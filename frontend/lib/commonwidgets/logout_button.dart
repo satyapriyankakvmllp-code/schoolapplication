@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../controllers/auth_controller.dart';
+import '../features/authentication/application/auth_controller.dart';
 
 class LogoutButton extends ConsumerWidget {
   final VoidCallback? onLogout;

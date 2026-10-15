@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/models/admission_request_model.dart';
-import '../controllers/admissions_controller.dart';
-import '../../../auth/presentation/controllers/auth_controller.dart';
-import '../../../auth/presentation/widgets/logout_button.dart';
+import '../features/admissions/domain/admission_request_model.dart';
+import '../features/admissions/application/admissions_controller.dart';
+import '../features/authentication/application/auth_controller.dart';
+import 'logout_button.dart';
 
 enum EdupluseNavPage {
   dashboard,

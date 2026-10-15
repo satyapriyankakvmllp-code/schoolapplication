@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../constants/app_constants.dart';
+import '../utils/app_constants.dart';
 
 /// Responsive builder helper to support adaptive mobile, tablet, and desktop views.
 class ResponsiveLayout extends StatelessWidget {

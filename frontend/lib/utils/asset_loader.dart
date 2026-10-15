@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import '../constants/app_constants.dart';
+import 'app_constants.dart';
 
 /// Service responsible for loading, parsing local mock JSON assets,
 /// and simulating network latency for backend readiness.
