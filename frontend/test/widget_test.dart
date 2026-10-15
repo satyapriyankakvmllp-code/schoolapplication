@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frontend/features/admissions/data/models/user_model.dart';
-import 'package:frontend/features/auth/presentation/widgets/logout_button.dart';
+import 'package:frontend/features/authentication/domain/user_model.dart';
+import 'package:frontend/commonwidgets/logout_button.dart';
 import 'package:frontend/main.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';

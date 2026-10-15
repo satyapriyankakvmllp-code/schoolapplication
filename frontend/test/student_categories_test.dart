@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frontend/features/admissions/presentation/screens/student_categories_screen.dart';
+import 'package:frontend/features/admissions/presentation/admin/student_categories_screen.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
