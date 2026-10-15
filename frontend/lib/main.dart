@@ -14,6 +14,7 @@ import 'features/auth/presentation/controllers/auth_controller.dart';
 import 'features/auth/presentation/screens/portal_gateway_screen.dart';
 import 'features/auth/presentation/screens/role_workspace_hub_screen.dart';
 import 'features/admissions/presentation/screens/frontdesk/frontdesk_workspace_screen.dart';
+import 'features/admissions/presentation/screens/parent/parent_portal_workspace_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -110,6 +111,15 @@ class _SchoolManagementAppState extends ConsumerState<SchoolManagementApp> {
       );
     }
 
+    // Parent & Guardian Portal (Phase 3)
+    if (activeRole == UserRole.parent) {
+      return ParentPortalWorkspaceScreen(
+        isDark: _isDarkMode,
+        onToggleTheme: _toggleTheme,
+        onExitToGateway: () => ref.read(activeUserRoleProvider.notifier).state = null,
+      );
+    }
+
     // Role-tailored workspace for other non-admin roles (Parent, Teacher, Student, Finance)
     if (activeRole != UserRole.admin) {
       return RoleWorkspaceHubScreen(
@@ -137,11 +147,12 @@ class _SchoolManagementAppState extends ConsumerState<SchoolManagementApp> {
         final currentStudent = _selectedStudentId != null
             ? ref.watch(studentDetailsProvider(_selectedStudentId)).valueOrNull
             : null;
+        final prefilledDraft = ref.watch(prefilledAdmissionDraftProvider);
         final admissionToUse = isEditMode
             ? (_editingAdmission ?? currentStudent)
-            : _editingAdmission;
+            : (_editingAdmission ?? prefilledDraft);
         return AddStudentFormScreen(
-          key: ValueKey('add_student_${admissionToUse?.student.id ?? 'empty'}_$isEditMode'),
+          key: ValueKey('add_student_${admissionToUse?.student.id ?? 'empty'}_${admissionToUse?.student.admissionNumber ?? 'new'}_$isEditMode'),
           isDark: _isDarkMode,
           isEditMode: isEditMode,
           onToggleTheme: _toggleTheme,

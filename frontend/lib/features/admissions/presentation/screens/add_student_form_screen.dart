@@ -192,20 +192,26 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
     _secondaryGuardianEmailController.text = edit.mother?.email ?? '';
 
     _birthCertificateFile = edit.student.dobCertificate;
+    _academicRecordFile = null;
+    _govtIdFile = null;
     if (edit.documents.isNotEmpty) {
       for (final doc in edit.documents) {
         final t = doc.title.toLowerCase();
-        if (t.contains('birth')) _birthCertificateFile = doc.fileName;
-        if (t.contains('academic') || t.contains('marksheet')) _academicRecordFile = doc.fileName;
-        if (t.contains('govt') || t.contains('aadhaar') || t.contains('id')) _govtIdFile = doc.fileName;
+        final f = doc.fileName.toLowerCase();
+        if (t.contains('birth') || f.contains('birth') || f.contains('dob')) {
+          _birthCertificateFile = doc.fileName;
+        } else if (t.contains('academic') || t.contains('marksheet') || t.contains('transfer') || t.contains('tc') || f.contains('transfer') || f.contains('tc') || f.contains('marks') || f.contains('report')) {
+          _academicRecordFile = doc.fileName;
+        } else if (t.contains('govt') || t.contains('aadhaar') || t.contains('id') || f.contains('govt') || f.contains('aadhaar') || f.contains('id') || f.contains('passport')) {
+          _govtIdFile = doc.fileName;
+        }
       }
     }
-    _birthCertificateFile ??= edit.student.dobCertificate ?? 'Aadhaar_Birth_Certificate.pdf';
-    _academicRecordFile ??= 'Class_9_Marksheet.pdf';
-    _govtIdFile ??= 'Govt_Aadhaar_Card.pdf';
     _idType = 'Aadhaar Card';
     _idNumberController.text = edit.student.nationalIdNumber ?? '';
-    _idExpiryDate = DateTime(2032, 8, 20);
+    _idExpiryDate = (edit.student.nationalIdNumber != null && edit.student.nationalIdNumber!.isNotEmpty)
+        ? DateTime(2032, 8, 20)
+        : null;
   }
 
   void _clearControllers() {
@@ -309,17 +315,6 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
       return;
     }
 
-    if (_birthCertificateFile == null || _academicRecordFile == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please upload all required documents (Birth Certificate & Academic Record) before submitting.'),
-          backgroundColor: Color(0xFFEF4444),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      setState(() => _currentStep = 3);
-      return;
-    }
 
     setState(() => _isSubmitting = true);
 
@@ -473,10 +468,10 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
   @override
   Widget build(BuildContext context) {
     final allStudents = ref.watch(admissionsListProvider).valueOrNull ?? MockAdmissionsRepository.defaultAdmissions;
-    final isEditing = widget.isEditMode || widget.admissionToEdit != null || _activeAdmissionToEdit != null;
+    final isEditing = widget.isEditMode;
 
     return EdupluseScaffold(
-      activePage: isEditing ? EdupluseNavPage.editStudent : EdupluseNavPage.addNewStudent,
+      activePage: widget.isEditMode ? EdupluseNavPage.editStudent : EdupluseNavPage.addNewStudent,
       onNavigate: widget.onNavigate,
       onToggleTheme: widget.onToggleTheme,
       isDark: widget.isDark,
@@ -491,7 +486,7 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildTopBar(isMobile: isMobile, isEditing: isEditing),
-                  if (isEditing) ...[
+                  if (widget.isEditMode) ...[
                     const SizedBox(height: 16),
                     _buildStudentPickerForEdit(
                       isMobile: isMobile,
@@ -521,7 +516,10 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
     required bool isDark,
     required List<StudentAdmissionModel> allStudents,
   }) {
-    final hasActiveStudent = _activeAdmissionToEdit != null;
+    final selectedStudentId = allStudents.any((s) => s.student.id == _activeAdmissionToEdit?.student.id)
+        ? _activeAdmissionToEdit?.student.id
+        : null;
+    final hasActiveStudent = selectedStudentId != null;
 
     final dropdownWidget = Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
@@ -538,7 +536,7 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           isExpanded: true,
-          value: _activeAdmissionToEdit?.student.id,
+          value: selectedStudentId,
           hint: Row(
             children: const [
               Icon(Icons.touch_app_outlined, size: 16, color: Color(0xFF109F83)),
@@ -1350,7 +1348,13 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
         _buildGridRow([
           _buildReadOnlyField('Admission Number', _studentIdController, hasLock: true),
           _buildDatePicker('Admission Date', _admissionDate, (d) => setState(() => _admissionDate = d), placeholder: 'Select Admission Date'),
-          _buildDropdown('Academic Year', _academicYear, ['Jun 2025/2026', '2026-2027', '2027-2028'], (v) => setState(() => _academicYear = v!)),
+          _buildDropdown('Academic Year', _academicYear, [
+            '2024-2025',
+            '2025-2026',
+            '2026-2027',
+            '2027-2028',
+            'Jun 2025/2026'
+          ], (v) => setState(() => _academicYear = v!)),
         ]),
 
         const SizedBox(height: 28),
@@ -1358,10 +1362,29 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
         _buildSectionHeader('B. Class Placement'),
         const SizedBox(height: 14),
         _buildGridRow([
-          _buildDropdown('Class & Section', _selectedClass, ['Primary', 'Grade 8', 'Grade 9', 'Grade 10'], (v) => setState(() => _selectedClass = v!)),
-          _buildDropdown('Section', _selectedSection, ['Science', 'Commerce', 'Arts', 'A', 'B'], (v) => setState(() => _selectedSection = v!)),
+          _buildDropdown('Class & Section', _selectedClass, [
+            'Nursery',
+            'Kindergarten',
+            'Class 1',
+            'Class 2',
+            'Class 3',
+            'Class 4',
+            'Class 5',
+            'Class 6',
+            'Class 7',
+            'Class 8',
+            'Class 9',
+            'Class 10',
+            'Class 11',
+            'Class 12',
+            'Primary',
+            'Grade 8',
+            'Grade 9',
+            'Grade 10',
+          ], (v) => setState(() => _selectedClass = v!)),
+          _buildDropdown('Section', _selectedSection, ['A', 'B', 'C', 'D', 'Science', 'Commerce', 'Arts'], (v) => setState(() => _selectedSection = v!)),
           _buildField('Roll Number', 'Roll Number', _step2RollNumberController),
-          _buildDropdown('Medium of Instruction', _mediumOfInstruction, ['English', 'Spanish', 'French', 'Bilingual'], (v) => setState(() => _mediumOfInstruction = v!)),
+          _buildDropdown('Medium of Instruction', _mediumOfInstruction, ['English', 'Hindi', 'Spanish', 'French', 'Bilingual'], (v) => setState(() => _mediumOfInstruction = v!)),
         ]),
 
         const SizedBox(height: 28),
@@ -1369,8 +1392,19 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
         _buildSectionHeader('C. Additional Assignment'),
         const SizedBox(height: 14),
         _buildGridRow([
-          _buildDropdown('House / Group', _houseGroup, ['Phoenix', 'Titans', 'Spartans', 'Hawks', 'Red House', 'Blue House'], (v) => setState(() => _houseGroup = v!)),
-          _buildDropdown('Second Language / Elective', _secondLanguage, ['Spanish', 'French', 'German', 'Hindi', 'Sanskrit', 'Computer Science'], (v) => setState(() => _secondLanguage = v!)),
+          _buildDropdown('House / Group', _houseGroup, [
+            'Shivaji House',
+            'Tagore House',
+            'Ashoka House',
+            'Raman House',
+            'Phoenix',
+            'Titans',
+            'Spartans',
+            'Hawks',
+            'Red House',
+            'Blue House'
+          ], (v) => setState(() => _houseGroup = v!)),
+          _buildDropdown('Second Language / Elective', _secondLanguage, ['Hindi', 'Sanskrit', 'Spanish', 'French', 'German', 'Computer Science'], (v) => setState(() => _secondLanguage = v!)),
         ]),
       ],
     );
@@ -1473,18 +1507,18 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
         const SizedBox(height: 14),
         _buildGridRow([
           FileUploadBox(
-            label: 'Birth Certificate *',
+            label: 'Birth Certificate',
             helperText: 'Click to upload or drag & drop\nSupport PDF, JPEG, PNG (max 5MB)',
             initialFileName: _birthCertificateFile,
-            isRequired: true,
+            isRequired: false,
             onFileSelected: (fn) => setState(() => _birthCertificateFile = fn.isEmpty ? null : fn),
             onFileRemoved: () => setState(() => _birthCertificateFile = null),
           ),
           FileUploadBox(
-            label: 'Previous Academic Record / Transcript *',
+            label: 'Previous Academic Record / Transcript (Optional)',
             helperText: 'Click to upload or drag & drop\nSupport PDF, JPEG, PNG (max 5MB)',
             initialFileName: _academicRecordFile,
-            isRequired: true,
+            isRequired: false,
             onFileSelected: (fn) => setState(() => _academicRecordFile = fn.isEmpty ? null : fn),
             onFileRemoved: () => setState(() => _academicRecordFile = null),
           ),
@@ -1501,10 +1535,10 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
         ]),
         const SizedBox(height: 16),
         FileUploadBox(
-          label: 'Upload Government ID (Front & Back) *',
+          label: 'Upload Government ID (Optional)',
           helperText: 'Click to upload or drag & drop\nSupport PDF, JPEG, PNG (max 10MB)',
           initialFileName: _govtIdFile,
-          isRequired: true,
+          isRequired: false,
           onFileSelected: (fn) => setState(() => _govtIdFile = fn.isEmpty ? null : fn),
           onFileRemoved: () => setState(() => _govtIdFile = null),
         ),
@@ -1741,16 +1775,21 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155),
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            if (hasLock)
+            if (hasLock) ...[
+              const SizedBox(width: 8),
               Text('Read-only', style: TextStyle(fontSize: 11, color: isDark ? const Color(0xFF94A3B8) : Colors.grey.shade500)),
+            ],
           ],
         ),
         const SizedBox(height: 6),
@@ -1773,7 +1812,20 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
 
   Widget _buildDropdown(String label, String value, List<String> items, ValueChanged<String?> onChanged) {
     final isDark = Theme.of(context).brightness == Brightness.dark || widget.isDark;
-    final effectiveItems = items.contains(value) ? items : [value, ...items];
+    final cleanValue = value.trim();
+    final uniqueItems = <String>{};
+    if (cleanValue.isNotEmpty) {
+      uniqueItems.add(cleanValue);
+    }
+    for (final it in items) {
+      final t = it.trim();
+      if (t.isNotEmpty) uniqueItems.add(t);
+    }
+    final effectiveItems = uniqueItems.toList();
+    final effectiveValue = effectiveItems.contains(cleanValue)
+        ? cleanValue
+        : (effectiveItems.isNotEmpty ? effectiveItems.first : null);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1787,10 +1839,11 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
         ),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
+          key: ValueKey('${label}_${effectiveValue}_${effectiveItems.length}'),
           dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-          initialValue: value,
+          initialValue: effectiveValue,
           items: effectiveItems
-              .map((e) => DropdownMenuItem(
+              .map((e) => DropdownMenuItem<String>(
                     value: e,
                     child: Text(
                       e,
@@ -1798,7 +1851,11 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
                     ),
                   ))
               .toList(),
-          onChanged: onChanged,
+          onChanged: (val) {
+            if (val != null) {
+              onChanged(val);
+            }
+          },
           decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12)),
         ),
       ],

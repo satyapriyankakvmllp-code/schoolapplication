@@ -534,6 +534,7 @@ class _InquiryDeskScreenState extends ConsumerState<InquiryDeskScreen> {
                 ),
                 onPressed: () {
                   ref.read(frontDeskInquiriesProvider.notifier).updateStatus(inq.id, InquiryStatus.converted);
+                  ref.read(frontDeskDraftInquiryProvider.notifier).state = inq;
                   widget.onConvertToApplication();
                 },
               ),

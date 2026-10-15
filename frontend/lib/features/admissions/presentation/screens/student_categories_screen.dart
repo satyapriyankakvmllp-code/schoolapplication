@@ -43,8 +43,10 @@ class _StudentCategoriesScreenState
         isDark: isDark,
         onApprove: (req) async {
           Navigator.of(ctx).pop();
-          // Generate an official admission number preview
-          final admNumber = 'ADM-2026-${1000 + int.parse(req.id.replaceAll(RegExp(r'[^0-9]'), ''))}';
+          // Generate an official admission number preview safely
+          final digits = req.id.replaceAll(RegExp(r'[^0-9]'), '');
+          final idNum = digits.isNotEmpty ? (int.tryParse(digits) ?? 1001) % 10000 : 1001;
+          final admNumber = 'ADM-2026-${1000 + idNum}';
           final prefilledAdmission = req.toStudentAdmissionDraft(
             newAdmissionNumber: admNumber,
           );

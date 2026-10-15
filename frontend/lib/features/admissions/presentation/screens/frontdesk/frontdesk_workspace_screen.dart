@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../controllers/frontdesk_controller.dart';
-import '../add_student_form_screen.dart';
+import '../../../data/models/admission_request_model.dart';
+import 'frontdesk_new_application_screen.dart';
 import 'frontdesk_dashboard_screen.dart';
 import 'inquiry_desk_screen.dart';
 import 'document_verification_queue_screen.dart';
@@ -440,18 +441,39 @@ class _FrontDeskWorkspaceScreenState extends ConsumerState<FrontDeskWorkspaceScr
           onConvertToApplication: () => ref.read(frontDeskActivePageProvider.notifier).state = FrontDeskPage.draftIntake,
         );
       case FrontDeskPage.draftIntake:
-        return AddStudentFormScreen(
+        final draftInq = ref.watch(frontDeskDraftInquiryProvider);
+        AdmissionRequestModel? initialModel;
+        if (draftInq != null) {
+          final names = draftInq.applicantName.split(' ');
+          final fName = names.isNotEmpty ? names.first : '';
+          final lName = names.length > 1 ? names.sublist(1).join(' ') : '';
+          initialModel = AdmissionRequestModel(
+            id: 'REQ-${draftInq.id.replaceAll(RegExp(r'[^0-9]'), '')}',
+            applicantFirstName: fName,
+            applicantLastName: lName,
+            gender: 'MALE',
+            dateOfBirth: DateTime(2018, 5, 12),
+            gradeApplied: draftInq.gradeApplying.isNotEmpty ? draftInq.gradeApplying : 'Class 1',
+            parentFullName: draftInq.parentName,
+            parentPhone: draftInq.parentPhone,
+            parentEmail: draftInq.parentEmail,
+            currentAddress: '',
+            emergencyContactPhone: draftInq.parentPhone,
+            source: AdmissionRequestSource.frontDesk,
+            status: AdmissionRequestStatus.pending,
+            appliedAt: DateTime.now(),
+            notes: 'Converted from Front-Desk Inquiry ${draftInq.id}. ${draftInq.notes}',
+          );
+        }
+        return FrontDeskNewApplicationScreen(
           isDark: isDark,
-          onToggleTheme: widget.onToggleTheme,
-          onCancel: () => ref.read(frontDeskActivePageProvider.notifier).state = FrontDeskPage.dashboard,
-          onSubmitted: (_) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Draft application submitted to Admin approval queue!'),
-                backgroundColor: Color(0xFF10B981),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
+          prefilledData: initialModel,
+          onCancel: () {
+            ref.read(frontDeskDraftInquiryProvider.notifier).state = null;
+            ref.read(frontDeskActivePageProvider.notifier).state = FrontDeskPage.dashboard;
+          },
+          onSubmittedSuccess: () {
+            ref.read(frontDeskDraftInquiryProvider.notifier).state = null;
             ref.read(frontDeskActivePageProvider.notifier).state = FrontDeskPage.dashboard;
           },
         );

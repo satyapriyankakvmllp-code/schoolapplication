@@ -244,9 +244,11 @@ class AdmissionRequestModel {
     required String newAdmissionNumber,
     String assignedSection = 'A',
   }) {
-    final generatedUserId = 'usr-${id.replaceAll(RegExp(r'[^0-9]'), '')}';
-    final generatedStudentId = 'std-${id.replaceAll(RegExp(r'[^0-9]'), '')}';
-    final parentId = 'par-${id.replaceAll(RegExp(r'[^0-9]'), '')}';
+    final digits = id.replaceAll(RegExp(r'[^0-9]'), '');
+    final idSuffix = digits.isNotEmpty ? digits : '${DateTime.now().millisecondsSinceEpoch % 10000}';
+    final generatedUserId = 'usr-$idSuffix';
+    final generatedStudentId = 'std-$idSuffix';
+    final parentId = 'par-$idSuffix';
 
     final user = UserModel(
       id: generatedUserId,
@@ -263,6 +265,14 @@ class AdmissionRequestModel {
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );
+
+    String? dobCert;
+    for (final doc in documents) {
+      if (doc.toLowerCase().contains('birth')) {
+        dobCert = doc;
+        break;
+      }
+    }
 
     final student = StudentProfileModel(
       id: generatedStudentId,
@@ -282,6 +292,7 @@ class AdmissionRequestModel {
       permanentAddress: permanentAddress ?? currentAddress,
       enrollmentStatus: EnrollmentStatus.enrolled,
       previousSchoolName: previousSchoolName,
+      dobCertificate: dobCert,
       additionalDetails: notes ?? 'Admission submitted via ${source.displayName}.',
     );
 
@@ -325,15 +336,28 @@ class AdmissionRequestModel {
       );
     }
 
-    final docModels = documents.map((docName) {
+    final docModels = documents.asMap().entries.map((entry) {
+      final idx = entry.key;
+      final docName = entry.value;
+      final dLower = docName.toLowerCase();
+      String title = 'Document';
+      if (dLower.contains('birth')) {
+        title = 'Birth Certificate';
+      } else if (dLower.contains('transfer') || dLower.contains('tc') || dLower.contains('report') || dLower.contains('marks')) {
+        title = 'Previous Academic Record';
+      } else if (dLower.contains('govt') || dLower.contains('id') || dLower.contains('aadhaar') || dLower.contains('parent')) {
+        title = 'Government ID';
+      } else if (dLower.contains('immun') || dLower.contains('medical') || dLower.contains('vaccin')) {
+        title = 'Medical / Immunization Record';
+      }
       return AdmissionDocumentModel(
-        id: 'doc-${DateTime.now().millisecondsSinceEpoch}',
-        title: docName.contains('Birth') ? 'Birth Certificate' : 'Transfer Certificate',
+        id: 'doc-${DateTime.now().millisecondsSinceEpoch}-$idx',
+        title: title,
         fileName: docName,
         fileUrl: docName,
         fileSize: '1.2 MB',
         fileType: docName.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image',
-        isVerified: false,
+        isVerified: true,
         uploadedAt: appliedAt,
       );
     }).toList();

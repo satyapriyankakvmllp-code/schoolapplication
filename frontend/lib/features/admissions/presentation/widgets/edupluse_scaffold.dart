@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../data/models/admission_request_model.dart';
 import '../controllers/admissions_controller.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../auth/presentation/widgets/logout_button.dart';
@@ -566,6 +567,9 @@ class _EdupluseScaffoldState extends ConsumerState<EdupluseScaffold> {
   }
 
   Widget _buildStudentsGroup({required bool showLabels, required bool isDrawer, required bool isDark}) {
+    final counts = ref.watch(admissionRequestCountsProvider);
+    final pendingCount = counts[AdmissionRequestStatus.pending] ?? 0;
+
     final isGroupActive = widget.activePage == EdupluseNavPage.addNewStudent ||
         widget.activePage == EdupluseNavPage.editStudent ||
         widget.activePage == EdupluseNavPage.studentDetails ||
@@ -626,6 +630,24 @@ class _EdupluseScaffoldState extends ConsumerState<EdupluseScaffold> {
                     ),
                   ),
                 ),
+                if (pendingCount > 0 && !isGroupActive)
+                  Container(
+                    margin: const EdgeInsets.only(right: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.5)),
+                    ),
+                    child: Text(
+                      '$pendingCount',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFF59E0B),
+                      ),
+                    ),
+                  ),
                 Icon(
                   _isStudentsExpanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_right,
                   size: 18,
@@ -646,6 +668,24 @@ class _EdupluseScaffoldState extends ConsumerState<EdupluseScaffold> {
                   title: 'Student Pipeline',
                   isActive: widget.activePage == EdupluseNavPage.studentPipeline,
                   isDark: isDark,
+                  trailingBadge: pendingCount > 0
+                      ? Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF59E0B).withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.5)),
+                          ),
+                          child: Text(
+                            '$pendingCount Pending',
+                            style: const TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFFF59E0B),
+                            ),
+                          ),
+                        )
+                      : null,
                   onTap: () => _handleNavigation(EdupluseNavPage.studentPipeline, isDrawer),
                 ),
                 _buildSubItem(
@@ -747,6 +787,7 @@ class _EdupluseScaffoldState extends ConsumerState<EdupluseScaffold> {
     required String title,
     bool isActive = false,
     required bool isDark,
+    Widget? trailingBadge,
     VoidCallback? onTap,
   }) {
     return InkWell(
@@ -780,6 +821,7 @@ class _EdupluseScaffoldState extends ConsumerState<EdupluseScaffold> {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
+            ?trailingBadge,
           ],
         ),
       ),

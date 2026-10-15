@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/network/asset_loader.dart';
 import '../models/admission_document_model.dart';
 import '../models/admission_request_model.dart';
@@ -24,6 +26,8 @@ class MockAdmissionsRepository implements AdmissionsRepository {
   final AssetLoader _assetLoader;
   static const String _mockDataPath = 'assets/data/admissions/admissions.json';
   static const String _mockRequestsPath = 'assets/data/admissions/admission_requests.json';
+  static const String _prefsRequestsKey = 'edupulse_saved_admission_requests';
+  static const String _prefsAdmissionsKey = 'edupulse_saved_enrolled_admissions';
 
   // In-memory cache so newly created or edited students persist in the session
   List<StudentAdmissionModel>? _cachedAdmissions;
@@ -37,24 +41,65 @@ class MockAdmissionsRepository implements AdmissionsRepository {
     _cachedRequests = _buildDefaultMockRequests();
   }
 
+  Future<SharedPreferences?> _getPrefs() async {
+    try {
+      return await SharedPreferences.getInstance().timeout(
+        const Duration(milliseconds: 300),
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> _ensureLoaded() async {
     if (_isAdmissionsJsonLoaded) return;
     _isAdmissionsJsonLoaded = true;
+
+    List<StudentAdmissionModel> baseAdmissions = [];
     try {
       final List<dynamic> list = await _assetLoader.loadJsonList(_mockDataPath, delayMs: 0);
-      final loaded = list
+      baseAdmissions = list
           .map((item) => StudentAdmissionModel.fromJson(item as Map<String, dynamic>))
           .toList();
-      if (loaded.isNotEmpty) {
-        _cachedAdmissions = loaded;
-      }
     } catch (_) {
       // Retain pre-seeded default Indian admissions
+    }
+
+    if (baseAdmissions.isEmpty) {
+      baseAdmissions = _buildDefaultIndianAdmissions();
+    }
+
+    try {
+      final prefs = await _getPrefs();
+      final String? savedJson = prefs?.getString(_prefsAdmissionsKey);
+      if (savedJson != null && savedJson.isNotEmpty) {
+        final decoded = jsonDecode(savedJson) as List<dynamic>;
+        final stored = decoded
+            .map((item) => StudentAdmissionModel.fromJson(item as Map<String, dynamic>))
+            .toList();
+
+        final storedIds = stored.map((s) => s.student.id).toSet();
+        final remainingBase = baseAdmissions.where((s) => !storedIds.contains(s.student.id)).toList();
+        _cachedAdmissions = [...stored, ...remainingBase];
+      } else {
+        _cachedAdmissions = baseAdmissions;
+      }
+    } catch (_) {
+      _cachedAdmissions = baseAdmissions;
     }
 
     if (_cachedAdmissions == null || _cachedAdmissions!.isEmpty) {
       _cachedAdmissions = _buildDefaultIndianAdmissions();
     }
+  }
+
+  Future<void> _persistAdmissions() async {
+    if (_cachedAdmissions == null) return;
+    try {
+      final prefs = await _getPrefs();
+      final listMap = _cachedAdmissions!.map((a) => a.toJson()).toList();
+      await prefs?.setString(_prefsAdmissionsKey, jsonEncode(listMap));
+    } catch (_) {}
   }
 
   static List<StudentAdmissionModel> _buildDefaultIndianAdmissions() {
@@ -287,6 +332,7 @@ class MockAdmissionsRepository implements AdmissionsRepository {
     } else {
       _cachedAdmissions!.insert(0, admission);
     }
+    await _persistAdmissions();
     // Simulate API delay
     await Future<void>.delayed(const Duration(milliseconds: 600));
     return admission;
@@ -301,6 +347,7 @@ class MockAdmissionsRepository implements AdmissionsRepository {
       _cachedAdmissions![index] = current.copyWith(
         student: current.student.copyWith(enrollmentStatus: EnrollmentStatus.discontinued),
       );
+      await _persistAdmissions();
       await Future<void>.delayed(const Duration(milliseconds: 400));
       return true;
     }
@@ -310,21 +357,53 @@ class MockAdmissionsRepository implements AdmissionsRepository {
   Future<void> _ensureRequestsLoaded() async {
     if (_isRequestsJsonLoaded) return;
     _isRequestsJsonLoaded = true;
+
+    List<AdmissionRequestModel> baseRequests = [];
     try {
       final List<dynamic> list = await _assetLoader.loadJsonList(_mockRequestsPath, delayMs: 0);
-      final loaded = list
+      baseRequests = list
           .map((item) => AdmissionRequestModel.fromJson(item as Map<String, dynamic>))
           .toList();
-      if (loaded.isNotEmpty) {
-        _cachedRequests = loaded;
-      }
     } catch (_) {
       // Retain pre-seeded default mock requests
+    }
+
+    if (baseRequests.isEmpty) {
+      baseRequests = _buildDefaultMockRequests();
+    }
+
+    try {
+      final prefs = await _getPrefs();
+      final String? savedJson = prefs?.getString(_prefsRequestsKey);
+      if (savedJson != null && savedJson.isNotEmpty) {
+        final decoded = jsonDecode(savedJson) as List<dynamic>;
+        final stored = decoded
+            .map((item) => AdmissionRequestModel.fromJson(item as Map<String, dynamic>))
+            .toList();
+
+        // Merge: stored items take precedence by ID, newly added front-desk requests appear at the top
+        final storedIds = stored.map((r) => r.id).toSet();
+        final remainingBase = baseRequests.where((r) => !storedIds.contains(r.id)).toList();
+        _cachedRequests = [...stored, ...remainingBase];
+      } else {
+        _cachedRequests = baseRequests;
+      }
+    } catch (_) {
+      _cachedRequests = baseRequests;
     }
 
     if (_cachedRequests == null || _cachedRequests!.isEmpty) {
       _cachedRequests = _buildDefaultMockRequests();
     }
+  }
+
+  Future<void> _persistRequests() async {
+    if (_cachedRequests == null) return;
+    try {
+      final prefs = await _getPrefs();
+      final listMap = _cachedRequests!.map((r) => r.toJson()).toList();
+      await prefs?.setString(_prefsRequestsKey, jsonEncode(listMap));
+    } catch (_) {}
   }
 
   static List<AdmissionRequestModel> _buildDefaultMockRequests() {
@@ -572,6 +651,7 @@ class MockAdmissionsRepository implements AdmissionsRepository {
         rejectionReason: rejectionReason ?? current.rejectionReason,
       );
       _cachedRequests![index] = updated;
+      await _persistRequests();
       await Future<void>.delayed(const Duration(milliseconds: 300));
       return updated;
     }
@@ -582,6 +662,7 @@ class MockAdmissionsRepository implements AdmissionsRepository {
   Future<AdmissionRequestModel> createAdmissionRequest(AdmissionRequestModel request) async {
     await _ensureRequestsLoaded();
     _cachedRequests!.insert(0, request);
+    await _persistRequests();
     await Future<void>.delayed(const Duration(milliseconds: 300));
     return request;
   }
