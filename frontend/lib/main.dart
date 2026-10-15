@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'core/constants/app_constants.dart';
-import 'core/theme/app_theme.dart';
-import 'features/admissions/data/models/student_admission_model.dart';
-import 'features/admissions/data/models/user_model.dart';
-import 'features/admissions/presentation/controllers/admissions_controller.dart';
-import 'features/admissions/presentation/screens/add_student_form_screen.dart';
-import 'features/admissions/presentation/screens/student_categories_screen.dart';
-import 'features/admissions/presentation/screens/student_details_screen.dart';
-import 'features/admissions/presentation/screens/student_list_screen.dart';
-import 'features/admissions/presentation/widgets/edupluse_scaffold.dart';
-import 'features/auth/presentation/controllers/auth_controller.dart';
-import 'features/auth/presentation/screens/portal_gateway_screen.dart';
-import 'features/auth/presentation/screens/role_workspace_hub_screen.dart';
-import 'features/admissions/presentation/screens/frontdesk/frontdesk_workspace_screen.dart';
+import 'utils/app_constants.dart';
+import 'themes/app_theme.dart';
+import 'features/admissions/domain/student_admission_model.dart';
+import 'features/authentication/domain/user_model.dart';
+import 'features/admissions/application/admissions_controller.dart';
+import 'features/admissions/presentation/admin/add_student_form_screen.dart';
+import 'features/admissions/presentation/admin/student_categories_screen.dart';
+import 'features/admissions/presentation/admin/student_details_screen.dart';
+import 'features/admissions/presentation/admin/student_list_screen.dart';
+import 'commonwidgets/edupluse_scaffold.dart';
+import 'features/authentication/application/auth_controller.dart';
+import 'features/authentication/presentation/portal_gateway_screen.dart';
+import 'features/authentication/presentation/role_workspace_hub_screen.dart';
+import 'features/admissions/presentation/frontdesk/frontdesk_workspace_screen.dart';
+import 'features/admissions/presentation/parent/parent_portal_workspace_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -110,6 +111,15 @@ class _SchoolManagementAppState extends ConsumerState<SchoolManagementApp> {
       );
     }
 
+    // Parent & Guardian Portal (Phase 3)
+    if (activeRole == UserRole.parent) {
+      return ParentPortalWorkspaceScreen(
+        isDark: _isDarkMode,
+        onToggleTheme: _toggleTheme,
+        onExitToGateway: () => ref.read(activeUserRoleProvider.notifier).state = null,
+      );
+    }
+
     // Role-tailored workspace for other non-admin roles (Parent, Teacher, Student, Finance)
     if (activeRole != UserRole.admin) {
       return RoleWorkspaceHubScreen(
@@ -137,11 +147,12 @@ class _SchoolManagementAppState extends ConsumerState<SchoolManagementApp> {
         final currentStudent = _selectedStudentId != null
             ? ref.watch(studentDetailsProvider(_selectedStudentId)).valueOrNull
             : null;
+        final prefilledDraft = ref.watch(prefilledAdmissionDraftProvider);
         final admissionToUse = isEditMode
             ? (_editingAdmission ?? currentStudent)
-            : _editingAdmission;
+            : (_editingAdmission ?? prefilledDraft);
         return AddStudentFormScreen(
-          key: ValueKey('add_student_${admissionToUse?.student.id ?? 'empty'}_$isEditMode'),
+          key: ValueKey('add_student_${admissionToUse?.student.id ?? 'empty'}_${admissionToUse?.student.admissionNumber ?? 'new'}_$isEditMode'),
           isDark: _isDarkMode,
           isEditMode: isEditMode,
           onToggleTheme: _toggleTheme,

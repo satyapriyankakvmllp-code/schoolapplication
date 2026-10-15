@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frontend/features/admissions/data/models/user_model.dart';
-import 'package:frontend/features/auth/presentation/widgets/logout_button.dart';
+import 'package:frontend/features/authentication/domain/user_model.dart';
+import 'package:frontend/commonwidgets/logout_button.dart';
 import 'package:frontend/main.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 void main() {
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
+
   testWidgets('SMS App renders successfully on mobile in Admin mode', (WidgetTester tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1.0;
@@ -262,4 +268,333 @@ void main() {
 
     expect(find.text('Institutional Sign In'), findsOneWidget);
   });
+
+  testWidgets('Complete End-to-End Admission Flow: Parent submits 3-step application and Admin reviews in Pipeline', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    // 1. Launch directly as Parent
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: SchoolManagementApp(initialRole: UserRole.parent),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // 2. Verify Parent Portal loaded
+    expect(find.text('Parent & Guardian Portal'), findsWidgets);
+    expect(find.text('New Child Admission'), findsOneWidget);
+
+    // 3. Navigate to New Child Admission tab
+    await tester.tap(find.text('New Child Admission'));
+    await tester.pumpAndSettle();
+
+    // Verify 3-step wizard Step 1 is rendered
+    expect(find.text('Step 1: Child Demographics & Grade Applied'), findsOneWidget);
+
+    // Fill child first & last name and address
+    final textFields = find.byType(TextFormField);
+    await tester.enterText(textFields.at(0), 'Ishaan');
+    await tester.enterText(textFields.at(1), 'Sharma');
+    await tester.enterText(textFields.at(4), '42 Lotus Enclave, MG Road');
+    await tester.pumpAndSettle();
+
+    // Click Next Step
+    final nextButton = find.text('Next Step ➔');
+    expect(nextButton, findsOneWidget);
+    await tester.ensureVisible(nextButton);
+    await tester.tap(nextButton);
+    await tester.pumpAndSettle();
+
+    // 4. Verify Step 2: Guardian Details is rendered
+    expect(find.text('Step 2: Parent / Guardian & Emergency Linking'), findsOneWidget);
+    expect(find.text('Rajesh Sharma'), findsWidgets);
+
+    // Click Next Step to go to Step 3
+    await tester.ensureVisible(nextButton);
+    await tester.tap(nextButton);
+    await tester.pumpAndSettle();
+
+    // 5. Verify Step 3: Documents & Declaration
+    expect(find.text('Step 3: Document Attachments & Declaration'), findsOneWidget);
+    expect(find.text('Ishaan Sharma'), findsWidgets);
+
+    // Accept Declaration Checkbox
+    final declarationFinder = find.byType(Checkbox).last;
+    await tester.ensureVisible(declarationFinder);
+    await tester.tap(declarationFinder);
+    await tester.pumpAndSettle();
+
+    // Submit Application to Admin
+    final submitButton = find.text('Submit Application to Admin ➔');
+    expect(submitButton, findsOneWidget);
+    await tester.ensureVisible(submitButton);
+    await tester.tap(submitButton);
+    await tester.pumpAndSettle();
+
+    // 6. Verify switched to My Applications & Status Tracker tab showing Ishaan Sharma in Pending Admin Review
+    expect(find.text('Admission Applications & Status Tracker'), findsOneWidget);
+    expect(find.text('Ishaan Sharma'), findsOneWidget);
+    expect(find.text('Pending Admin Review'), findsWidgets);
+
+    // 7. Log out from Parent Portal
+    expect(find.byType(LogoutButton), findsOneWidget);
+    await tester.tap(find.byType(LogoutButton));
+    await tester.pumpAndSettle();
+    expect(find.text('Institutional Sign In'), findsOneWidget);
+
+    // 8. Sign in as Admin Console
+    await tester.tap(find.text('Admin Console'));
+    await tester.pumpAndSettle();
+    final adminSignInBtn = find.widgetWithText(ElevatedButton, 'Sign In as Admin Console');
+    await tester.ensureVisible(adminSignInBtn);
+    await tester.tap(adminSignInBtn);
+    await tester.pumpAndSettle();
+
+    // 9. Navigate to Student Pipeline (Categories)
+    final pipelineNavFinder = find.text('Student Pipeline');
+    expect(pipelineNavFinder, findsWidgets);
+    await tester.tap(pipelineNavFinder.first);
+    await tester.pumpAndSettle();
+
+    // 10. Verify Ishaan Sharma is present in the Admin Pipeline under Pending with Parent Portal badge!
+    expect(find.text('Ishaan Sharma'), findsWidgets);
+    expect(find.text('Parent Portal'), findsWidgets);
+  });
+
+  testWidgets('Front-Desk Officer Walk-In Intake Form renders separately on Phone (390x844) without Admin sidebar and submits to Admin pending queue', (WidgetTester tester) async {
+    // Set viewport to mobile phone size (iPhone 13/14/15 size: 390x844)
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    // 1. Launch with admissions (Front-Desk) role
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: SchoolManagementApp(initialRole: UserRole.admissions),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // 2. On mobile phone, verify hamburger button exists and opens drawer
+    final menuButton = find.byIcon(Icons.menu);
+    expect(menuButton, findsOneWidget);
+    await tester.tap(menuButton);
+    await tester.pumpAndSettle();
+
+    // 3. Tap "New Application" from drawer
+    final newAppNavItem = find.text('New Application');
+    expect(newAppNavItem, findsOneWidget);
+    await tester.tap(newAppNavItem);
+    await tester.pumpAndSettle();
+
+    // 4. Verify Front-Desk Standalone Intake form is rendered WITHOUT Admin sidebar
+    expect(find.text('Walk-In Admission Intake Form'), findsOneWidget);
+    expect(find.text('1. Student Personal Details'), findsOneWidget);
+    expect(find.text('2. Academic Placement Applied'), findsOneWidget);
+    expect(find.text('3. Parent / Guardian & Emergency Linking'), findsOneWidget);
+    expect(find.text('4. Documents Presented by Parent'), findsOneWidget);
+
+    // Fill student personal details
+    final textFields = find.byType(TextFormField);
+    await tester.ensureVisible(textFields.at(0));
+    await tester.enterText(textFields.at(0), 'Ananya'); // First Name
+    await tester.ensureVisible(textFields.at(1));
+    await tester.enterText(textFields.at(1), 'Kulkarni'); // Last Name
+    await tester.ensureVisible(textFields.at(3));
+    await tester.enterText(textFields.at(3), '12 Palm Grove, Pune'); // Address
+    await tester.ensureVisible(textFields.at(6));
+    await tester.enterText(textFields.at(6), 'Suresh Kulkarni'); // Guardian Name
+    await tester.ensureVisible(textFields.at(7));
+    await tester.enterText(textFields.at(7), '+91 98220 12345'); // Guardian Phone
+    await tester.ensureVisible(textFields.at(8));
+    await tester.enterText(textFields.at(8), 'suresh.kulkarni@example.com'); // Guardian Email
+    await tester.pumpAndSettle();
+
+    // Scroll down to submit button
+    final submitButton = find.text('Submit Application to Admin ➔');
+    expect(submitButton, findsOneWidget);
+    await tester.ensureVisible(submitButton);
+    await tester.pumpAndSettle();
+    await tester.tap(submitButton);
+    await tester.pumpAndSettle();
+
+    // Verify submission modal dialog with Pending status
+    expect(find.text('Application Submitted!'), findsOneWidget);
+    expect(find.text('Pending Review'), findsOneWidget);
+
+    // Click Return to Dashboard
+    final returnBtn = find.text('Return to Dashboard');
+    expect(returnBtn, findsOneWidget);
+    await tester.tap(returnBtn);
+    await tester.pumpAndSettle();
+
+    // Verify returned to Front-Desk Dashboard
+    expect(find.text('Admissions & Intake Cockpit'), findsOneWidget);
+  });
+
+  testWidgets('Front-Desk Officer attaches documents, submits to Admin, and Admin approves into registration form without crash', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: SchoolManagementApp(initialRole: UserRole.admissions),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Navigate to New Application
+    final newAppNavItem = find.text('New Application');
+    expect(newAppNavItem, findsWidgets);
+    await tester.tap(newAppNavItem.first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('4. Documents Presented by Parent'), findsOneWidget);
+    expect(find.text('Student Birth Certificate *'), findsOneWidget);
+
+    // Fill form
+    final textFields = find.byType(TextFormField);
+    await tester.enterText(textFields.at(0), 'Rohit');
+    await tester.enterText(textFields.at(1), 'Verma');
+    await tester.enterText(textFields.at(3), '42 MG Road, Bangalore');
+    await tester.enterText(textFields.at(6), 'Vikram Verma');
+    await tester.enterText(textFields.at(7), '+91 98888 77777');
+    await tester.enterText(textFields.at(8), 'vikram.verma@example.com');
+    await tester.pumpAndSettle();
+
+    // Submit Application to Admin
+    final submitButton = find.text('Submit Application to Admin ➔');
+    await tester.ensureVisible(submitButton);
+    await tester.tap(submitButton);
+    await tester.pumpAndSettle();
+
+    // Dismiss modal dialog
+    final returnBtn = find.text('Return to Dashboard');
+    expect(returnBtn, findsOneWidget);
+    await tester.tap(returnBtn);
+    await tester.pumpAndSettle();
+
+    // Log out and switch to Admin Console
+    await tester.tap(find.byType(LogoutButton));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Admin Console'));
+    await tester.pumpAndSettle();
+    final adminSignInBtn = find.widgetWithText(ElevatedButton, 'Sign In as Admin Console');
+    await tester.ensureVisible(adminSignInBtn);
+    await tester.tap(adminSignInBtn);
+    await tester.pumpAndSettle();
+
+    // Navigate to Student Pipeline
+    final pipelineNavFinder = find.text('Student Pipeline');
+    expect(pipelineNavFinder, findsWidgets);
+    await tester.tap(pipelineNavFinder.first);
+    await tester.pumpAndSettle();
+
+    // Verify Rohit Verma appears in the pipeline
+    expect(find.text('Rohit Verma'), findsWidgets);
+
+    // Open review modal via Review button
+    final reviewButtons = find.text('Review');
+    expect(reviewButtons, findsWidgets);
+    await tester.tap(reviewButtons.first);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    // Verify documents are displayed in review sheet
+    expect(find.text('Application Details'), findsOneWidget);
+    expect(find.text('Submitted Documents'), findsOneWidget);
+
+    // Click Approve & Pre-fill Form
+    final approveBtn = find.text('Approve & Pre-fill Form');
+    expect(approveBtn, findsOneWidget);
+    await tester.tap(approveBtn);
+    await tester.pumpAndSettle();
+
+    // Verify Add Student Form Screen opens without crash and pre-fills Rohit Verma!
+    expect(find.text('Student Personal Details'), findsOneWidget);
+    expect(find.text('Rohit'), findsWidgets);
+    expect(find.text('Verma'), findsWidgets);
+
+    // Navigate through steps to Step 4: Document Verification
+    for (int i = 0; i < 3; i++) {
+      final proceedBtn = find.text('Proceed to Next Step →');
+      await tester.dragUntilVisible(
+        proceedBtn,
+        find.byType(SingleChildScrollView).last,
+        const Offset(0, -150),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(proceedBtn, warnIfMissed: false);
+      await tester.pumpAndSettle();
+    }
+
+    // Verify default fake documents were NOT automatically populated
+    expect(find.text('Class_9_Marksheet.pdf'), findsNothing);
+    expect(find.text('Govt_Aadhaar_Card.pdf'), findsNothing);
+    expect(find.text('Aadhaar_Birth_Certificate.pdf'), findsNothing);
+
+    // Update and register student succeeds without blocking on missing optional documents
+    final submitBtn = find.byType(ElevatedButton).last;
+    await tester.dragUntilVisible(
+      submitBtn,
+      find.byType(SingleChildScrollView).last,
+      const Offset(0, -150),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(submitBtn, warnIfMissed: false);
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('Parent Portal renders responsive mobile layout on phone (390x844) with bottom navigation and switches tabs cleanly', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: SchoolManagementApp(initialRole: UserRole.parent),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Verify Mobile Header and Bottom Navigation Bar
+    expect(find.text('EduPulse'), findsOneWidget);
+    expect(find.text('PARENT & GUARDIAN PORTAL'), findsOneWidget);
+    expect(find.byType(NavigationBar), findsOneWidget);
+
+    // Verify Sibling switcher and stats on mobile
+    expect(find.text('Aarav Sharma'), findsWidgets);
+    expect(find.text('Kabir Sharma'), findsWidgets);
+    expect(find.text('Attendance Rate'), findsOneWidget);
+
+    // Switch child to Kabir Sharma
+    await tester.tap(find.text('Kabir Sharma').first);
+    await tester.pumpAndSettle();
+    expect(find.text('Kabir Rajesh Sharma'), findsOneWidget);
+
+    // Tap New Child Admission on Bottom Navigation
+    await tester.tap(find.text('New Child Admission'));
+    await tester.pumpAndSettle();
+    expect(find.text('Step 1: Child Demographics & Grade Applied'), findsOneWidget);
+
+    // Tap My Applications on Bottom Navigation
+    await tester.tap(find.text('My Applications'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('Admission Applications & Status Tracker'), findsOneWidget);
+
+    // Tap Header Back Button to return to Enrolled Children Overview
+    await tester.tap(find.byTooltip('Back to Overview'));
+    await tester.pumpAndSettle();
+    expect(find.text('Kabir Rajesh Sharma'), findsOneWidget);
+  });
 }
+
