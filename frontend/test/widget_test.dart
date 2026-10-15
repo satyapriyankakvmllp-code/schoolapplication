@@ -590,6 +590,11 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.text('Admission Applications & Status Tracker'), findsOneWidget);
+
+    // Tap Header Back Button to return to Enrolled Children Overview
+    await tester.tap(find.byTooltip('Back to Overview'));
+    await tester.pumpAndSettle();
+    expect(find.text('Kabir Rajesh Sharma'), findsOneWidget);
   });
 }
 

@@ -95,37 +95,48 @@ class _ParentPortalWorkspaceScreenState
       orElse: () => 0,
     );
 
-    return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0B1120) : const Color(0xFFF1F5F9),
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildTopHeader(isDark: isDark, isMobile: isMobile),
-            if (!isMobile)
-              _buildNavigationTabBar(
-                isDark: isDark,
-                isMobile: isMobile,
-                myAppCount: myAppCount,
-              ),
-            Expanded(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 250),
-                child: _buildActiveTabContent(
+    return PopScope(
+      canPop: _activeTab == ParentPortalTab.childrenOverview && widget.onExitToGateway == null,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (_activeTab != ParentPortalTab.childrenOverview) {
+          setState(() => _activeTab = ParentPortalTab.childrenOverview);
+        } else {
+          widget.onExitToGateway?.call();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: isDark ? const Color(0xFF0B1120) : const Color(0xFFF1F5F9),
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildTopHeader(isDark: isDark, isMobile: isMobile),
+              if (!isMobile)
+                _buildNavigationTabBar(
                   isDark: isDark,
                   isMobile: isMobile,
-                  key: ValueKey(_activeTab),
+                  myAppCount: myAppCount,
+                ),
+              Expanded(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 250),
+                  child: _buildActiveTabContent(
+                    isDark: isDark,
+                    isMobile: isMobile,
+                    key: ValueKey(_activeTab),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
+        bottomNavigationBar: isMobile
+            ? _buildMobileBottomNav(
+                isDark: isDark,
+                myAppCount: myAppCount,
+              )
+            : null,
       ),
-      bottomNavigationBar: isMobile
-          ? _buildMobileBottomNav(
-              isDark: isDark,
-              myAppCount: myAppCount,
-            )
-          : null,
     );
   }
 
@@ -133,9 +144,12 @@ class _ParentPortalWorkspaceScreenState
   // Top Header: Compact & Clean on Mobile, Full on Desktop
   // --------------------------------------------------------------------------
   Widget _buildTopHeader({required bool isDark, required bool isMobile}) {
+    final canGoBackToOverview = _activeTab != ParentPortalTab.childrenOverview;
+    final showBackButton = canGoBackToOverview || widget.onExitToGateway != null;
+
     return Container(
       height: isMobile ? 62 : 70,
-      padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 24),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
         border: Border(
@@ -147,10 +161,37 @@ class _ParentPortalWorkspaceScreenState
       ),
       child: Row(
         children: [
+          // Back Button (Returns to Overview if in sub-tab, or to Gateway if on Overview)
+          if (showBackButton) ...[
+            Tooltip(
+              message: canGoBackToOverview ? 'Back to Overview' : 'Back to Gateway',
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                constraints: BoxConstraints(
+                  minWidth: isMobile ? 32 : 36,
+                  minHeight: isMobile ? 32 : 36,
+                ),
+                icon: Icon(
+                  Icons.arrow_back_rounded,
+                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  size: isMobile ? 20 : 22,
+                ),
+                onPressed: () {
+                  if (canGoBackToOverview) {
+                    setState(() => _activeTab = ParentPortalTab.childrenOverview);
+                  } else {
+                    widget.onExitToGateway?.call();
+                  }
+                },
+              ),
+            ),
+            SizedBox(width: isMobile ? 2 : 6),
+          ],
+
           // Brand Lockup
           Container(
-            width: isMobile ? 32 : 36,
-            height: isMobile ? 32 : 36,
+            width: isMobile ? 30 : 36,
+            height: isMobile ? 30 : 36,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFF10B981), Color(0xFF06B6D4)],
@@ -159,13 +200,13 @@ class _ParentPortalWorkspaceScreenState
               ),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.family_restroom_rounded,
               color: Colors.white,
-              size: 20,
+              size: isMobile ? 18 : 20,
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1084,6 +1125,30 @@ class _ParentPortalWorkspaceScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Back to Overview quick link
+              InkWell(
+                onTap: () => setState(() => _activeTab = ParentPortalTab.childrenOverview),
+                borderRadius: BorderRadius.circular(6),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Icon(Icons.arrow_back, size: 14, color: Color(0xFF10B981)),
+                      SizedBox(width: 6),
+                      Text(
+                        'Back to Children Overview',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF10B981),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
               if (isMobile) ...[
                 Text(
                   'Admission Applications & Status Tracker',
