@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../admissions/data/models/user_model.dart';
-import '../controllers/auth_controller.dart';
+import '../../domain/user_model.dart';
+import '../../application/auth_controller.dart';
 
 class RoleSwitcherPill extends ConsumerWidget {
   final VoidCallback? onExitToGateway;
