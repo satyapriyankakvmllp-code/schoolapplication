@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/models/admission_request_model.dart';
-import '../../data/models/student_admission_model.dart';
-import '../../data/repositories/admissions_repository.dart';
+import '../domain/admission_request_model.dart';
+import '../domain/student_admission_model.dart';
+import '../data/admissions_repository.dart';
 
 final admissionsRepositoryProvider = Provider<AdmissionsRepository>((ref) {
   return MockAdmissionsRepository();

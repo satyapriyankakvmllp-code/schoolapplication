@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../controllers/admissions_controller.dart';
-import '../../controllers/frontdesk_controller.dart';
-import '../../../data/models/admission_request_model.dart';
-import '../../widgets/file_upload_box.dart';
+import '../../application/admissions_controller.dart';
+import '../../application/frontdesk_controller.dart';
+import '../../domain/admission_request_model.dart';
+import '../widgets/file_upload_box.dart';
 
 /// Dedicated Standalone Walk-In Admission Intake Screen for Front-Desk Officers.
 /// Takes details from the visiting parent and directly submits to Admin in PENDING status.

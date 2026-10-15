@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../controllers/frontdesk_controller.dart';
-import '../../../data/models/admission_request_model.dart';
+import '../../application/frontdesk_controller.dart';
+import '../../domain/admission_request_model.dart';
 import 'frontdesk_new_application_screen.dart';
 import 'frontdesk_dashboard_screen.dart';
 import 'inquiry_desk_screen.dart';
@@ -9,8 +9,8 @@ import 'document_verification_queue_screen.dart';
 import 'interview_scheduler_screen.dart';
 import 'id_badge_studio_screen.dart';
 import 'frontdesk_student_lookup_screen.dart';
-import '../../../../auth/presentation/widgets/logout_button.dart';
-import '../../../../auth/presentation/controllers/auth_controller.dart';
+import '../../../../commonwidgets/logout_button.dart';
+import '../../../authentication/application/auth_controller.dart';
 
 class FrontDeskWorkspaceScreen extends ConsumerStatefulWidget {
   final bool isDark;

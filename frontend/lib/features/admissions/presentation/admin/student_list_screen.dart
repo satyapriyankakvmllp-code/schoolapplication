@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/models/student_profile_model.dart';
-import '../controllers/admissions_controller.dart';
-import '../widgets/edupluse_scaffold.dart';
+import '../../../../commonwidgets/edupluse_scaffold.dart';
+import '../../application/admissions_controller.dart';
+import '../../domain/student_profile_model.dart';
 
 class StudentListScreen extends ConsumerStatefulWidget {
   final ValueChanged<EdupluseNavPage>? onNavigate;

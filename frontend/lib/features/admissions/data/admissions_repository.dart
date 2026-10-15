@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../../core/network/asset_loader.dart';
-import '../models/admission_document_model.dart';
-import '../models/admission_request_model.dart';
-import '../models/parent_profile_model.dart';
-import '../models/student_admission_model.dart';
-import '../models/student_profile_model.dart';
-import '../models/user_model.dart';
+import '../../../utils/asset_loader.dart';
+import '../../authentication/domain/user_model.dart';
+import '../domain/admission_document_model.dart';
+import '../domain/admission_request_model.dart';
+import '../domain/parent_profile_model.dart';
+import '../domain/student_admission_model.dart';
+import '../domain/student_profile_model.dart';
 
 abstract class AdmissionsRepository {
   Future<List<StudentAdmissionModel>> getAdmissions();

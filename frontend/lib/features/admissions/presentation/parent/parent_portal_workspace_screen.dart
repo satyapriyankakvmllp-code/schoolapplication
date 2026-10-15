@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../controllers/admissions_controller.dart';
-import '../../../data/models/admission_request_model.dart';
-import '../../widgets/admission_application_wizard.dart';
-import '../../../../auth/presentation/widgets/logout_button.dart';
+import '../../../../commonwidgets/logout_button.dart';
+import '../../application/admissions_controller.dart';
+import '../../domain/admission_request_model.dart';
+import '../widgets/admission_application_wizard.dart';
 
 enum ParentPortalTab {
   childrenOverview,

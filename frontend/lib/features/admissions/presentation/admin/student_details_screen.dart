@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../data/models/student_admission_model.dart';
-import '../../data/models/student_profile_model.dart';
-import '../../data/repositories/admissions_repository.dart';
-import '../controllers/admissions_controller.dart';
-import '../widgets/edupluse_scaffold.dart';
+import '../../../../commonwidgets/edupluse_scaffold.dart';
+import '../../application/admissions_controller.dart';
+import '../../data/admissions_repository.dart';
+import '../../domain/student_admission_model.dart';
+import '../../domain/student_profile_model.dart';
 
 class StudentDetailsScreen extends ConsumerStatefulWidget {
   final String? studentId;

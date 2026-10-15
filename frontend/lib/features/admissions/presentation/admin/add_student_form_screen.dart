@@ -3,14 +3,14 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../data/models/admission_document_model.dart';
-import '../../data/models/parent_profile_model.dart';
-import '../../data/models/student_admission_model.dart';
-import '../../data/models/student_profile_model.dart';
-import '../../data/models/user_model.dart';
-import '../../data/repositories/admissions_repository.dart';
-import '../controllers/admissions_controller.dart';
-import '../widgets/edupluse_scaffold.dart';
+import '../../../../commonwidgets/edupluse_scaffold.dart';
+import '../../../authentication/domain/user_model.dart';
+import '../../application/admissions_controller.dart';
+import '../../data/admissions_repository.dart';
+import '../../domain/admission_document_model.dart';
+import '../../domain/parent_profile_model.dart';
+import '../../domain/student_admission_model.dart';
+import '../../domain/student_profile_model.dart';
 import '../widgets/file_upload_box.dart';
 
 class AddStudentFormScreen extends ConsumerStatefulWidget {

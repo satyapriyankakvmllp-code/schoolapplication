@@ -2,7 +2,7 @@ import 'admission_document_model.dart';
 import 'parent_profile_model.dart';
 import 'student_admission_model.dart';
 import 'student_profile_model.dart';
-import 'user_model.dart';
+import '../../authentication/domain/user_model.dart';
 
 enum AdmissionRequestStatus {
   pending,

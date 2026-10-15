@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../controllers/frontdesk_controller.dart';
+import '../../application/frontdesk_controller.dart';
 
 class InquiryDeskScreen extends ConsumerStatefulWidget {
   final bool isDark;

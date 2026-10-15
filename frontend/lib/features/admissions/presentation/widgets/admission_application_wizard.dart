@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../data/models/admission_request_model.dart';
+import '../../domain/admission_request_model.dart';
 import 'file_upload_box.dart';
 
 /// Reusable 3-Step Guided Wizard for New Student Admission Intake.
