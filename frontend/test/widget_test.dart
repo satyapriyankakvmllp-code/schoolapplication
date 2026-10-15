@@ -551,5 +551,45 @@ void main() {
     await tester.tap(submitBtn, warnIfMissed: false);
     await tester.pumpAndSettle();
   });
+
+  testWidgets('Parent Portal renders responsive mobile layout on phone (390x844) with bottom navigation and switches tabs cleanly', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: SchoolManagementApp(initialRole: UserRole.parent),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Verify Mobile Header and Bottom Navigation Bar
+    expect(find.text('EduPulse'), findsOneWidget);
+    expect(find.text('PARENT & GUARDIAN PORTAL'), findsOneWidget);
+    expect(find.byType(NavigationBar), findsOneWidget);
+
+    // Verify Sibling switcher and stats on mobile
+    expect(find.text('Aarav Sharma'), findsWidgets);
+    expect(find.text('Kabir Sharma'), findsWidgets);
+    expect(find.text('Attendance Rate'), findsOneWidget);
+
+    // Switch child to Kabir Sharma
+    await tester.tap(find.text('Kabir Sharma').first);
+    await tester.pumpAndSettle();
+    expect(find.text('Kabir Rajesh Sharma'), findsOneWidget);
+
+    // Tap New Child Admission on Bottom Navigation
+    await tester.tap(find.text('New Child Admission'));
+    await tester.pumpAndSettle();
+    expect(find.text('Step 1: Child Demographics & Grade Applied'), findsOneWidget);
+
+    // Tap My Applications on Bottom Navigation
+    await tester.tap(find.text('My Applications'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('Admission Applications & Status Tracker'), findsOneWidget);
+  });
 }
 

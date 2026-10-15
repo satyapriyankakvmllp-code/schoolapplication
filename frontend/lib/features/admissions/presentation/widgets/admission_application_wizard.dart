@@ -307,7 +307,10 @@ class _AdmissionApplicationWizardState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 8,
+                  runSpacing: 4,
                   children: [
                     Text(
                       'New Student Admission Application',
@@ -317,7 +320,6 @@ class _AdmissionApplicationWizardState
                         color: isDark ? Colors.white : const Color(0xFF0F172A),
                       ),
                     ),
-                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
@@ -1181,52 +1183,64 @@ class _AdmissionApplicationWizardState
   // Navigation & Action Buttons
   // --------------------------------------------------------------------------
   Widget _buildNavButtons(bool isDark, bool isMobile) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        if (_currentStep == 0)
-          OutlinedButton.icon(
+    final prevOrCancelButton = _currentStep == 0
+        ? OutlinedButton.icon(
             onPressed: widget.onCancel,
             icon: const Icon(Icons.close, size: 16),
             label: const Text('Cancel Intake'),
             style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               foregroundColor: isDark ? Colors.white70 : Colors.grey.shade700,
             ),
           )
-        else
-          OutlinedButton.icon(
+        : OutlinedButton.icon(
             onPressed: _prevStep,
             icon: const Icon(Icons.arrow_back, size: 16),
             label: const Text('Previous Step'),
             style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               foregroundColor: isDark ? Colors.white : const Color(0xFF0F172A),
             ),
-          ),
+          );
 
-        if (_currentStep < 2)
-          ElevatedButton.icon(
+    final nextOrSubmitButton = _currentStep < 2
+        ? ElevatedButton.icon(
             onPressed: _nextStep,
             icon: const Icon(Icons.arrow_forward, size: 16),
             label: const Text('Next Step ➔'),
             style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
               backgroundColor: const Color(0xFF0D9488),
               foregroundColor: Colors.white,
             ),
           )
-        else
-          ElevatedButton.icon(
+        : ElevatedButton.icon(
             onPressed: _submitForm,
             icon: const Icon(Icons.send_rounded, size: 16),
             label: const Text('Submit Application to Admin ➔'),
             style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
               backgroundColor: const Color(0xFF10B981),
               foregroundColor: Colors.white,
             ),
-          ),
+          );
+
+    if (isMobile) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          nextOrSubmitButton,
+          const SizedBox(height: 10),
+          prevOrCancelButton,
+        ],
+      );
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        prevOrCancelButton,
+        nextOrSubmitButton,
       ],
     );
   }
