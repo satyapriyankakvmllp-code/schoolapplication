@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../features/admissions/domain/admission_request_model.dart';
 import '../features/admissions/application/admissions_controller.dart';
 import '../features/authentication/application/auth_controller.dart';
+import '../features/authentication/domain/user_model.dart';
 import 'logout_button.dart';
 
 enum EdupluseNavPage {
@@ -15,6 +16,13 @@ enum EdupluseNavPage {
   teachers,
   guardian,
   classes,
+  classesSubjects,
+  classesSections,
+  classesCurriculum,
+  classesDailyLessons,
+  classesTimetable,
+  classesClassrooms,
+  classesTeacherWork,
   examinations,
   fees,
   attendance,
@@ -45,6 +53,7 @@ class EdupluseScaffold extends ConsumerStatefulWidget {
 class _EdupluseScaffoldState extends ConsumerState<EdupluseScaffold> {
   bool _isSidebarCollapsed = false;
   bool _isStudentsExpanded = true;
+  bool _isClassesExpanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -144,57 +153,59 @@ class _EdupluseScaffoldState extends ConsumerState<EdupluseScaffold> {
               ),
             ),
           const SizedBox(width: 8),
-          // Search Bar
-          if (!isMobile)
-            InkWell(
-              onTap: () => _openSearchDialog(context, isDark),
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 380),
-                height: 42,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: isDark ? const Color(0xFF334155) : Colors.grey.shade200,
+          // Search Bar (Expanded on Desktop, Icon on Tablet/Mobile)
+          if (isDesktop)
+            Flexible(
+              child: InkWell(
+                onTap: () => _openSearchDialog(context, isDark),
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 380),
+                  height: 42,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF334155) : Colors.grey.shade200,
+                    ),
                   ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.search,
-                      size: 18,
-                      color: isDark ? const Color(0xFF94A3B8) : Colors.grey.shade400,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Search students by name, id...',
-                        style: TextStyle(
-                          color: isDark ? const Color(0xFF94A3B8) : Colors.grey.shade400,
-                          fontSize: 13,
-                        ),
-                        overflow: TextOverflow.ellipsis,
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.search,
+                        size: 18,
+                        color: isDark ? const Color(0xFF94A3B8) : Colors.grey.shade400,
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF334155) : Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        'Quick Search',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: isDark ? const Color(0xFFCBD5E1) : Colors.grey.shade600,
-                          fontWeight: FontWeight.bold,
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Search students by name, id...',
+                          style: TextStyle(
+                            color: isDark ? const Color(0xFF94A3B8) : Colors.grey.shade400,
+                            fontSize: 13,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF334155) : Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          'Quick Search',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: isDark ? const Color(0xFFCBD5E1) : Colors.grey.shade600,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             )
@@ -466,13 +477,7 @@ class _EdupluseScaffoldState extends ConsumerState<EdupluseScaffold> {
                 isDark: isDark,
                 onTap: () => _handleGeneralNavItem('Guardian', isDrawer),
               ),
-              _buildNavItem(
-                icon: Icons.class_outlined,
-                title: 'Classes',
-                showLabels: showLabels,
-                isDark: isDark,
-                onTap: () => _handleGeneralNavItem('Classes', isDrawer),
-              ),
+              _buildClassesGroup(showLabels: showLabels, isDrawer: isDrawer, isDark: isDark),
               _buildNavItem(
                 icon: Icons.quiz_outlined,
                 title: 'Examinations',
@@ -712,6 +717,149 @@ class _EdupluseScaffoldState extends ConsumerState<EdupluseScaffold> {
                   isDark: isDark,
                   onTap: () => _handleNavigation(EdupluseNavPage.studentList, isDrawer),
                 ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildClassesGroup({required bool showLabels, required bool isDrawer, required bool isDark}) {
+    final activeRole = ref.watch(activeUserRoleProvider);
+    final isTeacher = activeRole == UserRole.teacher;
+    final isStudent = activeRole == UserRole.student;
+    final isParent = activeRole == UserRole.parent;
+
+    final isGroupActive = widget.activePage == EdupluseNavPage.classes ||
+        widget.activePage == EdupluseNavPage.classesSubjects ||
+        widget.activePage == EdupluseNavPage.classesSections ||
+        widget.activePage == EdupluseNavPage.classesCurriculum ||
+        widget.activePage == EdupluseNavPage.classesDailyLessons ||
+        widget.activePage == EdupluseNavPage.classesTimetable ||
+        widget.activePage == EdupluseNavPage.classesClassrooms ||
+        widget.activePage == EdupluseNavPage.classesTeacherWork;
+
+    if (!showLabels) {
+      return _buildNavItem(
+        icon: Icons.class_outlined,
+        title: 'Classes',
+        isActive: isGroupActive,
+        showLabels: false,
+        isDark: isDark,
+        onTap: () {
+          setState(() {
+            _isSidebarCollapsed = false;
+            _isClassesExpanded = true;
+          });
+        },
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InkWell(
+          onTap: () {
+            setState(() {
+              _isClassesExpanded = !_isClassesExpanded;
+            });
+          },
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: isGroupActive ? const Color(0xFF109F83) : Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.class_outlined,
+                  size: 20,
+                  color: isGroupActive
+                      ? Colors.white
+                      : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Classes',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: isGroupActive ? FontWeight.w600 : FontWeight.w500,
+                      color: isGroupActive
+                          ? Colors.white
+                          : (isDark ? const Color(0xFFF1F5F9) : const Color(0xFF334155)),
+                    ),
+                  ),
+                ),
+                Icon(
+                  _isClassesExpanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_right,
+                  size: 18,
+                  color: isGroupActive
+                      ? Colors.white
+                      : (isDark ? const Color(0xFF94A3B8) : Colors.grey.shade500),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_isClassesExpanded)
+          Padding(
+            padding: const EdgeInsets.only(left: 14, top: 4, bottom: 4),
+            child: Column(
+              children: [
+                _buildSubItem(
+                  title: isTeacher ? 'My Classes' : (isStudent || isParent ? 'My Class' : 'Class List'),
+                  isActive: widget.activePage == EdupluseNavPage.classes,
+                  isDark: isDark,
+                  onTap: () => _handleNavigation(EdupluseNavPage.classes, isDrawer),
+                ),
+                _buildSubItem(
+                  title: 'Subjects',
+                  isActive: widget.activePage == EdupluseNavPage.classesSubjects,
+                  isDark: isDark,
+                  onTap: () => _handleNavigation(EdupluseNavPage.classesSubjects, isDrawer),
+                ),
+                if (!isStudent && !isParent)
+                  _buildSubItem(
+                    title: 'Sections',
+                    isActive: widget.activePage == EdupluseNavPage.classesSections,
+                    isDark: isDark,
+                    onTap: () => _handleNavigation(EdupluseNavPage.classesSections, isDrawer),
+                  ),
+                _buildSubItem(
+                  title: 'Curriculum',
+                  isActive: widget.activePage == EdupluseNavPage.classesCurriculum,
+                  isDark: isDark,
+                  onTap: () => _handleNavigation(EdupluseNavPage.classesCurriculum, isDrawer),
+                ),
+                _buildSubItem(
+                  title: 'Daily Lessons',
+                  isActive: widget.activePage == EdupluseNavPage.classesDailyLessons,
+                  isDark: isDark,
+                  onTap: () => _handleNavigation(EdupluseNavPage.classesDailyLessons, isDrawer),
+                ),
+                _buildSubItem(
+                  title: 'Timetable',
+                  isActive: widget.activePage == EdupluseNavPage.classesTimetable,
+                  isDark: isDark,
+                  onTap: () => _handleNavigation(EdupluseNavPage.classesTimetable, isDrawer),
+                ),
+                if (!isStudent && !isParent)
+                  _buildSubItem(
+                    title: 'Classrooms',
+                    isActive: widget.activePage == EdupluseNavPage.classesClassrooms,
+                    isDark: isDark,
+                    onTap: () => _handleNavigation(EdupluseNavPage.classesClassrooms, isDrawer),
+                  ),
+                if (!isStudent && !isParent)
+                  _buildSubItem(
+                    title: 'Teacher Work',
+                    isActive: widget.activePage == EdupluseNavPage.classesTeacherWork,
+                    isDark: isDark,
+                    onTap: () => _handleNavigation(EdupluseNavPage.classesTeacherWork, isDrawer),
+                  ),
               ],
             ),
           ),
