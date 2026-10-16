@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../application/admissions_controller.dart';
 import '../../application/frontdesk_controller.dart';
 
 class FrontDeskDashboardScreen extends ConsumerWidget {
@@ -19,6 +20,11 @@ class FrontDeskDashboardScreen extends ConsumerWidget {
     final inquiries = ref.watch(frontDeskInquiriesProvider);
     final documents = ref.watch(documentQueueProvider);
     final interviews = ref.watch(interviewSlotsProvider);
+    final admissionsAsync = ref.watch(admissionsListProvider);
+    final enrolledCount = admissionsAsync.maybeWhen(
+      data: (list) => list.length,
+      orElse: () => 18,
+    );
 
     final pendingDocsCount = documents.where((d) => d.status == DocVerifyStatus.pending).length;
     final screenWidth = MediaQuery.sizeOf(context).width;
@@ -33,7 +39,7 @@ class FrontDeskDashboardScreen extends ConsumerWidget {
         children: [
           _buildCockpitHero(isMobile),
           const SizedBox(height: 20),
-          _buildKpiGrid(inquiries.length, pendingDocsCount, interviews.length, isMobile, isTablet),
+          _buildKpiGrid(inquiries.length, pendingDocsCount, interviews.length, enrolledCount, isMobile, isTablet),
           const SizedBox(height: 24),
           _buildQuickActionShortcuts(isMobile),
           const SizedBox(height: 24),
@@ -139,7 +145,7 @@ class FrontDeskDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildKpiGrid(int totalInquiries, int pendingDocs, int scheduledInterviews, bool isMobile, bool isTablet) {
+  Widget _buildKpiGrid(int totalInquiries, int pendingDocs, int scheduledInterviews, int enrolledCount, bool isMobile, bool isTablet) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final crossAxisCount = isMobile ? 1 : (isTablet ? 2 : 4);
@@ -149,7 +155,7 @@ class FrontDeskDashboardScreen extends ConsumerWidget {
           _buildKpiCard('12', 'Walk-in Leads Today', '+4 vs yesterday', Icons.person_add_alt_1_outlined, const Color(0xFFF59E0B), () => onNavigateFrontDesk(FrontDeskPage.inquiries)),
           _buildKpiCard(pendingDocs.toString(), 'Pending Documents', 'Needs immediate screening', Icons.fact_check_outlined, const Color(0xFF3B82F6), () => onNavigateFrontDesk(FrontDeskPage.documentQueue)),
           _buildKpiCard(scheduledInterviews.toString(), 'Interviews Scheduled', '3 panel slots today', Icons.event_available_outlined, const Color(0xFF10B981), () => onNavigateFrontDesk(FrontDeskPage.interviewScheduler)),
-          _buildKpiCard('9', 'Ready for Admin', 'Vetted & finance cleared', Icons.verified_outlined, const Color(0xFF6366F1), () {}),
+          _buildKpiCard(enrolledCount.toString(), 'Enrolled Scholars', 'Live student directory & badges', Icons.school_outlined, const Color(0xFF6366F1), () => onNavigateFrontDesk(FrontDeskPage.studentLookup)),
         ];
 
         return Wrap(

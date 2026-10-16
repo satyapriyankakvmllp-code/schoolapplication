@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../features/admissions/domain/admission_request_model.dart';
 import '../features/admissions/application/admissions_controller.dart';
 import '../features/authentication/application/auth_controller.dart';
+import '../features/staff/application/staff_controller.dart';
 import '../features/authentication/domain/user_model.dart';
 import 'logout_button.dart';
 
@@ -13,6 +14,11 @@ enum EdupluseNavPage {
   studentList,
   studentDetails,
   studentPipeline,
+  staffList,
+  addNewStaff,
+  editStaff,
+  staffDetails,
+  staffDepartments,
   teachers,
   guardian,
   classes,
@@ -53,6 +59,7 @@ class EdupluseScaffold extends ConsumerStatefulWidget {
 class _EdupluseScaffoldState extends ConsumerState<EdupluseScaffold> {
   bool _isSidebarCollapsed = false;
   bool _isStudentsExpanded = true;
+  bool _isStaffExpanded = true;
   bool _isClassesExpanded = false;
 
   @override
@@ -463,13 +470,8 @@ class _EdupluseScaffoldState extends ConsumerState<EdupluseScaffold> {
               ),
               // Expandable Students Module
               _buildStudentsGroup(showLabels: showLabels, isDrawer: isDrawer, isDark: isDark),
-              _buildNavItem(
-                icon: Icons.person_outline,
-                title: 'Teachers',
-                showLabels: showLabels,
-                isDark: isDark,
-                onTap: () => _handleGeneralNavItem('Teachers', isDrawer),
-              ),
+              // Expandable Staff Module
+              _buildStaffGroup(showLabels: showLabels, isDrawer: isDrawer, isDark: isDark),
               _buildNavItem(
                 icon: Icons.family_restroom_outlined,
                 title: 'Guardian',
@@ -716,6 +718,133 @@ class _EdupluseScaffoldState extends ConsumerState<EdupluseScaffold> {
                   isActive: widget.activePage == EdupluseNavPage.studentList,
                   isDark: isDark,
                   onTap: () => _handleNavigation(EdupluseNavPage.studentList, isDrawer),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildStaffGroup({required bool showLabels, required bool isDrawer, required bool isDark}) {
+    final staffCounts = ref.watch(staffCountsProvider);
+    final isGroupActive = widget.activePage == EdupluseNavPage.staffList ||
+        widget.activePage == EdupluseNavPage.addNewStaff ||
+        widget.activePage == EdupluseNavPage.editStaff ||
+        widget.activePage == EdupluseNavPage.staffDetails ||
+        widget.activePage == EdupluseNavPage.staffDepartments;
+
+    if (!showLabels) {
+      return _buildNavItem(
+        icon: Icons.badge_outlined,
+        title: 'Staff',
+        isActive: isGroupActive,
+        showLabels: false,
+        isDark: isDark,
+        onTap: () {
+          setState(() {
+            _isSidebarCollapsed = false;
+            _isStaffExpanded = true;
+          });
+        },
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InkWell(
+          onTap: () {
+            setState(() {
+              _isStaffExpanded = !_isStaffExpanded;
+            });
+          },
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: isGroupActive ? const Color(0xFF109F83) : Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.badge_outlined,
+                  size: 20,
+                  color: isGroupActive
+                      ? Colors.white
+                      : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Staff',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: isGroupActive ? FontWeight.w600 : FontWeight.w500,
+                      color: isGroupActive
+                          ? Colors.white
+                          : (isDark ? const Color(0xFFF1F5F9) : const Color(0xFF334155)),
+                    ),
+                  ),
+                ),
+                if (staffCounts.total > 0 && !isGroupActive)
+                  Container(
+                    margin: const EdgeInsets.only(right: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF109F83).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFF109F83).withValues(alpha: 0.4)),
+                    ),
+                    child: Text(
+                      '${staffCounts.total}',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF109F83),
+                      ),
+                    ),
+                  ),
+                Icon(
+                  _isStaffExpanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_right,
+                  size: 18,
+                  color: isGroupActive
+                      ? Colors.white
+                      : (isDark ? const Color(0xFF94A3B8) : Colors.grey.shade500),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_isStaffExpanded)
+          Padding(
+            padding: const EdgeInsets.only(left: 14, top: 4, bottom: 4),
+            child: Column(
+              children: [
+                _buildSubItem(
+                  title: 'Staff Directory',
+                  isActive: widget.activePage == EdupluseNavPage.staffList,
+                  isDark: isDark,
+                  onTap: () => _handleNavigation(EdupluseNavPage.staffList, isDrawer),
+                ),
+                _buildSubItem(
+                  title: 'Add New Staff',
+                  isActive: widget.activePage == EdupluseNavPage.addNewStaff,
+                  isDark: isDark,
+                  onTap: () => _handleNavigation(EdupluseNavPage.addNewStaff, isDrawer),
+                ),
+                _buildSubItem(
+                  title: 'Edit Staff',
+                  isActive: widget.activePage == EdupluseNavPage.editStaff,
+                  isDark: isDark,
+                  onTap: () => _handleNavigation(EdupluseNavPage.editStaff, isDrawer),
+                ),
+                _buildSubItem(
+                  title: 'Departments & Roles',
+                  isActive: widget.activePage == EdupluseNavPage.staffDepartments,
+                  isDark: isDark,
+                  onTap: () => _handleNavigation(EdupluseNavPage.staffDepartments, isDrawer),
                 ),
               ],
             ),

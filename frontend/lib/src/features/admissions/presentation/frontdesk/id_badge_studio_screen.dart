@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import '../../application/admissions_controller.dart';
+import '../../application/frontdesk_controller.dart';
+import '../../domain/student_admission_model.dart';
 
 class IdBadgeStudioScreen extends ConsumerStatefulWidget {
   final bool isDark;
@@ -56,6 +60,56 @@ class _IdBadgeStudioScreenState extends ConsumerState<IdBadgeStudioScreen> {
     },
   };
 
+  Map<String, Map<String, String>> _getCombinedBadgeData(List<StudentAdmissionModel> admissions) {
+    final map = Map<String, Map<String, String>>.from(_mockBadgeData);
+
+    // Live enrolled admissions (adds new students not already in baseline badge list)
+    for (final adm in admissions) {
+      final name = adm.user.fullName;
+      final alreadyExists = map.containsKey(name) ||
+          map.values.any((v) => v['id'] == adm.student.admissionNumber);
+
+      if (!alreadyExists) {
+        final parentName = adm.father?.fullName ??
+            adm.guardian?.fullName ??
+            adm.mother?.fullName ??
+            'Parent / Guardian';
+        final phone = adm.student.emergencyContactPhone ??
+            adm.father?.phoneNumber ??
+            adm.user.phoneNumber;
+        final parentRel = adm.father != null
+            ? 'Father'
+            : (adm.mother != null ? 'Mother' : (adm.guardian?.relationship ?? 'Guardian'));
+        final grade =
+            '${adm.student.className}${adm.student.section != null && adm.student.section!.isNotEmpty ? " - Sec ${adm.student.section}" : ""}';
+        final roll = adm.student.rollNumber != null && adm.student.rollNumber!.isNotEmpty
+            ? '#${adm.student.rollNumber}'
+            : '#Pending';
+        final dobStr = adm.user.dateOfBirth != null
+            ? DateFormat('dd MMM yyyy').format(adm.user.dateOfBirth!)
+            : '14 Aug 2014';
+        final address = adm.student.currentAddress.isNotEmpty
+            ? adm.student.currentAddress
+            : 'Registered Residential Address';
+
+        map[name] = {
+          'name': name,
+          'id': adm.student.admissionNumber,
+          'roll': roll,
+          'class': grade,
+          'dob': dobStr,
+          'blood': '${adm.student.bloodGroup ?? "O+"} (Positive)',
+          'parent': parentName,
+          'phone': phone,
+          'address': address,
+          'emergency': '$phone ($parentRel)',
+        };
+      }
+    }
+
+    return map;
+  }
+
   void _printBadge() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -71,7 +125,19 @@ class _IdBadgeStudioScreenState extends ConsumerState<IdBadgeStudioScreen> {
     final isDark = widget.isDark;
     final screenWidth = MediaQuery.sizeOf(context).width;
     final isMobile = screenWidth < 768;
-    final studentData = _mockBadgeData[_selectedStudent]!;
+
+    final admissionsAsync = ref.watch(admissionsListProvider);
+    final badgeData = _getCombinedBadgeData(admissionsAsync.valueOrNull ?? []);
+
+    final externalSelected = ref.watch(frontDeskSelectedStudentBadgeProvider);
+    if (externalSelected != null && badgeData.containsKey(externalSelected) && _selectedStudent != externalSelected) {
+      _selectedStudent = externalSelected;
+    } else if (!badgeData.containsKey(_selectedStudent) && badgeData.isNotEmpty) {
+      _selectedStudent = badgeData.keys.first;
+    }
+
+    final studentData = badgeData[_selectedStudent] ??
+        (badgeData.isNotEmpty ? badgeData.values.first : _mockBadgeData.values.first);
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
@@ -133,7 +199,7 @@ class _IdBadgeStudioScreenState extends ConsumerState<IdBadgeStudioScreen> {
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
-                      children: _mockBadgeData.keys.map((name) {
+                      children: badgeData.keys.map((name) {
                         final isSelected = _selectedStudent == name;
                         return Padding(
                           padding: const EdgeInsets.only(right: 8),
@@ -147,7 +213,10 @@ class _IdBadgeStudioScreenState extends ConsumerState<IdBadgeStudioScreen> {
                               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                               color: isSelected ? const Color(0xFF8B5CF6) : (isDark ? Colors.white70 : Colors.black87),
                             ),
-                            onSelected: (_) => setState(() => _selectedStudent = name),
+                            onSelected: (_) {
+                              ref.read(frontDeskSelectedStudentBadgeProvider.notifier).state = name;
+                              setState(() => _selectedStudent = name);
+                            },
                           ),
                         );
                       }).toList(),

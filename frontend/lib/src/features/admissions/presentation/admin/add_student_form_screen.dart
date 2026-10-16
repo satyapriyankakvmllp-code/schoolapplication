@@ -319,7 +319,8 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      final isEditing = widget.admissionToEdit != null || widget.isEditMode || _activeAdmissionToEdit != null;
+      final isOriginatingRequest = ref.read(originatingRequestIdProvider) != null;
+      final isEditing = !isOriginatingRequest && (widget.admissionToEdit != null || widget.isEditMode || _activeAdmissionToEdit != null);
       final studentId = _activeAdmissionToEdit != null
           ? _activeAdmissionToEdit!.student.id
           : (widget.admissionToEdit != null
@@ -1601,7 +1602,7 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
               : Text(
                   _currentStep < 3
                       ? 'Proceed to Next Step →'
-                      : ((widget.admissionToEdit != null || widget.isEditMode || _activeAdmissionToEdit != null)
+                      : ((ref.read(originatingRequestIdProvider) == null && (widget.admissionToEdit != null || widget.isEditMode || _activeAdmissionToEdit != null))
                           ? 'Update Student Information →'
                           : 'Submit Application →'),
                   style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5),

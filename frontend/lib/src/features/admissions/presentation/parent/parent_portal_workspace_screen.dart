@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../../commonwidgets/logout_button.dart';
 import '../../application/admissions_controller.dart';
 import '../../domain/admission_request_model.dart';
+import '../../domain/student_admission_model.dart';
 import '../widgets/admission_application_wizard.dart';
 
 enum ParentPortalTab {
@@ -36,7 +37,7 @@ class _ParentPortalWorkspaceScreenState
   late ParentPortalTab _activeTab;
   String _selectedEnrolledChild = 'Aarav Sharma';
 
-  // Enrolled children mock profiles
+  // Base enrolled children mock profiles
   final List<Map<String, dynamic>> _enrolledChildren = [
     {
       'name': 'Aarav Sharma',
@@ -72,11 +73,44 @@ class _ParentPortalWorkspaceScreenState
     _activeTab = widget.initialTab;
   }
 
-  Map<String, dynamic> get _activeChildData {
-    return _enrolledChildren.firstWhere(
-      (c) => c['name'] == _selectedEnrolledChild,
-      orElse: () => _enrolledChildren.first,
-    );
+  List<Map<String, dynamic>> _getCombinedChildren(List<StudentAdmissionModel> allAdmissions) {
+    final list = List<Map<String, dynamic>>.from(_enrolledChildren);
+
+    for (final adm in allAdmissions) {
+      final parentName = adm.father?.fullName ?? adm.guardian?.fullName ?? adm.mother?.fullName ?? '';
+      final isSharmaParent = parentName.toLowerCase().contains('sharma') ||
+          adm.user.fullName.toLowerCase().contains('sharma') ||
+          adm.father?.phoneNumber == '+91 98765 43210' ||
+          adm.guardian?.phoneNumber == '+91 98765 43210' ||
+          adm.student.emergencyContactPhone == '+91 98765 43210';
+      final alreadyExists = list.any((c) =>
+          c['admNo'] == adm.student.admissionNumber ||
+          c['name'] == adm.user.fullName);
+
+      if (isSharmaParent && !alreadyExists) {
+        final initials = adm.user.fullName
+            .split(' ')
+            .where((w) => w.isNotEmpty)
+            .take(2)
+            .map((w) => w[0].toUpperCase())
+            .join();
+
+        list.add({
+          'name': adm.user.fullName,
+          'fullName': adm.user.fullName,
+          'grade': '${adm.student.className} - Section ${adm.student.section ?? "A"}',
+          'rollNo': adm.student.rollNumber != null ? '#${adm.student.rollNumber}' : '#Pending',
+          'admNo': adm.student.admissionNumber,
+          'initials': initials.isNotEmpty ? initials : 'ST',
+          'teacher': 'Assigned by Administration',
+          'academicYear': adm.student.academicYear ?? '2026-2027',
+          'attendance': '100% (Newly Enrolled)',
+          'phone': adm.student.emergencyContactPhone ?? '+91 98765 43210 (Father)',
+          'color': const Color(0xFF3B82F6),
+        });
+      }
+    }
+    return list;
   }
 
   @override
@@ -599,7 +633,12 @@ class _ParentPortalWorkspaceScreenState
   // TAB 1: Enrolled Children Overview
   // --------------------------------------------------------------------------
   Widget _buildChildrenOverviewTab(bool isDark, bool isMobile) {
-    final activeChild = _activeChildData;
+    final admissionsAsync = ref.watch(admissionsListProvider);
+    final childrenList = _getCombinedChildren(admissionsAsync.valueOrNull ?? []);
+    final activeChild = childrenList.firstWhere(
+      (c) => c['name'] == _selectedEnrolledChild,
+      orElse: () => childrenList.first,
+    );
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
@@ -618,7 +657,11 @@ class _ParentPortalWorkspaceScreenState
               const SizedBox(height: 18),
 
               // Sibling Selection Bar
-              _buildSiblingSelector(isDark: isDark, isMobile: isMobile),
+              _buildSiblingSelector(
+                childrenList: childrenList,
+                isDark: isDark,
+                isMobile: isMobile,
+              ),
               const SizedBox(height: 18),
 
               // Active Student Snapshot Card
@@ -744,7 +787,11 @@ class _ParentPortalWorkspaceScreenState
     );
   }
 
-  Widget _buildSiblingSelector({required bool isDark, required bool isMobile}) {
+  Widget _buildSiblingSelector({
+    required List<Map<String, dynamic>> childrenList,
+    required bool isDark,
+    required bool isMobile,
+  }) {
     return Container(
       padding: EdgeInsets.all(isMobile ? 12 : 16),
       decoration: BoxDecoration(
@@ -772,86 +819,113 @@ class _ParentPortalWorkspaceScreenState
             ],
           ),
           const SizedBox(height: 10),
-          Row(
-            children: _enrolledChildren.map((child) {
-              final isSelected = _selectedEnrolledChild == child['name'];
-              return Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    right: child == _enrolledChildren.last ? 0 : 8,
-                  ),
-                  child: InkWell(
-                    onTap: () => setState(() => _selectedEnrolledChild = child['name'] as String),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: isMobile ? 8 : 12,
-                        vertical: isMobile ? 8 : 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? const Color(0xFF10B981).withValues(alpha: 0.15)
-                            : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC)),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isSelected
-                              ? const Color(0xFF10B981)
-                              : (isDark ? const Color(0xFF334155) : Colors.grey.shade300),
-                          width: isSelected ? 1.5 : 1,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            radius: isMobile ? 12 : 14,
-                            backgroundColor: child['color'] as Color,
-                            child: Text(
-                              child['initials'] as String,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 10,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  child['name'] as String,
-                                  style: TextStyle(
-                                    fontSize: isMobile ? 12 : 13,
-                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                                    color: isSelected
-                                        ? const Color(0xFF10B981)
-                                        : (isDark ? Colors.white : const Color(0xFF0F172A)),
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                Text(
-                                  child['grade'] as String,
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: isDark ? const Color(0xFF94A3B8) : Colors.grey.shade600,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                          if (isSelected)
-                            const Icon(Icons.check_circle, color: Color(0xFF10B981), size: 16),
-                        ],
-                      ),
+          if (childrenList.length <= 2)
+            Row(
+              children: childrenList.map((child) {
+                final isSelected = _selectedEnrolledChild == child['name'];
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      right: child == childrenList.last ? 0 : 8,
                     ),
+                    child: _buildChildSelectorItem(child, isSelected, isDark, isMobile),
                   ),
-                ),
-              );
-            }).toList(),
-          ),
+                );
+              }).toList(),
+            )
+          else
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: childrenList.map((child) {
+                  final isSelected = _selectedEnrolledChild == child['name'];
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: SizedBox(
+                      width: isMobile ? 175 : 210,
+                      child: _buildChildSelectorItem(child, isSelected, isDark, isMobile),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildChildSelectorItem(
+    Map<String, dynamic> child,
+    bool isSelected,
+    bool isDark,
+    bool isMobile,
+  ) {
+    return InkWell(
+      onTap: () => setState(() => _selectedEnrolledChild = child['name'] as String),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 8 : 12,
+          vertical: isMobile ? 8 : 10,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xFF10B981).withValues(alpha: 0.15)
+              : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC)),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFF10B981)
+                : (isDark ? const Color(0xFF334155) : Colors.grey.shade300),
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: isMobile ? 12 : 14,
+              backgroundColor: child['color'] as Color,
+              child: Text(
+                child['initials'] as String,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 10,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    child['name'] as String,
+                    style: TextStyle(
+                      fontSize: isMobile ? 12 : 13,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                      color: isSelected
+                          ? const Color(0xFF10B981)
+                          : (isDark ? Colors.white : const Color(0xFF0F172A)),
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    child['grade'] as String,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: isDark ? const Color(0xFF94A3B8) : Colors.grey.shade600,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              const Icon(Icons.check_circle, color: Color(0xFF10B981), size: 16),
+          ],
+        ),
       ),
     );
   }

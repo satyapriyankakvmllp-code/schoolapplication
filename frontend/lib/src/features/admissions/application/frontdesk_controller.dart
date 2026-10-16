@@ -436,3 +436,5 @@ enum FrontDeskPage {
 final frontDeskActivePageProvider = StateProvider<FrontDeskPage>((ref) => FrontDeskPage.dashboard);
 
 final frontDeskDraftInquiryProvider = StateProvider<FrontDeskInquiry?>((ref) => null);
+
+final frontDeskSelectedStudentBadgeProvider = StateProvider<String?>((ref) => null);

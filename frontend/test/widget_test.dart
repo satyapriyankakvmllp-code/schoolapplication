@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frontend/src/features/authentication/domain/user_model.dart';
 import 'package:frontend/src/commonwidgets/logout_button.dart';
+import 'package:frontend/src/features/admissions/presentation/admin/add_student_form_screen.dart';
+import 'package:frontend/src/features/authentication/domain/user_model.dart';
 import 'package:frontend/main.dart';
-
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -596,5 +596,197 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Kabir Rajesh Sharma'), findsOneWidget);
   });
+
+  testWidgets('Cross-role verification: Admin student approval reactively updates Parent and Front-Desk views', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    // 1. Launch directly as Parent
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: SchoolManagementApp(initialRole: UserRole.parent),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // 2. Navigate to "New Child Admission" wizard
+    await tester.tap(find.text('New Child Admission'));
+    await tester.pumpAndSettle();
+
+    // Fill new student details: "Aditi" "Sharma"
+    final textFields = find.byType(TextFormField);
+    await tester.enterText(textFields.at(0), 'Aditi');
+    await tester.enterText(textFields.at(1), 'Sharma');
+    await tester.enterText(textFields.at(4), '42 Lotus Enclave, MG Road');
+    await tester.pumpAndSettle();
+
+    // Step 1 -> Step 2
+    final nextBtn = find.text('Next Step ➔');
+    await tester.ensureVisible(nextBtn);
+    await tester.tap(nextBtn);
+    await tester.pumpAndSettle();
+
+    // Step 2 -> Step 3
+    await tester.ensureVisible(nextBtn);
+    await tester.tap(nextBtn);
+    await tester.pumpAndSettle();
+
+    // Accept Declaration Checkbox & Submit Application
+    final declarationFinder = find.byType(Checkbox).last;
+    await tester.ensureVisible(declarationFinder);
+    await tester.tap(declarationFinder);
+    await tester.pumpAndSettle();
+
+    final submitAppBtn = find.text('Submit Application to Admin ➔');
+    await tester.ensureVisible(submitAppBtn);
+    await tester.tap(submitAppBtn);
+    await tester.pumpAndSettle();
+
+    // Verify parent tracker immediately shows Aditi Sharma as Pending Admin Review
+    expect(find.text('Admission Applications & Status Tracker'), findsOneWidget);
+    expect(find.text('Aditi Sharma'), findsOneWidget);
+    expect(find.text('Pending Admin Review'), findsWidgets);
+
+    // 3. Log out and switch to Admin Console
+    expect(find.byType(LogoutButton), findsOneWidget);
+    await tester.tap(find.byType(LogoutButton));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Admin Console'));
+    await tester.pumpAndSettle();
+    final adminSignInBtn = find.widgetWithText(ElevatedButton, 'Sign In as Admin Console');
+    await tester.ensureVisible(adminSignInBtn);
+    await tester.tap(adminSignInBtn);
+    await tester.pumpAndSettle();
+
+    // Navigate to Student Pipeline
+    final pipelineNavFinder = find.text('Student Pipeline');
+    expect(pipelineNavFinder, findsWidgets);
+    await tester.tap(pipelineNavFinder.first);
+    await tester.pumpAndSettle();
+
+    // Verify Aditi Sharma is in the pending pipeline
+    expect(find.text('Aditi Sharma'), findsWidgets);
+
+    // Open Review modal for Aditi Sharma
+    final reviewButtons = find.text('Review');
+    await tester.tap(reviewButtons.first);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(find.text('Application Details'), findsOneWidget);
+    final approveBtn = find.text('Approve & Pre-fill Form');
+    expect(approveBtn, findsOneWidget);
+    await tester.tap(approveBtn);
+    await tester.pumpAndSettle();
+
+    // Verify Add Student Form screen opens pre-filled with Aditi Sharma
+    expect(find.text('Student Personal Details'), findsOneWidget);
+    expect(find.text('Aditi'), findsWidgets);
+    expect(find.text('Sharma'), findsWidgets);
+
+    // Dismiss any lingering snackbars so action buttons aren't obscured
+    ScaffoldMessenger.of(tester.element(find.byType(AddStudentFormScreen))).clearSnackBars();
+    await tester.pumpAndSettle();
+
+    // Step through the form to Step 4
+    for (int i = 0; i < 3; i++) {
+      final proceedBtn = find.text('Proceed to Next Step →');
+      await tester.ensureVisible(proceedBtn);
+      await tester.pumpAndSettle();
+      await tester.tap(proceedBtn);
+      await tester.pumpAndSettle();
+    }
+
+    // Submit and register student into official institutional records
+    final submitIntakeBtn = find.text('Submit Application →');
+    await tester.ensureVisible(submitIntakeBtn);
+    await tester.pumpAndSettle();
+    await tester.tap(submitIntakeBtn);
+    await tester.pumpAndSettle();
+
+    // Verify confirmation snackbar
+    expect(find.textContaining('completed successfully'), findsWidgets);
+
+    // 4. Log out from Admin Console and Switch back to Parent Portal
+    await tester.tap(find.byType(LogoutButton));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Parent Portal').first);
+    await tester.pumpAndSettle();
+    final parentSignInBtn = find.widgetWithText(ElevatedButton, 'Sign In as Parent Portal');
+    await tester.ensureVisible(parentSignInBtn);
+    await tester.tap(parentSignInBtn);
+    await tester.pumpAndSettle();
+
+    // VERIFY PARENT END:
+    // (A) In Tab 1: Aditi Sharma is now reactively present in Enrolled Children switcher!
+    expect(find.text('Parent & Guardian Portal'), findsWidgets);
+    expect(find.text('Aditi Sharma'), findsWidgets);
+
+    // Tap Aditi Sharma to view her snapshot card
+    await tester.tap(find.text('Aditi Sharma').first);
+    await tester.pumpAndSettle();
+    expect(find.text('100% (Newly Enrolled)'), findsOneWidget);
+
+    // (B) In Tab 3: Navigate to "My Applications & Status Tracker"
+    await tester.tap(find.text('My Applications & Status'));
+    await tester.pumpAndSettle();
+
+    // Verify status reactively changed to "Approved & Enrolled" with stage 3 completed!
+    expect(find.text('Approved & Enrolled'), findsWidgets);
+    expect(find.text('3. Final Enrollment'), findsWidgets);
+
+    // 5. Log out from Parent Portal and Switch to Admissions Officer (Front-Desk)
+    await tester.tap(find.byType(LogoutButton));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Front-Desk Desk').first);
+    await tester.pumpAndSettle();
+    final frontDeskSignInBtn = find.widgetWithText(ElevatedButton, 'Sign In as Front-Desk Desk');
+    await tester.ensureVisible(frontDeskSignInBtn);
+    await tester.tap(frontDeskSignInBtn);
+    await tester.pumpAndSettle();
+
+    // VERIFY FRONT-DESK END:
+    // (A) Front-Desk Dashboard KPI shows live enrolled scholars
+    expect(find.text('Live student directory & badges'), findsOneWidget);
+
+    // (B) Navigate to Student Directory Lookup
+    await tester.tap(find.text('Student Directory Lookup').first);
+    await tester.pumpAndSettle();
+
+    // Verify newly approved student Aditi Sharma is listed in the Front-Desk directory with Enrolled status
+    expect(find.text('Student Directory & Visitor Verification'), findsOneWidget);
+    expect(find.text('Aditi Sharma'), findsWidgets);
+    expect(find.text('Enrolled'), findsWidgets);
+
+    // Search specifically for Aditi Sharma in directory
+    await tester.enterText(find.byType(TextField).last, 'Aditi');
+    await tester.pumpAndSettle();
+
+    // (C) Tap "View Badge" for Aditi Sharma and verify ID Badge Studio
+    final viewBadgeBtns = find.text('View Badge');
+    expect(viewBadgeBtns, findsWidgets);
+    await tester.tap(viewBadgeBtns.first);
+    await tester.pumpAndSettle();
+
+    // Verify ID Badge Studio is active with Aditi Sharma selected
+    expect(find.text('Student Photo ID Badge Studio'), findsOneWidget);
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Aditi Sharma'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Front Side (Identity)'), findsOneWidget);
+    expect(find.text('EDUPULSE ACADEMY'), findsOneWidget);
+
+    // Switch to Back Side of the badge
+    await tester.tap(find.text('Back Side (Emergency & Address)'));
+    await tester.pumpAndSettle();
+    expect(find.text('EMERGENCY & GUARDIAN DIRECTORY'), findsOneWidget);
+    expect(find.text('Rajesh Sharma'), findsWidgets);
+  });
+
 }
 
