@@ -6,7 +6,7 @@
 - **Constructive Consultation**: Offer superior alternatives, identify trade-offs, and suggest enhancements where relevant.
 - **Step-by-Step Questioning**: Use interactive questions (`ask_question`) one at a time to resolve decisions collaboratively.
 
-## 2. Staff Management Module Architecture (`features/staff`)
+## 2. Staff Management Module Architecture (`src/features/staff`)
 Refer to [STAFF_MODULE_SPECIFICATION.md](file:///c:/Users/rinku/OneDrive/Desktop/KVM/schoolmgnt/frontend/STAFF_MODULE_SPECIFICATION.md) for full details.
 
 - **15 Required Attributes**:

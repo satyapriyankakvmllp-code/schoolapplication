@@ -1,27 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'utils/app_constants.dart';
-import 'themes/app_theme.dart';
-import 'features/admissions/domain/student_admission_model.dart';
-import 'features/authentication/domain/user_model.dart';
-import 'features/admissions/application/admissions_controller.dart';
-import 'features/admissions/presentation/admin/add_student_form_screen.dart';
-import 'features/admissions/presentation/admin/student_categories_screen.dart';
-import 'features/admissions/presentation/admin/student_details_screen.dart';
-import 'features/admissions/presentation/admin/student_list_screen.dart';
-import 'commonwidgets/edupluse_scaffold.dart';
-import 'features/authentication/application/auth_controller.dart';
-import 'features/authentication/presentation/portal_gateway_screen.dart';
-import 'features/authentication/presentation/role_workspace_hub_screen.dart';
-import 'features/admissions/presentation/frontdesk/frontdesk_workspace_screen.dart';
-import 'features/admissions/presentation/parent/parent_portal_workspace_screen.dart';
-import 'features/staff/domain/staff_member_model.dart';
-import 'features/staff/application/staff_controller.dart';
-import 'features/staff/presentation/admin/staff_list_screen.dart';
-import 'features/staff/presentation/admin/add_staff_form_screen.dart';
-import 'features/staff/presentation/admin/staff_details_screen.dart';
-import 'features/staff/presentation/admin/staff_departments_screen.dart';
-import 'features/staff/presentation/admin/edit_staff_screen.dart';
+import 'src/utils/app_constants.dart';
+import 'src/themes/app_theme.dart';
+import 'src/features/admissions/domain/student_admission_model.dart';
+import 'src/features/authentication/domain/user_model.dart';
+import 'src/features/admissions/application/admissions_controller.dart';
+import 'src/features/admissions/presentation/admin/add_student_form_screen.dart';
+import 'src/features/admissions/presentation/admin/student_categories_screen.dart';
+import 'src/features/admissions/presentation/admin/student_details_screen.dart';
+import 'src/features/admissions/presentation/admin/student_list_screen.dart';
+import 'src/commonwidgets/edupluse_scaffold.dart';
+import 'src/features/authentication/application/auth_controller.dart';
+import 'src/features/authentication/presentation/portal_gateway_screen.dart';
+import 'src/features/authentication/presentation/role_workspace_hub_screen.dart';
+import 'src/features/admissions/presentation/frontdesk/frontdesk_workspace_screen.dart';
+import 'src/features/admissions/presentation/parent/parent_portal_workspace_screen.dart';
+import 'src/features/classes/presentation/shared/classes_hub_screen.dart';
+import 'src/features/staff/domain/staff_member_model.dart';
+import 'src/features/staff/application/staff_controller.dart';
+import 'src/features/staff/presentation/admin/staff_list_screen.dart';
+import 'src/features/staff/presentation/admin/add_staff_form_screen.dart';
+import 'src/features/staff/presentation/admin/staff_details_screen.dart';
+import 'src/features/staff/presentation/admin/staff_departments_screen.dart';
+import 'src/features/staff/presentation/admin/edit_staff_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -110,7 +111,29 @@ class _SchoolManagementAppState extends ConsumerState<SchoolManagementApp> {
       );
     }
 
-    // Front-Desk / Admissions Officer Workspace (Phase 2)
+    // Direct Classes navigation across all roles (Admin, Teacher, Student, Parent, Admissions)
+    if (_isClassesPage(_activeNavPage)) {
+      return ClassesHubScreen(
+        activeNavPage: _activeNavPage,
+        isDark: _isDarkMode,
+        onToggleTheme: _toggleTheme,
+        onNavigate: (page) {
+          setState(() {
+            if (page == EdupluseNavPage.addNewStudent) {
+              _editingAdmission = null;
+            } else if (page == EdupluseNavPage.editStudent) {
+              _editingAdmission = _selectedStudentId != null
+                  ? ref.read(studentDetailsProvider(_selectedStudentId)).valueOrNull
+                  : null;
+            }
+            _activeNavPage = page;
+          });
+        },
+        onExitToGateway: () => ref.read(activeUserRoleProvider.notifier).state = null,
+      );
+    }
+
+    // Front-Desk / Admissions Officer Workspace
     if (activeRole == UserRole.admissions) {
       return FrontDeskWorkspaceScreen(
         isDark: _isDarkMode,
@@ -119,7 +142,7 @@ class _SchoolManagementAppState extends ConsumerState<SchoolManagementApp> {
       );
     }
 
-    // Parent & Guardian Portal (Phase 3)
+    // Parent & Guardian Portal
     if (activeRole == UserRole.parent) {
       return ParentPortalWorkspaceScreen(
         isDark: _isDarkMode,
@@ -128,7 +151,7 @@ class _SchoolManagementAppState extends ConsumerState<SchoolManagementApp> {
       );
     }
 
-    // Role-tailored workspace for other non-admin roles (Parent, Teacher, Student, Finance)
+    // Role-tailored workspace for other non-admin roles (Teacher, Student, Finance)
     if (activeRole != UserRole.admin) {
       return RoleWorkspaceHubScreen(
         role: activeRole,
@@ -147,8 +170,45 @@ class _SchoolManagementAppState extends ConsumerState<SchoolManagementApp> {
     return _buildAdminScreen();
   }
 
+  bool _isClassesPage(EdupluseNavPage page) {
+    return page == EdupluseNavPage.classes ||
+        page == EdupluseNavPage.classesSubjects ||
+        page == EdupluseNavPage.classesSections ||
+        page == EdupluseNavPage.classesCurriculum ||
+        page == EdupluseNavPage.classesDailyLessons ||
+        page == EdupluseNavPage.classesTimetable ||
+        page == EdupluseNavPage.classesClassrooms ||
+        page == EdupluseNavPage.classesTeacherWork;
+  }
+
   Widget _buildAdminScreen() {
     switch (_activeNavPage) {
+      case EdupluseNavPage.classes:
+      case EdupluseNavPage.classesSubjects:
+      case EdupluseNavPage.classesSections:
+      case EdupluseNavPage.classesCurriculum:
+      case EdupluseNavPage.classesDailyLessons:
+      case EdupluseNavPage.classesTimetable:
+      case EdupluseNavPage.classesClassrooms:
+      case EdupluseNavPage.classesTeacherWork:
+        return ClassesHubScreen(
+          activeNavPage: _activeNavPage,
+          isDark: _isDarkMode,
+          onToggleTheme: _toggleTheme,
+          onNavigate: (page) {
+            setState(() {
+              if (page == EdupluseNavPage.addNewStudent) {
+                _editingAdmission = null;
+              } else if (page == EdupluseNavPage.editStudent) {
+                _editingAdmission = _selectedStudentId != null
+                    ? ref.read(studentDetailsProvider(_selectedStudentId)).valueOrNull
+                    : null;
+              }
+              _activeNavPage = page;
+            });
+          },
+          onExitToGateway: () => ref.read(activeUserRoleProvider.notifier).state = null,
+        );
       case EdupluseNavPage.editStudent:
       case EdupluseNavPage.addNewStudent:
         final isEditMode = _activeNavPage == EdupluseNavPage.editStudent;

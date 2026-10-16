@@ -1,17 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frontend/commonwidgets/logout_button.dart';
-import 'package:frontend/features/admissions/application/admissions_controller.dart';
-import 'package:frontend/features/admissions/domain/admission_request_model.dart';
-import 'package:frontend/features/admissions/domain/parent_profile_model.dart';
-import 'package:frontend/features/admissions/domain/student_admission_model.dart';
-import 'package:frontend/features/admissions/domain/student_profile_model.dart';
-import 'package:frontend/features/admissions/presentation/admin/add_student_form_screen.dart';
-import 'package:frontend/features/admissions/presentation/admin/student_categories_screen.dart';
-import 'package:frontend/features/admissions/presentation/frontdesk/frontdesk_workspace_screen.dart';
-import 'package:frontend/features/admissions/presentation/parent/parent_portal_workspace_screen.dart';
-import 'package:frontend/features/authentication/domain/user_model.dart';
+import 'package:frontend/src/commonwidgets/logout_button.dart';
+import 'package:frontend/src/features/admissions/presentation/admin/add_student_form_screen.dart';
+import 'package:frontend/src/features/authentication/domain/user_model.dart';
 import 'package:frontend/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

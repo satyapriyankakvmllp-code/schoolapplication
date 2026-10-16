@@ -2,7 +2,7 @@
 
 **Document Version:** 1.0.0  
 **Status:** Approved for Implementation  
-**Module Identifier:** `features/staff`  
+**Module Identifier:** `src/features/staff`  
 **Primary Interface:** School Administrator Console & Front-Desk Directory  
 
 ---
@@ -149,7 +149,7 @@ Replaces the flat *"Teachers"* item with an expandable module matching the estab
 ## 5. Domain Models & Architecture
 
 ```
-lib/features/staff/
+lib/src/features/staff/
 ├── domain/
 │   ├── staff_member_model.dart          # Core entity model linking demographic, HR, & academic data
 │   ├── class_subject_assignment.dart    # Class-Section-Subject pairing model

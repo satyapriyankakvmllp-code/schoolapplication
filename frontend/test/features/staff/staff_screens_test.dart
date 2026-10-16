@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:frontend/features/staff/application/staff_controller.dart';
-import 'package:frontend/features/staff/data/staff_repository.dart';
-import 'package:frontend/features/staff/presentation/admin/add_staff_form_screen.dart';
-import 'package:frontend/features/staff/presentation/admin/staff_departments_screen.dart';
-import 'package:frontend/features/staff/presentation/admin/staff_details_screen.dart';
-import 'package:frontend/features/staff/presentation/admin/staff_list_screen.dart';
-import 'package:frontend/features/staff/presentation/admin/edit_staff_screen.dart';
-import 'package:frontend/commonwidgets/edupluse_scaffold.dart';
+import 'package:frontend/src/features/staff/application/staff_controller.dart';
+import 'package:frontend/src/features/staff/data/staff_repository.dart';
+import 'package:frontend/src/features/staff/presentation/admin/add_staff_form_screen.dart';
+import 'package:frontend/src/features/staff/presentation/admin/staff_departments_screen.dart';
+import 'package:frontend/src/features/staff/presentation/admin/staff_details_screen.dart';
+import 'package:frontend/src/features/staff/presentation/admin/staff_list_screen.dart';
+import 'package:frontend/src/features/staff/presentation/admin/edit_staff_screen.dart';
+import 'package:frontend/src/commonwidgets/edupluse_scaffold.dart';
 
 void main() {
   setUp(() {

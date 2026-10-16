@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frontend/features/staff/data/staff_repository.dart';
-import 'package:frontend/features/staff/domain/class_subject_assignment.dart';
-import 'package:frontend/features/staff/domain/staff_compensation_model.dart';
-import 'package:frontend/features/staff/domain/staff_login_account_model.dart';
-import 'package:frontend/features/staff/domain/staff_member_model.dart';
+import 'package:frontend/src/features/staff/data/staff_repository.dart';
+import 'package:frontend/src/features/staff/domain/class_subject_assignment.dart';
+import 'package:frontend/src/features/staff/domain/staff_compensation_model.dart';
+import 'package:frontend/src/features/staff/domain/staff_login_account_model.dart';
+import 'package:frontend/src/features/staff/domain/staff_member_model.dart';
 
 void main() {
   group('Staff Domain Models Tests', () {
