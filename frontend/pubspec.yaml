@@ -43,5 +43,6 @@ flutter:
     - assets/data/admin/
     - assets/data/admissions/
     - assets/data/auth/
+    - assets/data/staff/
     - assets/images/
     - assets/icons/

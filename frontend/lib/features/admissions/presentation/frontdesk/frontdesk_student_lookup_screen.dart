@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../application/admissions_controller.dart';
 import '../../application/frontdesk_controller.dart';
+import '../../domain/student_admission_model.dart';
 
 class FrontDeskStudentLookupScreen extends ConsumerStatefulWidget {
   final bool isDark;
@@ -63,13 +65,58 @@ class _FrontDeskStudentLookupScreenState extends ConsumerState<FrontDeskStudentL
     },
   ];
 
+  List<Map<String, String>> _getCombinedDirectory(List<StudentAdmissionModel> admissions) {
+    final list = List<Map<String, String>>.from(_studentsDirectory);
+
+    // Live newly enrolled students from admissionsListProvider prepended at the top
+    for (final adm in admissions) {
+      final alreadyExists = list.any((s) =>
+          s['id'] == adm.student.admissionNumber ||
+          s['name'] == adm.user.fullName);
+
+      if (!alreadyExists) {
+        final parentName = adm.father?.fullName ??
+            adm.guardian?.fullName ??
+            adm.mother?.fullName ??
+            'Parent / Guardian';
+        final parentRel = adm.father != null
+            ? 'Father'
+            : (adm.mother != null ? 'Mother' : (adm.guardian?.relationship ?? 'Guardian'));
+        final grade =
+            '${adm.student.className}${adm.student.section != null && adm.student.section!.isNotEmpty ? " - Sec ${adm.student.section}" : ""}';
+        final roll = adm.student.rollNumber != null && adm.student.rollNumber!.isNotEmpty
+            ? '#${adm.student.rollNumber}'
+            : '#Pending';
+        final phone = adm.student.emergencyContactPhone ??
+            adm.father?.phoneNumber ??
+            adm.user.phoneNumber;
+
+        list.insert(0, {
+          'id': adm.student.admissionNumber,
+          'name': adm.user.fullName,
+          'grade': grade,
+          'roll': roll,
+          'parent': '$parentName ($parentRel)',
+          'phone': phone,
+          'blood': adm.student.bloodGroup ?? 'O+',
+          'status': 'Enrolled',
+        });
+      }
+    }
+
+    return list;
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = widget.isDark;
     final screenWidth = MediaQuery.sizeOf(context).width;
     final isMobile = screenWidth < 768;
 
-    final filtered = _studentsDirectory.where((s) {
+    final admissionsAsync = ref.watch(admissionsListProvider);
+    final combinedDirectory = _getCombinedDirectory(admissionsAsync.valueOrNull ?? []);
+
+    final filtered = combinedDirectory.where((s) {
       final matchesQuery = s['name']!.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           s['id']!.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           s['phone']!.contains(_searchQuery);
@@ -197,7 +244,19 @@ class _FrontDeskStudentLookupScreenState extends ConsumerState<FrontDeskStudentL
                         foregroundColor: const Color(0xFF8B5CF6),
                         side: const BorderSide(color: Color(0xFF8B5CF6)),
                       ),
-                      onPressed: () => widget.onNavigateFrontDesk(FrontDeskPage.idBadgeStudio),
+                      onPressed: () {
+                        ref.read(frontDeskSelectedStudentBadgeProvider.notifier).state = s['name'];
+                        widget.onNavigateFrontDesk(FrontDeskPage.idBadgeStudio);
+                      },
+                    )
+                  else
+                    IconButton(
+                      icon: const Icon(Icons.badge_outlined, color: Color(0xFF8B5CF6), size: 20),
+                      tooltip: 'View Badge',
+                      onPressed: () {
+                        ref.read(frontDeskSelectedStudentBadgeProvider.notifier).state = s['name'];
+                        widget.onNavigateFrontDesk(FrontDeskPage.idBadgeStudio);
+                      },
                     ),
                 ],
               ),

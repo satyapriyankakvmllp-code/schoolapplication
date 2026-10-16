@@ -15,6 +15,13 @@ import 'features/authentication/presentation/portal_gateway_screen.dart';
 import 'features/authentication/presentation/role_workspace_hub_screen.dart';
 import 'features/admissions/presentation/frontdesk/frontdesk_workspace_screen.dart';
 import 'features/admissions/presentation/parent/parent_portal_workspace_screen.dart';
+import 'features/staff/domain/staff_member_model.dart';
+import 'features/staff/application/staff_controller.dart';
+import 'features/staff/presentation/admin/staff_list_screen.dart';
+import 'features/staff/presentation/admin/add_staff_form_screen.dart';
+import 'features/staff/presentation/admin/staff_details_screen.dart';
+import 'features/staff/presentation/admin/staff_departments_screen.dart';
+import 'features/staff/presentation/admin/edit_staff_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,6 +44,7 @@ class _SchoolManagementAppState extends ConsumerState<SchoolManagementApp> {
   EdupluseNavPage _activeNavPage = EdupluseNavPage.studentDetails;
   String? _selectedStudentId;
   StudentAdmissionModel? _editingAdmission;
+  StaffMemberModel? _editingStaff;
   bool _isDarkMode = false;
   bool _initialized = false;
 
@@ -226,6 +234,135 @@ class _SchoolManagementAppState extends ConsumerState<SchoolManagementApp> {
           },
           onSelectStudent: (id) {
             _selectStudent(id);
+          },
+        );
+      case EdupluseNavPage.staffList:
+        return StaffListScreen(
+          isDark: _isDarkMode,
+          onToggleTheme: _toggleTheme,
+          onNavigate: (page) {
+            setState(() {
+              if (page == EdupluseNavPage.addNewStaff || page == EdupluseNavPage.editStaff) {
+                _editingStaff = null;
+              }
+              _activeNavPage = page;
+            });
+          },
+          onSelectStaff: (staffId) {
+            ref.read(selectedStaffIdProvider.notifier).state = staffId;
+            setState(() {
+              _activeNavPage = EdupluseNavPage.staffDetails;
+            });
+          },
+          onEditStaff: (staff) {
+            ref.read(selectedStaffIdProvider.notifier).state = staff.id;
+            setState(() {
+              _editingStaff = staff;
+              _activeNavPage = EdupluseNavPage.editStaff;
+            });
+          },
+        );
+      case EdupluseNavPage.addNewStaff:
+        return AddStaffFormScreen(
+          key: const ValueKey('add_new_staff'),
+          isDark: _isDarkMode,
+          isEditMode: false,
+          staffToEdit: null,
+          onToggleTheme: _toggleTheme,
+          onNavigate: (page) {
+            setState(() {
+              if (page == EdupluseNavPage.addNewStaff || page == EdupluseNavPage.editStaff) {
+                _editingStaff = null;
+              }
+              _activeNavPage = page;
+            });
+          },
+          onSubmitted: (staffId) {
+            ref.read(selectedStaffIdProvider.notifier).state = staffId;
+            setState(() {
+              _editingStaff = null;
+              _activeNavPage = EdupluseNavPage.staffDetails;
+            });
+          },
+          onCancel: () {
+            setState(() {
+              _editingStaff = null;
+              _activeNavPage = EdupluseNavPage.staffList;
+            });
+          },
+        );
+      case EdupluseNavPage.editStaff:
+        final staffToUse = _editingStaff;
+        return EditStaffScreen(
+          key: ValueKey('edit_staff_${staffToUse?.id ?? 'empty'}'),
+          initialStaff: staffToUse,
+          isDark: _isDarkMode,
+          onToggleTheme: _toggleTheme,
+          onNavigate: (page) {
+            setState(() {
+              if (page == EdupluseNavPage.addNewStaff || page == EdupluseNavPage.editStaff) {
+                _editingStaff = null;
+              }
+              _activeNavPage = page;
+            });
+          },
+          onSubmitted: (staffId) {
+            ref.read(selectedStaffIdProvider.notifier).state = staffId;
+            setState(() {
+              _editingStaff = null;
+              _activeNavPage = EdupluseNavPage.staffDetails;
+            });
+          },
+          onCancel: () {
+            setState(() {
+              _editingStaff = null;
+              _activeNavPage = EdupluseNavPage.staffList;
+            });
+          },
+          onSelectStaffForEdit: (staff) {
+            setState(() {
+              _editingStaff = staff;
+            });
+            ref.read(selectedStaffIdProvider.notifier).state = staff.id;
+          },
+        );
+      case EdupluseNavPage.staffDetails:
+        return StaffDetailsScreen(
+          isDark: _isDarkMode,
+          onToggleTheme: _toggleTheme,
+          onNavigate: (page) {
+            setState(() {
+              if (page == EdupluseNavPage.addNewStaff || page == EdupluseNavPage.editStaff) {
+                _editingStaff = null;
+              }
+              _activeNavPage = page;
+            });
+          },
+          onEditStaff: (staff) {
+            ref.read(selectedStaffIdProvider.notifier).state = staff.id;
+            setState(() {
+              _editingStaff = staff;
+              _activeNavPage = EdupluseNavPage.editStaff;
+            });
+          },
+        );
+      case EdupluseNavPage.staffDepartments:
+        return StaffDepartmentsScreen(
+          isDark: _isDarkMode,
+          onToggleTheme: _toggleTheme,
+          onNavigate: (page) {
+            setState(() {
+              if (page == EdupluseNavPage.addNewStaff || page == EdupluseNavPage.editStaff) {
+                _editingStaff = null;
+              }
+              _activeNavPage = page;
+            });
+          },
+          onSelectStaff: (staffId) {
+            ref.read(selectedStaffIdProvider.notifier).state = staffId;
+            setState(() {
+              _activeNavPage = EdupluseNavPage.staffDetails;
+            });
           },
         );
       case EdupluseNavPage.studentDetails:
