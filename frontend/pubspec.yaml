@@ -29,6 +29,7 @@ dependencies:
   # File & Document Handling (UI Simulation)
   file_picker: ^8.1.7
   shared_preferences: ^2.5.6
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:
@@ -45,5 +46,13 @@ flutter:
     - assets/data/auth/
     - assets/data/staff/
     - assets/data/classes/
+    - assets/data/students/
+    - assets/data/academics/
+    - assets/data/attendance/
+    - assets/data/coursework/
+    - assets/data/examinations/
+    - assets/data/finance/
+    - assets/data/transfers/
+    - assets/data/announcements/
     - assets/images/
     - assets/icons/

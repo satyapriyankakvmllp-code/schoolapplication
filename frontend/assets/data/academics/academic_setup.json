@@ -1,0 +1,307 @@
+{
+  "class_sections": [
+    {
+      "id": "cls-sec-10a",
+      "class_name": "Class 10",
+      "section_name": "A",
+      "academic_year": "2026-2027",
+      "class_incharge_id": "tch-prof-301",
+      "room_number": "Room 201"
+    },
+    {
+      "id": "cls-sec-10b",
+      "class_name": "Class 10",
+      "section_name": "B",
+      "academic_year": "2026-2027",
+      "class_incharge_id": "tch-prof-305",
+      "room_number": "Room 202"
+    },
+    {
+      "id": "cls-sec-11a",
+      "class_name": "Class 11",
+      "section_name": "A",
+      "academic_year": "2026-2027",
+      "class_incharge_id": "tch-prof-302",
+      "room_number": "Room 301"
+    },
+    {
+      "id": "cls-sec-12a",
+      "class_name": "Class 12",
+      "section_name": "A",
+      "academic_year": "2026-2027",
+      "class_incharge_id": "tch-prof-304",
+      "room_number": "Room 401"
+    }
+  ],
+  "subjects": [
+    {
+      "id": "sbj-101",
+      "subject_name": "Mathematics",
+      "subject_code": "MATH-101",
+      "department": "Mathematics",
+      "description": "Advanced algebra, coordinate geometry, trigonometry, and calculus basics.",
+      "is_practical": false,
+      "is_active": true,
+      "created_at": "2024-01-10T09:00:00.000Z",
+      "updated_at": "2026-10-10T09:00:00.000Z"
+    },
+    {
+      "id": "sbj-102",
+      "subject_name": "Physics",
+      "subject_code": "PHY-201",
+      "department": "Sciences",
+      "description": "Mechanics, wave optics, electricity, and electromagnetic theory.",
+      "is_practical": true,
+      "is_active": true,
+      "created_at": "2024-01-10T09:00:00.000Z",
+      "updated_at": "2026-10-10T09:00:00.000Z"
+    },
+    {
+      "id": "sbj-103",
+      "subject_name": "Chemistry",
+      "subject_code": "CHEM-202",
+      "department": "Sciences",
+      "description": "Physical, organic, and inorganic chemistry principles with lab titrations.",
+      "is_practical": true,
+      "is_active": true,
+      "created_at": "2024-01-10T09:00:00.000Z",
+      "updated_at": "2026-10-10T09:00:00.000Z"
+    },
+    {
+      "id": "sbj-104",
+      "subject_name": "Computer Science",
+      "subject_code": "CS-301",
+      "department": "Computer Science",
+      "description": "Data structures, algorithms, Python programming, and relational SQL.",
+      "is_practical": true,
+      "is_active": true,
+      "created_at": "2024-01-10T09:00:00.000Z",
+      "updated_at": "2026-10-10T09:00:00.000Z"
+    },
+    {
+      "id": "sbj-105",
+      "subject_name": "English Core",
+      "subject_code": "ENG-001",
+      "department": "Languages",
+      "description": "Reading comprehension, creative writing, and classical literature analysis.",
+      "is_practical": false,
+      "is_active": true,
+      "created_at": "2024-01-10T09:00:00.000Z",
+      "updated_at": "2026-10-10T09:00:00.000Z"
+    },
+    {
+      "id": "sbj-106",
+      "subject_name": "Social Science",
+      "subject_code": "SOC-102",
+      "department": "Humanities",
+      "description": "Modern Indian history, democratic politics, and economic development.",
+      "is_practical": false,
+      "is_active": true,
+      "created_at": "2024-01-10T09:00:00.000Z",
+      "updated_at": "2026-10-10T09:00:00.000Z"
+    }
+  ],
+  "class_subject_allocations": [
+    {
+      "id": "csa-10a-math",
+      "class_section_id": "cls-sec-10a",
+      "subject_id": "sbj-101",
+      "teacher_id": "tch-prof-301",
+      "academic_year": "2026-2027",
+      "is_active": true,
+      "created_at": "2026-06-01T09:00:00.000Z",
+      "updated_at": "2026-06-01T09:00:00.000Z"
+    },
+    {
+      "id": "csa-10a-phy",
+      "class_section_id": "cls-sec-10a",
+      "subject_id": "sbj-102",
+      "teacher_id": "tch-prof-302",
+      "academic_year": "2026-2027",
+      "is_active": true,
+      "created_at": "2026-06-01T09:00:00.000Z",
+      "updated_at": "2026-06-01T09:00:00.000Z"
+    },
+    {
+      "id": "csa-10a-chem",
+      "class_section_id": "cls-sec-10a",
+      "subject_id": "sbj-103",
+      "teacher_id": "tch-prof-303",
+      "academic_year": "2026-2027",
+      "is_active": true,
+      "created_at": "2026-06-01T09:00:00.000Z",
+      "updated_at": "2026-06-01T09:00:00.000Z"
+    },
+    {
+      "id": "csa-10a-cs",
+      "class_section_id": "cls-sec-10a",
+      "subject_id": "sbj-104",
+      "teacher_id": "tch-prof-304",
+      "academic_year": "2026-2027",
+      "is_active": true,
+      "created_at": "2026-06-01T09:00:00.000Z",
+      "updated_at": "2026-06-01T09:00:00.000Z"
+    },
+    {
+      "id": "csa-10a-eng",
+      "class_section_id": "cls-sec-10a",
+      "subject_id": "sbj-105",
+      "teacher_id": "tch-prof-305",
+      "academic_year": "2026-2027",
+      "is_active": true,
+      "created_at": "2026-06-01T09:00:00.000Z",
+      "updated_at": "2026-06-01T09:00:00.000Z"
+    },
+    {
+      "id": "csa-10a-soc",
+      "class_section_id": "cls-sec-10a",
+      "subject_id": "sbj-106",
+      "teacher_id": "tch-prof-306",
+      "academic_year": "2026-2027",
+      "is_active": true,
+      "created_at": "2026-06-01T09:00:00.000Z",
+      "updated_at": "2026-06-01T09:00:00.000Z"
+    },
+    {
+      "id": "csa-10b-math",
+      "class_section_id": "cls-sec-10b",
+      "subject_id": "sbj-101",
+      "teacher_id": "tch-prof-301",
+      "academic_year": "2026-2027",
+      "is_active": true,
+      "created_at": "2026-06-01T09:00:00.000Z",
+      "updated_at": "2026-06-01T09:00:00.000Z"
+    },
+    {
+      "id": "csa-10b-eng",
+      "class_section_id": "cls-sec-10b",
+      "subject_id": "sbj-105",
+      "teacher_id": "tch-prof-305",
+      "academic_year": "2026-2027",
+      "is_active": true,
+      "created_at": "2026-06-01T09:00:00.000Z",
+      "updated_at": "2026-06-01T09:00:00.000Z"
+    }
+  ],
+  "timetable_slots": [
+    {
+      "id": "tts-10a-mon-p1",
+      "class_section_id": "cls-sec-10a",
+      "subject_id": "sbj-101",
+      "teacher_id": "tch-prof-301",
+      "day_of_week": "MONDAY",
+      "period_number": 1,
+      "start_time": "08:30:00",
+      "end_time": "09:15:00",
+      "is_active": true,
+      "created_at": "2026-06-01T09:00:00.000Z",
+      "updated_at": "2026-06-01T09:00:00.000Z"
+    },
+    {
+      "id": "tts-10a-mon-p2",
+      "class_section_id": "cls-sec-10a",
+      "subject_id": "sbj-102",
+      "teacher_id": "tch-prof-302",
+      "day_of_week": "MONDAY",
+      "period_number": 2,
+      "start_time": "09:15:00",
+      "end_time": "10:00:00",
+      "is_active": true,
+      "created_at": "2026-06-01T09:00:00.000Z",
+      "updated_at": "2026-06-01T09:00:00.000Z"
+    },
+    {
+      "id": "tts-10a-mon-p3",
+      "class_section_id": "cls-sec-10a",
+      "subject_id": "sbj-103",
+      "teacher_id": "tch-prof-303",
+      "day_of_week": "MONDAY",
+      "period_number": 3,
+      "start_time": "10:15:00",
+      "end_time": "11:00:00",
+      "is_active": true,
+      "created_at": "2026-06-01T09:00:00.000Z",
+      "updated_at": "2026-06-01T09:00:00.000Z"
+    },
+    {
+      "id": "tts-10a-mon-p4",
+      "class_section_id": "cls-sec-10a",
+      "subject_id": "sbj-104",
+      "teacher_id": "tch-prof-304",
+      "day_of_week": "MONDAY",
+      "period_number": 4,
+      "start_time": "11:00:00",
+      "end_time": "11:45:00",
+      "is_active": true,
+      "created_at": "2026-06-01T09:00:00.000Z",
+      "updated_at": "2026-06-01T09:00:00.000Z"
+    },
+    {
+      "id": "tts-10a-mon-p5",
+      "class_section_id": "cls-sec-10a",
+      "subject_id": "sbj-105",
+      "teacher_id": "tch-prof-305",
+      "day_of_week": "MONDAY",
+      "period_number": 5,
+      "start_time": "12:30:00",
+      "end_time": "13:15:00",
+      "is_active": true,
+      "created_at": "2026-06-01T09:00:00.000Z",
+      "updated_at": "2026-06-01T09:00:00.000Z"
+    },
+    {
+      "id": "tts-10a-mon-p6",
+      "class_section_id": "cls-sec-10a",
+      "subject_id": "sbj-106",
+      "teacher_id": "tch-prof-306",
+      "day_of_week": "MONDAY",
+      "period_number": 6,
+      "start_time": "13:15:00",
+      "end_time": "14:00:00",
+      "is_active": true,
+      "created_at": "2026-06-01T09:00:00.000Z",
+      "updated_at": "2026-06-01T09:00:00.000Z"
+    },
+    {
+      "id": "tts-10a-tue-p1",
+      "class_section_id": "cls-sec-10a",
+      "subject_id": "sbj-102",
+      "teacher_id": "tch-prof-302",
+      "day_of_week": "TUESDAY",
+      "period_number": 1,
+      "start_time": "08:30:00",
+      "end_time": "09:15:00",
+      "is_active": true,
+      "created_at": "2026-06-01T09:00:00.000Z",
+      "updated_at": "2026-06-01T09:00:00.000Z"
+    },
+    {
+      "id": "tts-10a-tue-p2",
+      "class_section_id": "cls-sec-10a",
+      "subject_id": "sbj-101",
+      "teacher_id": "tch-prof-301",
+      "day_of_week": "TUESDAY",
+      "period_number": 2,
+      "start_time": "09:15:00",
+      "end_time": "10:00:00",
+      "is_active": true,
+      "created_at": "2026-06-01T09:00:00.000Z",
+      "updated_at": "2026-06-01T09:00:00.000Z"
+    }
+  ],
+  "timetable_substitutions": [
+    {
+      "id": "subst-2026-01",
+      "timetable_slot_id": "tts-10a-mon-p2",
+      "substitution_date": "2026-10-19",
+      "original_teacher_id": "tch-prof-302",
+      "substitute_teacher_id": "tch-prof-304",
+      "assigned_by_admin_id": "usr-adm-001",
+      "status": "CONFIRMED",
+      "reason": "Medical leave coverage for senior physics session",
+      "notes": "Conduct lab revision on Wave Optics chapter",
+      "created_at": "2026-10-16T14:00:00.000Z",
+      "updated_at": "2026-10-16T14:30:00.000Z"
+    }
+  ]
+}

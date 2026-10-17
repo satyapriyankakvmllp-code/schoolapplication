@@ -1,6 +1,5 @@
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../../utils/asset_loader.dart';
+import '../../../utils/dynamic_data_client.dart';
 import '../../authentication/domain/user_model.dart';
 import '../domain/admission_document_model.dart';
 import '../domain/admission_request_model.dart';
@@ -23,7 +22,7 @@ abstract class AdmissionsRepository {
 }
 
 class MockAdmissionsRepository implements AdmissionsRepository {
-  final AssetLoader _assetLoader;
+  final DynamicDataClient _dataClient;
   static const String _mockDataPath = 'assets/data/admissions/admissions.json';
   static const String _mockRequestsPath = 'assets/data/admissions/admission_requests.json';
   static const String _prefsRequestsKey = 'edupulse_saved_admission_requests';
@@ -35,70 +34,43 @@ class MockAdmissionsRepository implements AdmissionsRepository {
   bool _isAdmissionsJsonLoaded = false;
   bool _isRequestsJsonLoaded = false;
 
-  MockAdmissionsRepository({AssetLoader? assetLoader})
-      : _assetLoader = assetLoader ?? const AssetLoader() {
+  MockAdmissionsRepository({
+    AssetLoader? assetLoader,
+    DynamicDataClient? dataClient,
+  })  : _dataClient = dataClient ?? DynamicDataClient.instance {
     _cachedAdmissions = _buildDefaultIndianAdmissions();
     _cachedRequests = _buildDefaultMockRequests();
-  }
-
-  Future<SharedPreferences?> _getPrefs() async {
-    try {
-      return await SharedPreferences.getInstance().timeout(
-        const Duration(milliseconds: 300),
-      );
-    } catch (_) {
-      return null;
-    }
   }
 
   Future<void> _ensureLoaded() async {
     if (_isAdmissionsJsonLoaded) return;
     _isAdmissionsJsonLoaded = true;
 
-    List<StudentAdmissionModel> baseAdmissions = [];
     try {
-      final List<dynamic> list = await _assetLoader.loadJsonList(_mockDataPath, delayMs: 0);
-      baseAdmissions = list
-          .map((item) => StudentAdmissionModel.fromJson(item as Map<String, dynamic>))
-          .toList();
-    } catch (_) {
-      // Retain pre-seeded default Indian admissions
-    }
-
-    if (baseAdmissions.isEmpty) {
-      baseAdmissions = _buildDefaultIndianAdmissions();
-    }
-
-    try {
-      final prefs = await _getPrefs();
-      final String? savedJson = prefs?.getString(_prefsAdmissionsKey);
-      if (savedJson != null && savedJson.isNotEmpty) {
-        final decoded = jsonDecode(savedJson) as List<dynamic>;
-        final stored = decoded
-            .map((item) => StudentAdmissionModel.fromJson(item as Map<String, dynamic>))
+      final raw = await _dataClient.getAll(
+        assetPath: _mockDataPath,
+        storageKey: _prefsAdmissionsKey,
+      );
+      if (raw.isNotEmpty) {
+        _cachedAdmissions = raw
+            .map((item) => StudentAdmissionModel.fromJson(item))
             .toList();
-
-        final storedIds = stored.map((s) => s.student.id).toSet();
-        final remainingBase = baseAdmissions.where((s) => !storedIds.contains(s.student.id)).toList();
-        _cachedAdmissions = [...stored, ...remainingBase];
-      } else {
-        _cachedAdmissions = baseAdmissions;
+        return;
       }
-    } catch (_) {
-      _cachedAdmissions = baseAdmissions;
-    }
+    } catch (_) {}
 
-    if (_cachedAdmissions == null || _cachedAdmissions!.isEmpty) {
-      _cachedAdmissions = _buildDefaultIndianAdmissions();
-    }
+    _cachedAdmissions = _buildDefaultIndianAdmissions();
   }
 
   Future<void> _persistAdmissions() async {
     if (_cachedAdmissions == null) return;
     try {
-      final prefs = await _getPrefs();
-      final listMap = _cachedAdmissions!.map((a) => a.toJson()).toList();
-      await prefs?.setString(_prefsAdmissionsKey, jsonEncode(listMap));
+      final rawList = _cachedAdmissions!.map((a) => a.toJson()).toList();
+      await _dataClient.syncAll(
+        assetPath: _mockDataPath,
+        storageKey: _prefsAdmissionsKey,
+        items: rawList,
+      );
     } catch (_) {}
   }
 
@@ -358,51 +330,31 @@ class MockAdmissionsRepository implements AdmissionsRepository {
     if (_isRequestsJsonLoaded) return;
     _isRequestsJsonLoaded = true;
 
-    List<AdmissionRequestModel> baseRequests = [];
     try {
-      final List<dynamic> list = await _assetLoader.loadJsonList(_mockRequestsPath, delayMs: 0);
-      baseRequests = list
-          .map((item) => AdmissionRequestModel.fromJson(item as Map<String, dynamic>))
-          .toList();
-    } catch (_) {
-      // Retain pre-seeded default mock requests
-    }
-
-    if (baseRequests.isEmpty) {
-      baseRequests = _buildDefaultMockRequests();
-    }
-
-    try {
-      final prefs = await _getPrefs();
-      final String? savedJson = prefs?.getString(_prefsRequestsKey);
-      if (savedJson != null && savedJson.isNotEmpty) {
-        final decoded = jsonDecode(savedJson) as List<dynamic>;
-        final stored = decoded
-            .map((item) => AdmissionRequestModel.fromJson(item as Map<String, dynamic>))
+      final raw = await _dataClient.getAll(
+        assetPath: _mockRequestsPath,
+        storageKey: _prefsRequestsKey,
+      );
+      if (raw.isNotEmpty) {
+        _cachedRequests = raw
+            .map((item) => AdmissionRequestModel.fromJson(item))
             .toList();
-
-        // Merge: stored items take precedence by ID, newly added front-desk requests appear at the top
-        final storedIds = stored.map((r) => r.id).toSet();
-        final remainingBase = baseRequests.where((r) => !storedIds.contains(r.id)).toList();
-        _cachedRequests = [...stored, ...remainingBase];
-      } else {
-        _cachedRequests = baseRequests;
+        return;
       }
-    } catch (_) {
-      _cachedRequests = baseRequests;
-    }
+    } catch (_) {}
 
-    if (_cachedRequests == null || _cachedRequests!.isEmpty) {
-      _cachedRequests = _buildDefaultMockRequests();
-    }
+    _cachedRequests = _buildDefaultMockRequests();
   }
 
   Future<void> _persistRequests() async {
     if (_cachedRequests == null) return;
     try {
-      final prefs = await _getPrefs();
-      final listMap = _cachedRequests!.map((r) => r.toJson()).toList();
-      await prefs?.setString(_prefsRequestsKey, jsonEncode(listMap));
+      final rawList = _cachedRequests!.map((r) => r.toJson()).toList();
+      await _dataClient.syncAll(
+        assetPath: _mockRequestsPath,
+        storageKey: _prefsRequestsKey,
+        items: rawList,
+      );
     } catch (_) {}
   }
 

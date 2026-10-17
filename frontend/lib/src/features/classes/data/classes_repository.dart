@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io' as io;
 import 'package:flutter/foundation.dart';
 import '../../../utils/asset_loader.dart';
+import '../../../utils/dynamic_data_client.dart';
 import '../domain/class_model.dart';
 import '../domain/classes_actor.dart';
 import '../domain/classroom_model.dart';
@@ -72,8 +73,10 @@ abstract class ClassesRepository {
 class MockClassesRepository implements ClassesRepository {
   static const String assetPath = 'assets/data/classes/classes.json';
   static const String fallbackAssetPath = 'assets/data/classes.json';
+  static const String prefsKey = 'edupulse_saved_classes_records';
 
   final AssetLoader _loader;
+  final DynamicDataClient _dataClient;
   Future<void>? _loading;
 
   List<ClassModel> _classes = [];
@@ -86,7 +89,11 @@ class MockClassesRepository implements ClassesRepository {
   List<TeacherWorkModel> _teacherWork = [];
   int _seq = 0;
 
-  MockClassesRepository({AssetLoader? loader}) : _loader = loader ?? const AssetLoader();
+  MockClassesRepository({
+    AssetLoader? loader,
+    DynamicDataClient? dataClient,
+  })  : _loader = loader ?? const AssetLoader(),
+        _dataClient = dataClient ?? DynamicDataClient.instance;
 
   Future<void> _ensureLoaded() => _loading ??= _load();
 
@@ -124,7 +131,17 @@ class MockClassesRepository implements ClassesRepository {
       } catch (_) {}
     }
 
-    // 2. Load via asset bundle (Web or packaged app)
+    // 2. Load via DynamicDataClient (Server / Asset bundle / SharedPreferences overlay)
+    if (rawJson == null) {
+      try {
+        rawJson = await _dataClient.getJsonObject(
+          assetPath: assetPath,
+          storageKey: prefsKey,
+        );
+      } catch (_) {}
+    }
+
+    // 3. Fallback via asset bundle directly if still null
     if (rawJson == null) {
       try {
         rawJson = await _loader.loadJsonObject(assetPath, delayMs: 0);
@@ -181,19 +198,39 @@ class MockClassesRepository implements ClassesRepository {
     }
   }
 
-  /// Writes all data back into classes.json (the only storage).
+  /// Writes all data back into classes.json (the only storage) and syncs via DynamicDataClient.
   Future<void> _persist() async {
     final jsonStr = exportJsonString();
     final isRunningTest = !kIsWeb && io.Platform.environment.containsKey('FLUTTER_TEST');
-    if (kIsWeb || isRunningTest) return; // browsers cannot write project files
 
-    final file = _findJsonFile();
-    if (file == null) {
-      throw const ClassesDataException(
-        'classes.json not found. Run the app from the "frontend" folder.',
-      );
+    // 1. Direct disk file write on desktop platforms
+    if (!kIsWeb && !isRunningTest) {
+      final file = _findJsonFile();
+      if (file != null) {
+        await file.writeAsString(jsonStr);
+      }
     }
-    await file.writeAsString(jsonStr);
+
+    // 2. Hybrid sync via DynamicDataClient (guarantees persistence across reloads on web and syncs to disk)
+    try {
+      final payload = {
+        'classes': _classes.map((c) => c.toJson()).toList(),
+        'sections': _sections.map((s) => s.toJson()).toList(),
+        'subjects': _subjects.map((s) => s.toJson()).toList(),
+        'curriculum': _curriculum.map((c) => c.toJson()).toList(),
+        'syllabus': _curriculum.map((c) => c.toJson()).toList(),
+        'daily_lessons': _lessons.map((l) => l.toJson()).toList(),
+        'timetable': _timetable.map((t) => t.toJson()).toList(),
+        'classrooms': _classrooms.map((r) => r.toJson()).toList(),
+        'teacher_work': _teacherWork.map((w) => w.toJson()).toList(),
+        'teacher_assignments': _teacherWork.map((w) => w.toJson()).toList(),
+      };
+      await _dataClient.syncJsonObject(
+        assetPath: assetPath,
+        storageKey: prefsKey,
+        data: payload,
+      );
+    } catch (_) {}
   }
 
   /// Export current JSON data as a formatted string

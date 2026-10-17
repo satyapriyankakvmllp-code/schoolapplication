@@ -1249,26 +1249,32 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
               ),
             ),
           if (isFulfilled)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextButton(
-                  onPressed: _pickStudentPhoto,
-                  style: TextButton.styleFrom(
-                    visualDensity: VisualDensity.compact,
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextButton(
+                    onPressed: _pickStudentPhoto,
+                    style: TextButton.styleFrom(
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                    ),
+                    child: const Text('Change', style: TextStyle(fontSize: 11, color: Color(0xFF0284C7))),
                   ),
-                  child: const Text('Change', style: TextStyle(fontSize: 11, color: Color(0xFF0284C7))),
-                ),
-                TextButton(
-                  onPressed: _removeStudentPhoto,
-                  style: TextButton.styleFrom(
-                    visualDensity: VisualDensity.compact,
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                  TextButton(
+                    onPressed: _removeStudentPhoto,
+                    style: TextButton.styleFrom(
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                    ),
+                    child: const Text('Remove', style: TextStyle(fontSize: 11, color: Color(0xFFEF4444))),
                   ),
-                  child: const Text('Remove', style: TextStyle(fontSize: 11, color: Color(0xFFEF4444))),
-                ),
-              ],
+                ],
+              ),
             )
           else
             Text(

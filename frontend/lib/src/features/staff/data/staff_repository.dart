@@ -1,6 +1,5 @@
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../../utils/asset_loader.dart';
+import '../../../utils/dynamic_data_client.dart';
 import '../domain/class_subject_assignment.dart';
 import '../domain/staff_compensation_model.dart';
 import '../domain/staff_login_account_model.dart';
@@ -15,28 +14,21 @@ abstract class StaffRepository {
 }
 
 class MockStaffRepository implements StaffRepository {
-  final AssetLoader _assetLoader;
+  final DynamicDataClient _dataClient;
   static const String _mockDataPath = 'assets/data/staff/staff.json';
   static const String _prefsKey = 'edupulse_saved_staff_records';
 
   List<StaffMemberModel>? _cachedStaff;
   bool _isJsonLoaded = false;
 
-  MockStaffRepository({AssetLoader? assetLoader, bool preloadDefaultsOnly = false})
-      : _assetLoader = assetLoader ?? const AssetLoader() {
+  MockStaffRepository({
+    AssetLoader? assetLoader,
+    DynamicDataClient? dataClient,
+    bool preloadDefaultsOnly = false,
+  }) : _dataClient = dataClient ?? DynamicDataClient.instance {
     _cachedStaff = _buildDefaultStaff();
     if (preloadDefaultsOnly) {
       _isJsonLoaded = true;
-    }
-  }
-
-  Future<SharedPreferences?> _getPrefs() async {
-    try {
-      return await SharedPreferences.getInstance().timeout(
-        const Duration(milliseconds: 400),
-      );
-    } catch (_) {
-      return null;
     }
   }
 
@@ -44,48 +36,29 @@ class MockStaffRepository implements StaffRepository {
     if (_isJsonLoaded) return;
     _isJsonLoaded = true;
 
-    List<StaffMemberModel> baseList = [];
     try {
-      final List<dynamic> raw = await _assetLoader.loadJsonList(_mockDataPath, delayMs: 0);
-      baseList = raw.map((item) => StaffMemberModel.fromMap(item as Map<String, dynamic>)).toList();
-    } catch (_) {
-      // Fallback to in-memory Indian faculty list
-      baseList = _buildDefaultStaff();
-    }
-
-    // Overlay SharedPreferences saved/updated records
-    try {
-      final prefs = await _getPrefs();
-      final savedJson = prefs?.getString(_prefsKey);
-      if (savedJson != null && savedJson.isNotEmpty) {
-        final List<dynamic> savedRaw = jsonDecode(savedJson);
-        final savedList = savedRaw
-            .map((item) => StaffMemberModel.fromMap(item as Map<String, dynamic>))
-            .toList();
-
-        final map = <String, StaffMemberModel>{};
-        for (final s in baseList) {
-          map[s.id] = s;
-        }
-        for (final s in savedList) {
-          map[s.id] = s;
-        }
-        _cachedStaff = map.values.toList();
+      final raw = await _dataClient.getAll(
+        assetPath: _mockDataPath,
+        storageKey: _prefsKey,
+      );
+      if (raw.isNotEmpty) {
+        _cachedStaff = raw.map((item) => StaffMemberModel.fromMap(item)).toList();
         return;
       }
     } catch (_) {}
 
-    _cachedStaff = baseList;
+    _cachedStaff = _buildDefaultStaff();
   }
 
   Future<void> _persistCache() async {
     if (_cachedStaff == null) return;
     try {
-      final prefs = await _getPrefs();
-      if (prefs != null) {
-        final rawList = _cachedStaff!.map((s) => s.toMap()).toList();
-        await prefs.setString(_prefsKey, jsonEncode(rawList));
-      }
+      final rawList = _cachedStaff!.map((s) => s.toMap()).toList();
+      await _dataClient.syncAll(
+        assetPath: _mockDataPath,
+        storageKey: _prefsKey,
+        items: rawList,
+      );
     } catch (_) {}
   }
 

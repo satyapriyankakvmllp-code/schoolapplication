@@ -1,0 +1,94 @@
+{
+  "daily_attendance_sessions": [
+    {
+      "id": "att-sess-2026-10-16-10a",
+      "class_section_id": "cls-sec-10a",
+      "attendance_date": "2026-10-16",
+      "taken_by_teacher_id": "tch-prof-301",
+      "submitted_at": "2026-10-16T08:45:00.000Z",
+      "is_locked": true,
+      "status": "SUBMITTED",
+      "total_students": 3,
+      "created_at": "2026-10-16T08:35:00.000Z",
+      "updated_at": "2026-10-16T08:45:00.000Z"
+    },
+    {
+      "id": "att-sess-2026-10-17-10a",
+      "class_section_id": "cls-sec-10a",
+      "attendance_date": "2026-10-17",
+      "taken_by_teacher_id": "tch-prof-301",
+      "submitted_at": "2026-10-17T08:40:00.000Z",
+      "is_locked": true,
+      "status": "SUBMITTED",
+      "total_students": 3,
+      "created_at": "2026-10-17T08:30:00.000Z",
+      "updated_at": "2026-10-17T08:40:00.000Z"
+    }
+  ],
+  "student_attendance_entries": [
+    {
+      "id": "att-entry-101",
+      "session_id": "att-sess-2026-10-16-10a",
+      "student_id": "std-prof-501",
+      "status": "PRESENT",
+      "remarks": "On time",
+      "marked_by_teacher_id": "tch-prof-301",
+      "created_at": "2026-10-16T08:40:00.000Z",
+      "updated_at": "2026-10-16T08:45:00.000Z"
+    },
+    {
+      "id": "att-entry-102",
+      "session_id": "att-sess-2026-10-16-10a",
+      "student_id": "std-prof-502",
+      "status": "ABSENT",
+      "remarks": "Fever reported by parent via SMS",
+      "marked_by_teacher_id": "tch-prof-301",
+      "created_at": "2026-10-16T08:41:00.000Z",
+      "updated_at": "2026-10-16T08:45:00.000Z"
+    },
+    {
+      "id": "att-entry-103",
+      "session_id": "att-sess-2026-10-16-10a",
+      "student_id": "std-prof-506",
+      "status": "EXCUSED",
+      "remarks": "TC documentation clearance in progress",
+      "marked_by_teacher_id": "tch-prof-301",
+      "created_at": "2026-10-16T08:42:00.000Z",
+      "updated_at": "2026-10-16T08:45:00.000Z"
+    },
+    {
+      "id": "att-entry-104",
+      "session_id": "att-sess-2026-10-17-10a",
+      "student_id": "std-prof-501",
+      "status": "PRESENT",
+      "remarks": null,
+      "marked_by_teacher_id": "tch-prof-301",
+      "created_at": "2026-10-17T08:35:00.000Z",
+      "updated_at": "2026-10-17T08:40:00.000Z"
+    },
+    {
+      "id": "att-entry-105",
+      "session_id": "att-sess-2026-10-17-10a",
+      "student_id": "std-prof-502",
+      "status": "PRESENT",
+      "remarks": "Resumed after fever recovery",
+      "marked_by_teacher_id": "tch-prof-301",
+      "created_at": "2026-10-17T08:36:00.000Z",
+      "updated_at": "2026-10-17T08:40:00.000Z"
+    }
+  ],
+  "attendance_alert_logs": [
+    {
+      "id": "alert-log-001",
+      "student_attendance_entry_id": "att-entry-102",
+      "parent_id": "par-prof-603",
+      "channel": "SMS",
+      "recipient_address": "+91 98765 77003",
+      "delivery_status": "SENT",
+      "message": "Dear Parent, your ward Diya Patel has been marked ABSENT on 16-Oct-2026 for Class 10A. Kindly verify with EduPulse School.",
+      "dispatched_at": "2026-10-16T08:46:12.000Z",
+      "created_at": "2026-10-16T08:45:00.000Z",
+      "updated_at": "2026-10-16T08:46:12.000Z"
+    }
+  ]
+}

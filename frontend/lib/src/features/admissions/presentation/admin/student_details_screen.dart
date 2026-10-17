@@ -6,6 +6,11 @@ import '../../application/admissions_controller.dart';
 import '../../data/admissions_repository.dart';
 import '../../domain/student_admission_model.dart';
 import '../../domain/student_profile_model.dart';
+import 'tabs/student_attendance_tab.dart';
+import 'tabs/student_leave_tab.dart';
+import 'tabs/student_fees_tab.dart';
+import 'tabs/student_exam_tab.dart';
+import 'tabs/student_library_tab.dart';
 
 class StudentDetailsScreen extends ConsumerStatefulWidget {
   final String? studentId;
@@ -94,10 +99,7 @@ class _StudentDetailsScreenState extends ConsumerState<StudentDetailsScreen> {
                   const SizedBox(height: 24),
                   _buildSubTabs(),
                   const SizedBox(height: 20),
-                  if (_activeTabIndex == 0)
-                    _buildStudentDetailsTab(admission)
-                  else
-                    _buildPlaceholderTab(_tabs[_activeTabIndex]),
+                  _buildTabContent(admission, isDark),
                 ],
               ),
             ),
@@ -317,32 +319,51 @@ class _StudentDetailsScreenState extends ConsumerState<StudentDetailsScreen> {
         final title = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Student Details',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                color: isDark ? Colors.white : const Color(0xFF0F172A),
-                letterSpacing: -0.4,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
+            Row(
               children: [
-                Text(
-                  'Dashboard / Student / ',
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                IconButton(
+                  onPressed: () => widget.onNavigate?.call(EdupluseNavPage.studentList),
+                  icon: const Icon(Icons.arrow_back),
+                  tooltip: 'Back to Student Directory',
                 ),
-                Text(
-                  '${admission.user.fullName} (${admission.student.admissionNumber})',
-                  style: const TextStyle(
-                    color: Color(0xFF109F83),
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    'Student Details',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      letterSpacing: -0.4,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 2),
+            Padding(
+              padding: EdgeInsets.only(left: isMobile ? 0 : 48),
+              child: Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  InkWell(
+                    onTap: () => widget.onNavigate?.call(EdupluseNavPage.studentList),
+                    child: Text(
+                      'Student List / ',
+                      style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                    ),
+                  ),
+                  Text(
+                    '${admission.user.fullName} (${admission.student.admissionNumber})',
+                    style: const TextStyle(
+                      color: Color(0xFF109F83),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         );
@@ -1243,6 +1264,25 @@ class _StudentDetailsScreenState extends ConsumerState<StudentDetailsScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildTabContent(StudentAdmissionModel admission, bool isDark) {
+    switch (_activeTabIndex) {
+      case 0:
+        return _buildStudentDetailsTab(admission);
+      case 1:
+        return StudentAttendanceTab(admission: admission, isDark: isDark);
+      case 2:
+        return StudentLeaveTab(admission: admission, isDark: isDark);
+      case 3:
+        return StudentFeesTab(admission: admission, isDark: isDark);
+      case 4:
+        return StudentExamTab(admission: admission, isDark: isDark);
+      case 5:
+        return StudentLibraryTab(admission: admission, isDark: isDark);
+      default:
+        return _buildPlaceholderTab(_tabs[_activeTabIndex]);
+    }
   }
 
   Widget _buildPlaceholderTab(String tabName) {

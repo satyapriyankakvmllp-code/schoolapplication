@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../features/admissions/domain/admission_request_model.dart';
 import '../features/admissions/application/admissions_controller.dart';
@@ -672,6 +672,13 @@ class _EdupluseScaffoldState extends ConsumerState<EdupluseScaffold> {
             child: Column(
               children: [
                 _buildSubItem(
+                  title: 'Student List',
+                  isActive: widget.activePage == EdupluseNavPage.studentList ||
+                      widget.activePage == EdupluseNavPage.studentDetails,
+                  isDark: isDark,
+                  onTap: () => _handleNavigation(EdupluseNavPage.studentList, isDrawer),
+                ),
+                _buildSubItem(
                   title: 'Student Pipeline',
                   isActive: widget.activePage == EdupluseNavPage.studentPipeline,
                   isDark: isDark,
@@ -706,18 +713,6 @@ class _EdupluseScaffoldState extends ConsumerState<EdupluseScaffold> {
                   isActive: widget.activePage == EdupluseNavPage.editStudent,
                   isDark: isDark,
                   onTap: () => _handleNavigation(EdupluseNavPage.editStudent, isDrawer),
-                ),
-                _buildSubItem(
-                  title: 'Student Details',
-                  isActive: widget.activePage == EdupluseNavPage.studentDetails,
-                  isDark: isDark,
-                  onTap: () => _handleNavigation(EdupluseNavPage.studentDetails, isDrawer),
-                ),
-                _buildSubItem(
-                  title: 'Student List',
-                  isActive: widget.activePage == EdupluseNavPage.studentList,
-                  isDark: isDark,
-                  onTap: () => _handleNavigation(EdupluseNavPage.studentList, isDrawer),
                 ),
               ],
             ),

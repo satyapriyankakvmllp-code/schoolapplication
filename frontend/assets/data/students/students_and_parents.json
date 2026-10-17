@@ -1,0 +1,208 @@
+{
+  "student_profiles": [
+    {
+      "id": "std-prof-501",
+      "user_id": "usr-std-501",
+      "admission_number": "ADM-2026-0042",
+      "roll_number": "10",
+      "current_class_id": "cls-sec-10a",
+      "admission_date": "2026-06-15",
+      "academic_year": "2026-2027",
+      "blood_group": "B+",
+      "emergency_contact_phone": "+91 98765 77001",
+      "current_address": "Flat 402, Green Glen Layout, Bellandur, Bengaluru, Karnataka 560103",
+      "enrollment_status": "ENROLLED",
+      "dob_certificate": "Aadhaar_Birth_Certificate.pdf",
+      "transfer_certificate_id": null,
+      "residential_address": "Flat 402, Green Glen Layout, Bellandur, Bengaluru, Karnataka 560103",
+      "id_badge_issued": true
+    },
+    {
+      "id": "std-prof-502",
+      "user_id": "usr-std-502",
+      "admission_number": "ADM-2026-0043",
+      "roll_number": "11",
+      "current_class_id": "cls-sec-10a",
+      "admission_date": "2026-06-15",
+      "academic_year": "2026-2027",
+      "blood_group": "O+",
+      "emergency_contact_phone": "+91 98765 77003",
+      "current_address": "Villa 14, Prestige Silver Oak, Whitefield, Bengaluru 560066",
+      "enrollment_status": "ENROLLED",
+      "dob_certificate": "Diya_BirthCert_Govt.pdf",
+      "transfer_certificate_id": null,
+      "residential_address": "Villa 14, Prestige Silver Oak, Whitefield, Bengaluru 560066",
+      "id_badge_issued": true
+    },
+    {
+      "id": "std-prof-503",
+      "user_id": "usr-std-503",
+      "admission_number": "ADM-2026-0044",
+      "roll_number": "12",
+      "current_class_id": "cls-sec-10b",
+      "admission_date": "2026-06-18",
+      "academic_year": "2026-2027",
+      "blood_group": "A+",
+      "emergency_contact_phone": "+91 98765 77004",
+      "current_address": "Tower 3, Apt 902, Sobha Iris, Outer Ring Road, Bengaluru 560103",
+      "enrollment_status": "ENROLLED",
+      "dob_certificate": "Rohan_BirthCert_Verified.pdf",
+      "transfer_certificate_id": null,
+      "residential_address": "Tower 3, Apt 902, Sobha Iris, Outer Ring Road, Bengaluru 560103",
+      "id_badge_issued": true
+    },
+    {
+      "id": "std-prof-504",
+      "user_id": "usr-std-504",
+      "admission_number": "ADM-2025-0019",
+      "roll_number": "05",
+      "current_class_id": "cls-sec-11a",
+      "admission_date": "2025-06-10",
+      "academic_year": "2026-2027",
+      "blood_group": "AB+",
+      "emergency_contact_phone": "+91 98765 77005",
+      "current_address": "Plot 45, Golden Palms Avenue, Koramangala, Bengaluru 560034",
+      "enrollment_status": "ENROLLED",
+      "dob_certificate": "Ananya_DOB_Cert.pdf",
+      "transfer_certificate_id": null,
+      "residential_address": "Plot 45, Golden Palms Avenue, Koramangala, Bengaluru 560034",
+      "id_badge_issued": true
+    },
+    {
+      "id": "std-prof-505",
+      "user_id": "usr-std-505",
+      "admission_number": "ADM-2024-0008",
+      "roll_number": "02",
+      "current_class_id": "cls-sec-12a",
+      "admission_date": "2024-06-12",
+      "academic_year": "2026-2027",
+      "blood_group": "O-",
+      "emergency_contact_phone": "+91 98765 77001",
+      "current_address": "Flat 402, Green Glen Layout, Bellandur, Bengaluru 560103",
+      "enrollment_status": "ENROLLED",
+      "dob_certificate": "Kabir_DOB_Cert.pdf",
+      "transfer_certificate_id": null,
+      "residential_address": "Flat 402, Green Glen Layout, Bellandur, Bengaluru 560103",
+      "id_badge_issued": true
+    },
+    {
+      "id": "std-prof-506",
+      "user_id": "usr-std-506",
+      "admission_number": "ADM-2026-0088",
+      "roll_number": "24",
+      "current_class_id": "cls-sec-10a",
+      "admission_date": "2026-06-20",
+      "academic_year": "2026-2027",
+      "blood_group": "B-",
+      "emergency_contact_phone": "+91 98765 77006",
+      "current_address": "B-104, Alpine Eco Apartments, Marathahalli, Bengaluru 560037",
+      "enrollment_status": "DISCONTINUED",
+      "dob_certificate": "Siddharth_DOB_Cert.pdf",
+      "transfer_certificate_id": "tc-cert-901",
+      "residential_address": "B-104, Alpine Eco Apartments, Marathahalli, Bengaluru 560037",
+      "id_badge_issued": true
+    }
+  ],
+  "parent_profiles": [
+    {
+      "id": "par-prof-601",
+      "user_id": "usr-par-601",
+      "residential_address": "Flat 402, Green Glen Layout, Bellandur, Bengaluru, Karnataka 560103",
+      "preferred_language": "en",
+      "billing_email": "ramesh.sharma@gmail.com"
+    },
+    {
+      "id": "par-prof-602",
+      "user_id": "usr-par-602",
+      "residential_address": "Flat 402, Green Glen Layout, Bellandur, Bengaluru, Karnataka 560103",
+      "preferred_language": "en",
+      "billing_email": "sunita.sharma@gmail.com"
+    },
+    {
+      "id": "par-prof-603",
+      "user_id": "usr-par-603",
+      "residential_address": "Villa 14, Prestige Silver Oak, Whitefield, Bengaluru 560066",
+      "preferred_language": "en",
+      "billing_email": "bhavin.patel@gmail.com"
+    },
+    {
+      "id": "par-prof-604",
+      "user_id": "usr-par-604",
+      "residential_address": "Tower 3, Apt 902, Sobha Iris, Outer Ring Road, Bengaluru 560103",
+      "preferred_language": "en",
+      "billing_email": "sanjay.gupta@gmail.com"
+    },
+    {
+      "id": "par-prof-605",
+      "user_id": "usr-par-605",
+      "residential_address": "Plot 45, Golden Palms Avenue, Koramangala, Bengaluru 560034",
+      "preferred_language": "en",
+      "billing_email": "venkat.reddy@gmail.com"
+    },
+    {
+      "id": "par-prof-606",
+      "user_id": "usr-par-606",
+      "residential_address": "B-104, Alpine Eco Apartments, Marathahalli, Bengaluru 560037",
+      "preferred_language": "hi",
+      "billing_email": "manish.varma@gmail.com"
+    }
+  ],
+  "student_parent_mappings": [
+    {
+      "id": "spm-101",
+      "student_id": "std-prof-501",
+      "parent_id": "par-prof-601",
+      "relationship_type": "FATHER",
+      "is_primary_contact": true,
+      "is_fee_payer": true
+    },
+    {
+      "id": "spm-102",
+      "student_id": "std-prof-501",
+      "parent_id": "par-prof-602",
+      "relationship_type": "MOTHER",
+      "is_primary_contact": false,
+      "is_fee_payer": false
+    },
+    {
+      "id": "spm-103",
+      "student_id": "std-prof-502",
+      "parent_id": "par-prof-603",
+      "relationship_type": "FATHER",
+      "is_primary_contact": true,
+      "is_fee_payer": true
+    },
+    {
+      "id": "spm-104",
+      "student_id": "std-prof-503",
+      "parent_id": "par-prof-604",
+      "relationship_type": "FATHER",
+      "is_primary_contact": true,
+      "is_fee_payer": true
+    },
+    {
+      "id": "spm-105",
+      "student_id": "std-prof-504",
+      "parent_id": "par-prof-605",
+      "relationship_type": "FATHER",
+      "is_primary_contact": true,
+      "is_fee_payer": true
+    },
+    {
+      "id": "spm-106",
+      "student_id": "std-prof-505",
+      "parent_id": "par-prof-601",
+      "relationship_type": "LEGAL_GUARDIAN",
+      "is_primary_contact": true,
+      "is_fee_payer": true
+    },
+    {
+      "id": "spm-107",
+      "student_id": "std-prof-506",
+      "parent_id": "par-prof-606",
+      "relationship_type": "FATHER",
+      "is_primary_contact": true,
+      "is_fee_payer": true
+    }
+  ]
+}
