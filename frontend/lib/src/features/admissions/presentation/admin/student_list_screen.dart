@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../commonwidgets/edupluse_scaffold.dart';
 import '../../application/admissions_controller.dart';
 import '../../domain/student_profile_model.dart';
+import '../../../classes/application/classes_controller.dart';
 
 class StudentListScreen extends ConsumerStatefulWidget {
   final ValueChanged<EdupluseNavPage>? onNavigate;
@@ -178,11 +179,19 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
             ),
           );
 
+          final classesAsync = ref.watch(classesControllerProvider);
+          final dynamicClassNames = classesAsync.value?.map((c) => c.name).where((n) => n.trim().isNotEmpty) ?? [];
+          final allStudents = ref.watch(admissionsListProvider).value ?? [];
+          final studentClassNames = allStudents.map((s) => s.student.className).where((n) => n.trim().isNotEmpty);
+          final mergedClasses = <String>{'All', ...dynamicClassNames, ...studentClassNames}.toList();
+
+          final effectiveFilter = mergedClasses.contains(_selectedClassFilter) ? _selectedClassFilter : 'All';
+
           final classDropdown = DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-              value: _selectedClassFilter,
-              items: ['All', 'Class 10', 'Class 9', 'Primary']
+              value: effectiveFilter,
+              items: mergedClasses
                   .map((c) => DropdownMenuItem(
                         value: c,
                         child: Text(

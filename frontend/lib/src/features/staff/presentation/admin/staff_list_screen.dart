@@ -30,19 +30,6 @@ class _StaffListScreenState extends ConsumerState<StaffListScreen> {
   bool _isGridView = true;
   final TextEditingController _searchController = TextEditingController();
 
-  static const List<String> _departments = [
-    'All Departments',
-    'Mathematics',
-    'Science',
-    'Humanities',
-    'Computer Science',
-    'Accounts & Finance',
-    'Admissions & Reception',
-    'Library',
-    'Physical Education',
-    'Campus Operations',
-  ];
-
   @override
   void dispose() {
     _searchController.dispose();
@@ -396,20 +383,33 @@ class _StaffListScreenState extends ConsumerState<StaffListScreen> {
                                         contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                                       ),
-                                      child: DropdownButtonHideUnderline(
-                                        child: DropdownButton<String>(
-                                          value: selectedDepartment ?? 'All Departments',
-                                          isExpanded: true,
-                                          isDense: true,
-                                          style: TextStyle(fontSize: 12, color: textColor),
-                                          items: _departments
-                                              .map((d) => DropdownMenuItem(value: d, child: Text(d, style: const TextStyle(fontSize: 12))))
-                                              .toList(),
-                                          onChanged: (val) {
-                                            ref.read(staffDepartmentFilterProvider.notifier).state =
-                                                (val == 'All Departments') ? null : val;
-                                          },
-                                        ),
+                                      child: Builder(
+                                        builder: (context) {
+                                          final staffList = ref.watch(staffListProvider).value ?? [];
+                                          final dynamicDepts = <String>{
+                                            'All Departments',
+                                            ...staffList.map((s) => s.department).where((d) => d.trim().isNotEmpty),
+                                          }.toList();
+                                          final effectiveVal = (selectedDepartment != null && dynamicDepts.contains(selectedDepartment))
+                                              ? selectedDepartment
+                                              : 'All Departments';
+
+                                          return DropdownButtonHideUnderline(
+                                            child: DropdownButton<String>(
+                                              value: effectiveVal,
+                                              isExpanded: true,
+                                              isDense: true,
+                                              style: TextStyle(fontSize: 12, color: textColor),
+                                              items: dynamicDepts
+                                                  .map((d) => DropdownMenuItem(value: d, child: Text(d, style: const TextStyle(fontSize: 12))))
+                                                  .toList(),
+                                              onChanged: (val) {
+                                                ref.read(staffDepartmentFilterProvider.notifier).state =
+                                                    (val == 'All Departments') ? null : val;
+                                              },
+                                            ),
+                                          );
+                                        },
                                       ),
                                     ),
                                   ),
@@ -651,16 +651,22 @@ class _StaffListScreenState extends ConsumerState<StaffListScreen> {
     final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
     final subColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: borderColor),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: DataTable(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: cardBg,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: borderColor),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minWidth: constraints.maxWidth),
+              child: DataTable(
           headingRowColor: WidgetStateProperty.all(
             isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
           ),
@@ -730,7 +736,9 @@ class _StaffListScreenState extends ConsumerState<StaffListScreen> {
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            'Class Teacher (${staff.primaryClassAssignment?.grade}-${staff.primaryClassAssignment?.section})',
+                            staff.classTeacherSummary.isNotEmpty
+                                ? staff.classTeacherSummary
+                                : 'Class Teacher (${staff.primaryClassAssignment?.grade}-${staff.primaryClassAssignment?.section})',
                             style: const TextStyle(fontSize: 10, color: Color(0xFF8B5CF6), fontWeight: FontWeight.bold),
                           ),
                         )
@@ -807,8 +815,11 @@ class _StaffListScreenState extends ConsumerState<StaffListScreen> {
               ],
             );
           }).toList(),
-        ),
-      ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 

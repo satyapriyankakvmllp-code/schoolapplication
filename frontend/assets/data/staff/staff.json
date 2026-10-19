@@ -50,7 +50,35 @@
     "gender": "Female",
     "dateOfBirth": "1982-04-12T00:00:00.000",
     "bloodGroup": "O+",
-    "emergencyContact": "+91 98450 99887"
+    "emergencyContact": "+91 98450 99887",
+    "fatherName": "S. Swaminathan",
+    "motherName": "K. Meenakshi",
+    "maritalStatus": "Married",
+    "experienceYears": 9,
+    "previousSchool": "National Public School, Indiranagar",
+    "currentSchool": "EduPulse Global Academy (Bengaluru Campus)",
+    "bankBranch": "Indiranagar Main Branch",
+    "height": "5.6 ft",
+    "weight": "62 kg",
+    "documents": [
+      {
+        "name": "PhdDegreeCertificate.pdf",
+        "size": "3.2 MB"
+      },
+      {
+        "name": "BedCertification.pdf",
+        "size": "1.8 MB"
+      },
+      {
+        "name": "AppointmentOrder2020.pdf",
+        "size": "2.1 MB"
+      }
+    ],
+    "socialMedia": {
+      "facebook": "https://facebook.com/r.swaminathan",
+      "linkedin": "https://linkedin.com/in/rswaminathan-math",
+      "instagram": "https://instagram.com/rswaminathan"
+    }
   },
   {
     "id": "STF-2026-0102",
@@ -103,7 +131,31 @@
     "gender": "Male",
     "dateOfBirth": "1985-09-24T00:00:00.000",
     "bloodGroup": "B+",
-    "emergencyContact": "+91 97110 88776"
+    "emergencyContact": "+91 97110 88776",
+    "fatherName": "B.K. Sen",
+    "motherName": "Aparna Sen",
+    "maritalStatus": "Married",
+    "experienceYears": 8,
+    "previousSchool": "South Point High School, Kolkata",
+    "currentSchool": "EduPulse Global Academy (Bengaluru Campus)",
+    "bankBranch": "Bellandur Green Glen Branch",
+    "height": "5.10 ft",
+    "weight": "74 kg",
+    "documents": [
+      {
+        "name": "MScPhysicsDegreeIITKgp.pdf",
+        "size": "2.9 MB"
+      },
+      {
+        "name": "BedCertificateKolkataUniv.pdf",
+        "size": "1.7 MB"
+      }
+    ],
+    "socialMedia": {
+      "facebook": "https://facebook.com/vikramaditya.sen",
+      "linkedin": "https://linkedin.com/in/v-sen-physics",
+      "instagram": "https://instagram.com/v_sen_phys"
+    }
   },
   {
     "id": "STF-2026-0103",

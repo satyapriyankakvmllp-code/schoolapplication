@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../classes/application/classes_controller.dart';
+import '../../../classes/application/sections_controller.dart';
+import '../../../classes/application/subjects_controller.dart';
+import '../../../classes/domain/class_model.dart';
 import '../../domain/class_subject_assignment.dart';
 
-class ClassPairingBox extends StatefulWidget {
+class ClassPairingBox extends ConsumerStatefulWidget {
   final List<ClassSubjectAssignment> initialAssignments;
   final ValueChanged<List<ClassSubjectAssignment>> onChanged;
   final bool isDark;
@@ -14,36 +19,36 @@ class ClassPairingBox extends StatefulWidget {
   });
 
   @override
-  State<ClassPairingBox> createState() => _ClassPairingBoxState();
+  ConsumerState<ClassPairingBox> createState() => _ClassPairingBoxState();
 }
 
-class _ClassPairingBoxState extends State<ClassPairingBox> {
+class _ClassPairingBoxState extends ConsumerState<ClassPairingBox> {
   late List<ClassSubjectAssignment> _assignments;
 
-  String _selectedGrade = 'Class 10';
+  String _selectedGrade = '10th Class';
   String _selectedSection = 'A';
   String _selectedSubject = 'Mathematics';
   bool _isClassTeacher = false;
   final int _periodsPerWeek = 5;
 
-  static const List<String> _gradeOptions = [
-    'Class 1',
-    'Class 2',
-    'Class 3',
-    'Class 4',
-    'Class 5',
-    'Class 6',
-    'Class 7',
-    'Class 8',
-    'Class 9',
-    'Class 10',
-    'Class 11',
-    'Class 12',
+  static const List<String> _fallbackGradeOptions = [
+    '1st Class',
+    '2nd Class',
+    '3rd Class',
+    '4th Class',
+    '5th Class',
+    '6th Class',
+    '7th Class',
+    '8th Class',
+    '9th Class',
+    '10th Class',
+    '11th Class',
+    '12th Class',
   ];
 
-  static const List<String> _sectionOptions = ['A', 'B', 'C', 'D'];
+  static const List<String> _fallbackSectionOptions = ['A', 'B', 'C', 'D'];
 
-  static const List<String> _commonSubjects = [
+  static const List<String> _fallbackCommonSubjects = [
     'Mathematics',
     'Advanced Mathematics',
     'Science',
@@ -86,10 +91,17 @@ class _ClassPairingBoxState extends State<ClassPairingBox> {
       return;
     }
 
-    // If marked as class teacher, unmark others if necessary
+    // Synchronize by Class & Section:
+    // If this class & section is already marked as Class Teacher, or if _isClassTeacher is checked,
+    // mark all pairings for this class & section as Class Teacher, while preserving other classes!
+    final isAlreadyClassTeacherForThisClass = _assignments.any(
+      (a) => a.grade == _selectedGrade && a.section == _selectedSection && a.isClassTeacher,
+    );
+    final shouldBeClassTeacher = _isClassTeacher || isAlreadyClassTeacherForThisClass;
+
     List<ClassSubjectAssignment> updated = _assignments.map((a) {
-      if (_isClassTeacher && a.isClassTeacher) {
-        return a.copyWith(isClassTeacher: false);
+      if (shouldBeClassTeacher && a.grade == _selectedGrade && a.section == _selectedSection) {
+        return a.copyWith(isClassTeacher: true);
       }
       return a;
     }).toList();
@@ -98,7 +110,7 @@ class _ClassPairingBoxState extends State<ClassPairingBox> {
       grade: _selectedGrade,
       section: _selectedSection,
       subject: _selectedSubject,
-      isClassTeacher: _isClassTeacher,
+      isClassTeacher: shouldBeClassTeacher,
       periodsPerWeek: _periodsPerWeek,
     ));
 
@@ -119,15 +131,15 @@ class _ClassPairingBoxState extends State<ClassPairingBox> {
 
   void _toggleClassTeacher(int index) {
     setState(() {
-      final current = _assignments[index].isClassTeacher;
-      _assignments = _assignments.asMap().entries.map((entry) {
-        if (entry.key == index) {
-          return entry.value.copyWith(isClassTeacher: !current);
-        } else if (!current) {
-          // If turning this one ON, turn others OFF
-          return entry.value.copyWith(isClassTeacher: false);
+      final target = _assignments[index];
+      final newStatus = !target.isClassTeacher;
+      // Synchronize all pairings for the same class & section,
+      // allowing multiple distinct classes to be assigned as Class Teacher!
+      _assignments = _assignments.map((a) {
+        if (a.grade == target.grade && a.section == target.section) {
+          return a.copyWith(isClassTeacher: newStatus);
         }
-        return entry.value;
+        return a;
       }).toList();
     });
     widget.onChanged(_assignments);
@@ -140,6 +152,72 @@ class _ClassPairingBoxState extends State<ClassPairingBox> {
     final borderColor = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
     final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
     final subColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+
+    // Dynamic data from central JSON repositories via Riverpod
+    final classesAsync = ref.watch(classesControllerProvider);
+    final sectionsAsync = ref.watch(sectionsControllerProvider);
+    final subjectsAsync = ref.watch(subjectsControllerProvider);
+
+    final rawClasses = classesAsync.value ?? [];
+    final rawSections = sectionsAsync.value ?? [];
+    final rawSubjects = subjectsAsync.value ?? [];
+
+    // 1. Dynamic Class / Grade Options
+    final dynamicGradeOptions = rawClasses.isNotEmpty
+        ? rawClasses.map((c) => c.name).where((n) => n.trim().isNotEmpty).toSet().toList()
+        : _fallbackGradeOptions;
+
+    final effectiveGradeOptions = dynamicGradeOptions.isNotEmpty ? dynamicGradeOptions : _fallbackGradeOptions;
+    if (!effectiveGradeOptions.contains(_selectedGrade) && effectiveGradeOptions.isNotEmpty) {
+      _selectedGrade = effectiveGradeOptions.first;
+    }
+
+    // 2. Cascading Section Options for the chosen Class
+    ClassModel? matchedClass;
+    for (final c in rawClasses) {
+      if (c.name == _selectedGrade) {
+        matchedClass = c;
+        break;
+      }
+    }
+
+    final dynamicSections = matchedClass != null
+        ? rawSections
+            .where((s) => s.classId == matchedClass!.id)
+            .map((s) => s.name)
+            .where((n) => n.trim().isNotEmpty)
+            .toSet()
+            .toList()
+        : <String>[];
+
+    final effectiveSectionOptions = dynamicSections.isNotEmpty ? dynamicSections : _fallbackSectionOptions;
+    if (!effectiveSectionOptions.contains(_selectedSection) && effectiveSectionOptions.isNotEmpty) {
+      _selectedSection = effectiveSectionOptions.first;
+    }
+
+    // 3. Cascading Subject Options for the chosen Class
+    final classSpecificSubjects = matchedClass != null
+        ? rawSubjects
+            .where((s) => s.classId == matchedClass!.id)
+            .map((s) => s.name)
+            .where((n) => n.trim().isNotEmpty)
+            .toSet()
+            .toList()
+        : <String>[];
+
+    final allDynamicSubjects = rawSubjects
+        .map((s) => s.name)
+        .where((n) => n.trim().isNotEmpty)
+        .toSet()
+        .toList();
+
+    final effectiveSubjectOptions = classSpecificSubjects.isNotEmpty
+        ? classSpecificSubjects
+        : (allDynamicSubjects.isNotEmpty ? allDynamicSubjects : _fallbackCommonSubjects);
+
+    if (!effectiveSubjectOptions.contains(_selectedSubject) && effectiveSubjectOptions.isNotEmpty) {
+      _selectedSubject = effectiveSubjectOptions.first;
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -155,19 +233,51 @@ class _ClassPairingBoxState extends State<ClassPairingBox> {
             children: [
               const Icon(Icons.class_outlined, size: 18, color: Color(0xFF109F83)),
               const SizedBox(width: 8),
-              Text(
-                'Class & Subject Pairing Matrix',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
+              Expanded(
+                child: Text(
+                  'Class & Subject Pairing Matrix',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
                 ),
               ),
-              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF109F83).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF109F83).withValues(alpha: 0.2)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF109F83),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      classesAsync.isLoading ? 'Syncing...' : 'Dynamic JSON',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF109F83),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF109F83).withValues(alpha: 0.1),
+                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -175,15 +285,15 @@ class _ClassPairingBoxState extends State<ClassPairingBox> {
                   style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF109F83),
+                    color: Color(0xFF8B5CF6),
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Text(
-            'Assign teaching classes and designate primary class teacher duties for institutional report cards.',
+            'Assign teaching classes and designate class teacher duties. Options sync live from the Academics module.',
             style: TextStyle(fontSize: 12, color: subColor),
           ),
           const SizedBox(height: 16),
@@ -197,13 +307,13 @@ class _ClassPairingBoxState extends State<ClassPairingBox> {
                   children: [
                     Row(
                       children: [
-                        Expanded(child: _buildGradeDropdown()),
+                        Expanded(child: _buildGradeDropdown(effectiveGradeOptions)),
                         const SizedBox(width: 8),
-                        Expanded(child: _buildSectionDropdown()),
+                        Expanded(child: _buildSectionDropdown(effectiveSectionOptions)),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    _buildSubjectDropdown(),
+                    _buildSubjectDropdown(effectiveSubjectOptions),
                     const SizedBox(height: 8),
                     _buildTeacherToggleAndAddButton(),
                   ],
@@ -214,11 +324,11 @@ class _ClassPairingBoxState extends State<ClassPairingBox> {
                 children: [
                   Row(
                     children: [
-                      Expanded(flex: 2, child: _buildGradeDropdown()),
+                      Expanded(flex: 2, child: _buildGradeDropdown(effectiveGradeOptions)),
                       const SizedBox(width: 8),
-                      Expanded(flex: 1, child: _buildSectionDropdown()),
+                      Expanded(flex: 1, child: _buildSectionDropdown(effectiveSectionOptions)),
                       const SizedBox(width: 8),
-                      Expanded(flex: 3, child: _buildSubjectDropdown()),
+                      Expanded(flex: 3, child: _buildSubjectDropdown(effectiveSubjectOptions)),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -370,62 +480,84 @@ class _ClassPairingBoxState extends State<ClassPairingBox> {
     );
   }
 
-  Widget _buildGradeDropdown() {
+  Widget _buildGradeDropdown(List<String> options) {
+    final effectiveVal = options.contains(_selectedGrade) ? _selectedGrade : (options.isNotEmpty ? options.first : null);
     return DropdownButtonFormField<String>(
-      initialValue: _selectedGrade,
+      key: ValueKey('grade_${options.length}_$effectiveVal'),
+      initialValue: effectiveVal,
       isExpanded: true,
       decoration: const InputDecoration(
-        labelText: 'Grade',
+        labelText: 'Class / Grade',
         contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         border: OutlineInputBorder(),
       ),
-      items: _gradeOptions
-          .map((g) => DropdownMenuItem(value: g, child: Text(g, style: const TextStyle(fontSize: 12))))
+      items: options
+          .map((g) => DropdownMenuItem(value: g, child: Text(g, style: const TextStyle(fontSize: 12), overflow: TextOverflow.ellipsis)))
           .toList(),
       onChanged: (val) {
-        if (val != null) setState(() => _selectedGrade = val);
+        if (val != null) {
+          setState(() {
+            _selectedGrade = val;
+          });
+        }
       },
     );
   }
 
-  Widget _buildSectionDropdown() {
+  Widget _buildSectionDropdown(List<String> options) {
+    final effectiveVal = options.contains(_selectedSection) ? _selectedSection : (options.isNotEmpty ? options.first : null);
     return DropdownButtonFormField<String>(
-      initialValue: _selectedSection,
+      key: ValueKey('section_${options.length}_$effectiveVal'),
+      initialValue: effectiveVal,
       isExpanded: true,
       decoration: const InputDecoration(
         labelText: 'Section',
         contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         border: OutlineInputBorder(),
       ),
-      items: _sectionOptions
+      items: options
           .map((s) => DropdownMenuItem(value: s, child: Text(s, style: const TextStyle(fontSize: 12))))
           .toList(),
       onChanged: (val) {
-        if (val != null) setState(() => _selectedSection = val);
+        if (val != null) {
+          setState(() {
+            _selectedSection = val;
+          });
+        }
       },
     );
   }
 
-  Widget _buildSubjectDropdown() {
+  Widget _buildSubjectDropdown(List<String> options) {
+    final effectiveVal = options.contains(_selectedSubject) ? _selectedSubject : (options.isNotEmpty ? options.first : null);
     return DropdownButtonFormField<String>(
-      initialValue: _selectedSubject,
+      key: ValueKey('subject_${options.length}_$effectiveVal'),
+      initialValue: effectiveVal,
       isExpanded: true,
       decoration: const InputDecoration(
         labelText: 'Subject',
         contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         border: OutlineInputBorder(),
       ),
-      items: _commonSubjects
-          .map((subj) => DropdownMenuItem(value: subj, child: Text(subj, style: const TextStyle(fontSize: 12))))
+      items: options
+          .map((subj) => DropdownMenuItem(value: subj, child: Text(subj, style: const TextStyle(fontSize: 12), overflow: TextOverflow.ellipsis)))
           .toList(),
       onChanged: (val) {
-        if (val != null) setState(() => _selectedSubject = val);
+        if (val != null) {
+          setState(() {
+            _selectedSubject = val;
+          });
+        }
       },
     );
   }
 
   Widget _buildTeacherToggleAndAddButton() {
-    return Row(
+    return Wrap(
+      alignment: WrapAlignment.spaceBetween,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 12,
+      runSpacing: 8,
       children: [
         Row(
           mainAxisSize: MainAxisSize.min,
@@ -438,12 +570,11 @@ class _ClassPairingBoxState extends State<ClassPairingBox> {
               },
             ),
             const Text(
-              'Primary Class Teacher',
+              'Designate as Class Teacher',
               style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
             ),
           ],
         ),
-        const Spacer(),
         ElevatedButton.icon(
           onPressed: _addPairing,
           icon: const Icon(Icons.add, size: 16),

@@ -6,6 +6,7 @@ import '../../domain/class_subject_assignment.dart';
 import '../../domain/staff_compensation_model.dart';
 import '../../domain/staff_login_account_model.dart';
 import '../../domain/staff_member_model.dart';
+import '../../../classes/application/classes_controller.dart';
 import '../widgets/class_pairing_box.dart';
 
 class EditStaffScreen extends ConsumerStatefulWidget {
@@ -108,8 +109,16 @@ class _EditStaffScreenState extends ConsumerState<EditStaffScreen> {
     ],
   };
 
-  List<String> get _currentDepartments =>
-      _categoryDepartments[_category] ?? _categoryDepartments[StaffCategory.teaching]!;
+  List<String> get _currentDepartments {
+    final base = _categoryDepartments[_category] ?? _categoryDepartments[StaffCategory.teaching]!;
+    final staffList = ref.watch(staffListProvider).value ?? [];
+    final existingDepts = staffList
+        .where((s) => s.category == _category)
+        .map((s) => s.department)
+        .where((d) => d.trim().isNotEmpty)
+        .toSet();
+    return <String>{...base, ...existingDepts}.toList();
+  }
 
   @override
   void initState() {
@@ -334,6 +343,27 @@ class _EditStaffScreenState extends ConsumerState<EditStaffScreen> {
       );
 
       await ref.read(staffListProvider.notifier).saveStaff(updatedStaff);
+
+      // Two-way cross-module synchronization: update classTeacherId in classes.json
+      if (updatedStaff.category == StaffCategory.teaching) {
+        try {
+          final classesList = ref.read(classesControllerProvider).value ?? [];
+          final ctGrades = updatedStaff.classTeacherAssignments
+              .map((a) => a.grade.trim().toLowerCase())
+              .toSet();
+
+          for (final cls in classesList) {
+            final isAssignedAsCT = ctGrades.contains(cls.name.trim().toLowerCase());
+            if (isAssignedAsCT && cls.classTeacherId != updatedStaff.id) {
+              await ref.read(classesControllerProvider.notifier).assignClassTeacher(cls.id, updatedStaff.id);
+            } else if (!isAssignedAsCT && cls.classTeacherId == updatedStaff.id) {
+              await ref.read(classesControllerProvider.notifier).assignClassTeacher(cls.id, null);
+            }
+          }
+        } catch (syncErr) {
+          debugPrint('Class teacher cross-module sync note: $syncErr');
+        }
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

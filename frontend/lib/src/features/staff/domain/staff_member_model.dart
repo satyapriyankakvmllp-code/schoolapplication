@@ -153,6 +153,17 @@ class StaffMemberModel {
   final DateTime? dateOfBirth;
   final String? bloodGroup;
   final String? emergencyContact;
+  final String? fatherName;
+  final String? motherName;
+  final String? maritalStatus;
+  final int? experienceYears;
+  final String? previousSchool;
+  final String? currentSchool;
+  final String? bankBranch;
+  final String? height;
+  final String? weight;
+  final List<Map<String, dynamic>>? documents;
+  final Map<String, dynamic>? socialMedia;
 
   const StaffMemberModel({
     required this.id,
@@ -177,6 +188,17 @@ class StaffMemberModel {
     this.dateOfBirth,
     this.bloodGroup,
     this.emergencyContact,
+    this.fatherName,
+    this.motherName,
+    this.maritalStatus,
+    this.experienceYears,
+    this.previousSchool,
+    this.currentSchool,
+    this.bankBranch,
+    this.height,
+    this.weight,
+    this.documents,
+    this.socialMedia,
   });
 
   /// True if staff member is currently designated as a primary class teacher
@@ -189,6 +211,37 @@ class StaffMemberModel {
     } catch (_) {
       return null;
     }
+  }
+
+  /// List of all distinct class teacher assignments
+  List<ClassSubjectAssignment> get classTeacherAssignments {
+    final seen = <String>{};
+    final list = <ClassSubjectAssignment>[];
+    for (final a in assignedClasses.where((e) => e.isClassTeacher)) {
+      final key = '${a.grade}-${a.section}';
+      if (seen.add(key)) {
+        list.add(a);
+      }
+    }
+    return list;
+  }
+
+  /// Human-readable summary of class teacher assignments (e.g. "Class Teacher (10-A, 9-B)")
+  String get classTeacherSummary {
+    final distinct = classTeacherAssignments;
+    if (distinct.isEmpty) return '';
+    if (distinct.length == 1) {
+      final a = distinct.first;
+      final cleanGrade = a.grade.replaceFirst(RegExp(r'^(Class\s+|Grade\s+)', caseSensitive: false), '');
+      return 'Class Teacher ($cleanGrade-${a.section})';
+    }
+    if (distinct.length <= 3) {
+      final codes = distinct
+          .map((a) => '${a.grade.replaceFirst(RegExp(r'^(Class\s+|Grade\s+)', caseSensitive: false), '')}-${a.section}')
+          .join(', ');
+      return 'Class Teacher ($codes)';
+    }
+    return 'Class Teacher (${distinct.length} Classes)';
   }
 
   /// Initial monogram (e.g., "RS" for "Rajeshwari Swaminathan")
@@ -229,6 +282,17 @@ class StaffMemberModel {
     DateTime? dateOfBirth,
     String? bloodGroup,
     String? emergencyContact,
+    String? fatherName,
+    String? motherName,
+    String? maritalStatus,
+    int? experienceYears,
+    String? previousSchool,
+    String? currentSchool,
+    String? bankBranch,
+    String? height,
+    String? weight,
+    List<Map<String, dynamic>>? documents,
+    Map<String, dynamic>? socialMedia,
   }) {
     return StaffMemberModel(
       id: id ?? this.id,
@@ -253,6 +317,17 @@ class StaffMemberModel {
       dateOfBirth: dateOfBirth ?? this.dateOfBirth,
       bloodGroup: bloodGroup ?? this.bloodGroup,
       emergencyContact: emergencyContact ?? this.emergencyContact,
+      fatherName: fatherName ?? this.fatherName,
+      motherName: motherName ?? this.motherName,
+      maritalStatus: maritalStatus ?? this.maritalStatus,
+      experienceYears: experienceYears ?? this.experienceYears,
+      previousSchool: previousSchool ?? this.previousSchool,
+      currentSchool: currentSchool ?? this.currentSchool,
+      bankBranch: bankBranch ?? this.bankBranch,
+      height: height ?? this.height,
+      weight: weight ?? this.weight,
+      documents: documents ?? this.documents,
+      socialMedia: socialMedia ?? this.socialMedia,
     );
   }
 
@@ -280,6 +355,17 @@ class StaffMemberModel {
       'dateOfBirth': dateOfBirth?.toIso8601String(),
       'bloodGroup': bloodGroup,
       'emergencyContact': emergencyContact,
+      'fatherName': fatherName,
+      'motherName': motherName,
+      'maritalStatus': maritalStatus,
+      'experienceYears': experienceYears,
+      'previousSchool': previousSchool,
+      'currentSchool': currentSchool,
+      'bankBranch': bankBranch,
+      'height': height,
+      'weight': weight,
+      'documents': documents,
+      'socialMedia': socialMedia,
     };
   }
 
@@ -324,6 +410,23 @@ class StaffMemberModel {
           : null,
       bloodGroup: map['bloodGroup']?.toString(),
       emergencyContact: map['emergencyContact']?.toString(),
+      fatherName: map['fatherName']?.toString(),
+      motherName: map['motherName']?.toString(),
+      maritalStatus: map['maritalStatus']?.toString(),
+      experienceYears: map['experienceYears'] != null
+          ? int.tryParse(map['experienceYears'].toString())
+          : null,
+      previousSchool: map['previousSchool']?.toString(),
+      currentSchool: map['currentSchool']?.toString(),
+      bankBranch: map['bankBranch']?.toString(),
+      height: map['height']?.toString(),
+      weight: map['weight']?.toString(),
+      documents: (map['documents'] as List<dynamic>?)
+          ?.map((e) => Map<String, dynamic>.from(e as Map))
+          .toList(),
+      socialMedia: map['socialMedia'] != null
+          ? Map<String, dynamic>.from(map['socialMedia'] as Map)
+          : null,
     );
   }
 }

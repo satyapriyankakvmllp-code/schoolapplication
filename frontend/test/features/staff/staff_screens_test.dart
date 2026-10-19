@@ -130,23 +130,21 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Dr. Rajeshwari Swaminathan'), findsWidgets);
-      expect(find.text('Overview'), findsOneWidget);
-      expect(find.text('Compensation'), findsOneWidget);
+      expect(find.text('Teacher Details'), findsOneWidget);
+      expect(find.text('Class Routine'), findsOneWidget);
+      expect(find.text('Attendance'), findsWidgets);
+      expect(find.text('Leave'), findsWidgets);
+      expect(find.text('Payroll'), findsWidgets);
+      expect(find.text('Library'), findsWidgets);
 
-      // Tap Compensation tab
-      await tester.tap(find.text('Compensation'));
+      // Tap Payroll subtab
+      await tester.tap(find.widgetWithText(InkWell, 'Payroll').first);
       await tester.pumpAndSettle();
 
-      expect(find.text('Sensitive HR & Financial Dossier'), findsOneWidget);
-      // By default salary is masked
-      expect(find.text('₹ ••••••• / month'), findsOneWidget);
-
-      // Tap Reveal Data
-      await tester.tap(find.text('Reveal Data'));
-      await tester.pumpAndSettle();
-
-      // Salary should now be revealed
-      expect(find.text('₹ 85000 / month'), findsOneWidget);
+      expect(find.text('Total Net Salary'), findsOneWidget);
+      expect(find.text('Total Gross Salary'), findsOneWidget);
+      expect(find.text('Total Deduction'), findsOneWidget);
+      expect(find.text('View Payslip'), findsWidgets);
     });
 
     testWidgets('StaffDepartmentsScreen renders departmental matrix', (tester) async {

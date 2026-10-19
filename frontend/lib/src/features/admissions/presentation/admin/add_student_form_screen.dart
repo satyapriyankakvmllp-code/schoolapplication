@@ -11,6 +11,9 @@ import '../../domain/admission_document_model.dart';
 import '../../domain/parent_profile_model.dart';
 import '../../domain/student_admission_model.dart';
 import '../../domain/student_profile_model.dart';
+import '../../../classes/application/classes_controller.dart';
+import '../../../classes/application/sections_controller.dart';
+import '../../../classes/domain/class_model.dart';
 import '../widgets/file_upload_box.dart';
 
 class AddStudentFormScreen extends ConsumerStatefulWidget {
@@ -1346,6 +1349,64 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
   // STEP 2: Academic & Class Placement
   // ==========================================
   Widget _buildStep2AcademicPlacement() {
+    final classesAsync = ref.watch(classesControllerProvider);
+    final sectionsAsync = ref.watch(sectionsControllerProvider);
+    final rawClasses = classesAsync.value ?? [];
+    final rawSections = sectionsAsync.value ?? [];
+
+    final dynamicClasses = rawClasses
+        .map((c) => c.name)
+        .where((n) => n.trim().isNotEmpty)
+        .toSet()
+        .toList();
+
+    const fallbackClasses = [
+      'Nursery',
+      'Kindergarten',
+      'Class 1',
+      'Class 2',
+      'Class 3',
+      'Class 4',
+      'Class 5',
+      'Class 6',
+      'Class 7',
+      'Class 8',
+      'Class 9',
+      'Class 10',
+      'Class 11',
+      'Class 12',
+    ];
+    final effectiveClasses = dynamicClasses.isNotEmpty ? dynamicClasses : fallbackClasses;
+
+    // Match selected class for cascading sections
+    ClassModel? matchedClass;
+    for (final c in rawClasses) {
+      if (c.name.trim().toLowerCase() == _selectedClass.trim().toLowerCase()) {
+        matchedClass = c;
+        break;
+      }
+    }
+
+    final dynamicSections = matchedClass != null
+        ? rawSections
+            .where((s) => s.classId == matchedClass!.id)
+            .map((s) => s.name)
+            .where((n) => n.trim().isNotEmpty)
+            .toSet()
+            .toList()
+        : <String>[];
+
+    const fallbackSections = ['A', 'B', 'C', 'D'];
+    final effectiveSections = dynamicSections.isNotEmpty ? dynamicSections : fallbackSections;
+
+    final dynamicYears = rawClasses
+        .map((c) => c.academicYear)
+        .where((y) => y.trim().isNotEmpty)
+        .toSet()
+        .toList();
+    const fallbackYears = ['2024-2025', '2025-2026', '2026-2027', '2027-2028'];
+    final effectiveYears = dynamicYears.isNotEmpty ? dynamicYears : fallbackYears;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1355,13 +1416,7 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
         _buildGridRow([
           _buildReadOnlyField('Admission Number', _studentIdController, hasLock: true),
           _buildDatePicker('Admission Date', _admissionDate, (d) => setState(() => _admissionDate = d), placeholder: 'Select Admission Date'),
-          _buildDropdown('Academic Year', _academicYear, [
-            '2024-2025',
-            '2025-2026',
-            '2026-2027',
-            '2027-2028',
-            'Jun 2025/2026'
-          ], (v) => setState(() => _academicYear = v!)),
+          _buildDropdown('Academic Year', _academicYear, effectiveYears, (v) => setState(() => _academicYear = v!)),
         ]),
 
         const SizedBox(height: 28),
@@ -1369,27 +1424,8 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
         _buildSectionHeader('B. Class Placement'),
         const SizedBox(height: 14),
         _buildGridRow([
-          _buildDropdown('Class & Section', _selectedClass, [
-            'Nursery',
-            'Kindergarten',
-            'Class 1',
-            'Class 2',
-            'Class 3',
-            'Class 4',
-            'Class 5',
-            'Class 6',
-            'Class 7',
-            'Class 8',
-            'Class 9',
-            'Class 10',
-            'Class 11',
-            'Class 12',
-            'Primary',
-            'Grade 8',
-            'Grade 9',
-            'Grade 10',
-          ], (v) => setState(() => _selectedClass = v!)),
-          _buildDropdown('Section', _selectedSection, ['A', 'B', 'C', 'D', 'Science', 'Commerce', 'Arts'], (v) => setState(() => _selectedSection = v!)),
+          _buildDropdown('Class & Section', _selectedClass, effectiveClasses, (v) => setState(() => _selectedClass = v!)),
+          _buildDropdown('Section', _selectedSection, effectiveSections, (v) => setState(() => _selectedSection = v!)),
           _buildField('Roll Number', 'Roll Number', _step2RollNumberController),
           _buildDropdown('Medium of Instruction', _mediumOfInstruction, ['English', 'Hindi', 'Spanish', 'French', 'Bilingual'], (v) => setState(() => _mediumOfInstruction = v!)),
         ]),

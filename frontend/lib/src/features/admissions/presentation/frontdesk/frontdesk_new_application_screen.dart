@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../application/admissions_controller.dart';
 import '../../application/frontdesk_controller.dart';
 import '../../domain/admission_request_model.dart';
+import '../../../classes/application/classes_controller.dart';
 import '../widgets/file_upload_box.dart';
 
 /// Dedicated Standalone Walk-In Admission Intake Screen for Front-Desk Officers.
@@ -644,15 +645,32 @@ class _FrontDeskNewApplicationScreenState
                 children: [
                   Text('Grade / Class Applying For *', style: _labelStyle(isDark)),
                   const SizedBox(height: 8),
-                  DropdownButtonFormField<String>(
-                    initialValue: _gradeApplied,
-                    dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-                    decoration: _inputDecoration(isDark),
-                    items: _gradeOptions.map((g) {
-                      return DropdownMenuItem(value: g, child: Text(g, style: const TextStyle(fontSize: 13)));
-                    }).toList(),
-                    onChanged: (val) {
-                      if (val != null) setState(() => _gradeApplied = val);
+                  Builder(
+                    builder: (context) {
+                      final classesAsync = ref.watch(classesControllerProvider);
+                      final dynamicGrades = classesAsync.value
+                              ?.map((c) => c.name)
+                              .where((n) => n.trim().isNotEmpty)
+                              .toSet()
+                              .toList() ??
+                          [];
+                      final effectiveGrades = dynamicGrades.isNotEmpty ? dynamicGrades : _gradeOptions;
+                      final effectiveVal = effectiveGrades.contains(_gradeApplied)
+                          ? _gradeApplied
+                          : (effectiveGrades.isNotEmpty ? effectiveGrades.first : null);
+
+                      return DropdownButtonFormField<String>(
+                        key: ValueKey('fd_grade_${effectiveVal}_${effectiveGrades.length}'),
+                        initialValue: effectiveVal,
+                        dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                        decoration: _inputDecoration(isDark),
+                        items: effectiveGrades.map((g) {
+                          return DropdownMenuItem(value: g, child: Text(g, style: const TextStyle(fontSize: 13)));
+                        }).toList(),
+                        onChanged: (val) {
+                          if (val != null) setState(() => _gradeApplied = val);
+                        },
+                      );
                     },
                   ),
                 ],

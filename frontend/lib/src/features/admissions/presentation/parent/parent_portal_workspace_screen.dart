@@ -98,14 +98,14 @@ class _ParentPortalWorkspaceScreenState
         list.add({
           'name': adm.user.fullName,
           'fullName': adm.user.fullName,
-          'grade': '${adm.student.className} - Section ${adm.student.section ?? "A"}',
+          'grade': '${adm.student.className} - Section ${adm.student.section.isNotEmpty ? adm.student.section : "A"}',
           'rollNo': adm.student.rollNumber != null ? '#${adm.student.rollNumber}' : '#Pending',
           'admNo': adm.student.admissionNumber,
           'initials': initials.isNotEmpty ? initials : 'ST',
           'teacher': 'Assigned by Administration',
-          'academicYear': adm.student.academicYear ?? '2026-2027',
+          'academicYear': adm.student.academicYear.isNotEmpty ? adm.student.academicYear : '2026-2027',
           'attendance': '100% (Newly Enrolled)',
-          'phone': adm.student.emergencyContactPhone ?? '+91 98765 43210 (Father)',
+          'phone': adm.student.emergencyContactPhone.isNotEmpty ? adm.student.emergencyContactPhone : '+91 98765 43210 (Father)',
           'color': const Color(0xFF3B82F6),
         });
       }

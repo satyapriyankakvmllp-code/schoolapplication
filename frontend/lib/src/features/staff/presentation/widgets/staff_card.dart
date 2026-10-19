@@ -231,7 +231,9 @@ class StaffCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(
-                          'Class Teacher (${staff.primaryClassAssignment?.grade}-${staff.primaryClassAssignment?.section})',
+                          staff.classTeacherSummary.isNotEmpty
+                              ? staff.classTeacherSummary
+                              : 'Class Teacher (${staff.primaryClassAssignment?.grade}-${staff.primaryClassAssignment?.section})',
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontSize: 11,

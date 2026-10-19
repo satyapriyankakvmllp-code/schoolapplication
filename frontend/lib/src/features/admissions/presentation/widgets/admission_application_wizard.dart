@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../domain/admission_request_model.dart';
+import '../../../classes/application/classes_controller.dart';
 import 'file_upload_box.dart';
 
 /// Reusable 3-Step Guided Wizard for New Student Admission Intake.
@@ -640,15 +641,32 @@ class _AdmissionApplicationWizardState
                         ),
                       ),
                       const SizedBox(height: 8),
-                      DropdownButtonFormField<String>(
-                        initialValue: _gradeApplied,
-                        dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-                        decoration: _inputDecoration(isDark),
-                        items: _gradeOptions.map((g) {
-                          return DropdownMenuItem(value: g, child: Text(g, style: const TextStyle(fontSize: 13)));
-                        }).toList(),
-                        onChanged: (val) {
-                          if (val != null) setState(() => _gradeApplied = val);
+                      Builder(
+                        builder: (context) {
+                          final classesAsync = ref.watch(classesControllerProvider);
+                          final dynamicGrades = classesAsync.value
+                                  ?.map((c) => c.name)
+                                  .where((n) => n.trim().isNotEmpty)
+                                  .toSet()
+                                  .toList() ??
+                              [];
+                          final effectiveGrades = dynamicGrades.isNotEmpty ? dynamicGrades : _gradeOptions;
+                          final effectiveVal = effectiveGrades.contains(_gradeApplied)
+                              ? _gradeApplied
+                              : (effectiveGrades.isNotEmpty ? effectiveGrades.first : null);
+
+                          return DropdownButtonFormField<String>(
+                            key: ValueKey('applied_grade_${effectiveVal}_${effectiveGrades.length}'),
+                            initialValue: effectiveVal,
+                            dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                            decoration: _inputDecoration(isDark),
+                            items: effectiveGrades.map((g) {
+                              return DropdownMenuItem(value: g, child: Text(g, style: const TextStyle(fontSize: 13)));
+                            }).toList(),
+                            onChanged: (val) {
+                              if (val != null) setState(() => _gradeApplied = val);
+                            },
+                          );
                         },
                       ),
                     ],

@@ -10,33 +10,55 @@ import '../../domain/classroom_model.dart';
 import '../../domain/section_model.dart';
 import '../../domain/subject_model.dart';
 
+import '../../../staff/application/staff_controller.dart';
+import '../../../staff/domain/staff_member_model.dart';
+
 class TeacherOption {
   final String id;
   final String name;
   const TeacherOption(this.id, this.name);
 }
 
-/// Teachers known to the app. Combines active mock users and school faculty directory.
+/// Teachers known to the app. Dynamically resolves from live Staff repository,
+/// with fallback to initial school faculty directory.
 final classesTeachersProvider = Provider<List<TeacherOption>>((ref) {
-  final activeTeacher = RoleDirectory.mockUsers[UserRole.teacher];
-  return [
-    if (activeTeacher != null)
-      TeacherOption(activeTeacher.id, '${activeTeacher.firstName} ${activeTeacher.lastName} (Current User)'),
-    const TeacherOption('tch-101', 'Anita Roy (Class In-Charge 10A)'),
-    const TeacherOption('tch-102', 'R. Sharma (Mathematics HOD)'),
-    const TeacherOption('tch-103', 'S. Verma (English Literature)'),
-    const TeacherOption('tch-104', 'A. Singh (Physics & Science)'),
-    const TeacherOption('tch-105', 'P. Mehta (Chemistry)'),
-    const TeacherOption('tch-106', 'N. Gupta (Computer Science & AI)'),
-    const TeacherOption('tch-107', 'V. Joshi (Social Science)'),
-    const TeacherOption('tch-108', 'M. Khan (Physical Education)'),
-    const TeacherOption('tch-109', 'K. Gupta (Hindi Core)'),
-    const TeacherOption('tch-110', 'P. Rao (Art & Design)'),
-    const TeacherOption('tch-111', 'R. Iyer (Music & Performing Arts)'),
-    const TeacherOption('tch-112', 'D. Patel (Biology & Environmental Studies)'),
-    const TeacherOption('tch-113', 'T. Das (History & Geography)'),
-    const TeacherOption('tch-114', 'S. Nair (Value Education & Ethics)'),
+  final staffList = ref.watch(staffListProvider).value ?? [];
+  final teachingStaff = staffList.where((s) => s.category == StaffCategory.teaching).toList();
+
+  final Map<String, TeacherOption> map = {};
+
+  // 1. Initial/pre-seeded seed options to guarantee resolution of existing classTeacherIds in classes.json
+  const defaultTeachers = [
+    TeacherOption('tch-101', 'Anita Roy (Class In-Charge 10A)'),
+    TeacherOption('tch-102', 'R. Sharma (Mathematics HOD)'),
+    TeacherOption('tch-103', 'S. Verma (English Literature)'),
+    TeacherOption('tch-104', 'A. Singh (Physics & Science)'),
+    TeacherOption('tch-105', 'P. Mehta (Chemistry)'),
+    TeacherOption('tch-106', 'N. Gupta (Computer Science & AI)'),
+    TeacherOption('tch-107', 'V. Joshi (Social Science)'),
+    TeacherOption('tch-108', 'M. Khan (Physical Education)'),
+    TeacherOption('tch-109', 'K. Gupta (Hindi Core)'),
+    TeacherOption('tch-110', 'P. Rao (Art & Design)'),
+    TeacherOption('tch-111', 'R. Iyer (Music & Performing Arts)'),
+    TeacherOption('tch-112', 'D. Patel (Biology & Environmental Studies)'),
+    TeacherOption('tch-113', 'T. Das (History & Geography)'),
+    TeacherOption('tch-114', 'S. Nair (Value Education & Ethics)'),
   ];
+  for (final t in defaultTeachers) {
+    map[t.id] = t;
+  }
+
+  // 2. Overlay live dynamic staff members
+  for (final staff in teachingStaff) {
+    map[staff.id] = TeacherOption(staff.id, '${staff.fullName} (${staff.designation})');
+  }
+
+  final activeTeacher = RoleDirectory.mockUsers[UserRole.teacher];
+  if (activeTeacher != null && !map.containsKey(activeTeacher.id)) {
+    map[activeTeacher.id] = TeacherOption(activeTeacher.id, '${activeTeacher.firstName} ${activeTeacher.lastName} (Current User)');
+  }
+
+  return map.values.toList();
 });
 
 /// Id -> display name resolver built from already-loaded, role-scoped data.
