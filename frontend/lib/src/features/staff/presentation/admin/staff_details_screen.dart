@@ -17,6 +17,7 @@ class StaffDetailsScreen extends ConsumerStatefulWidget {
   final VoidCallback? onToggleTheme;
   final ValueChanged<EdupluseNavPage>? onNavigate;
   final ValueChanged<StaffMemberModel>? onEditStaff;
+  final VoidCallback? onExitToGateway;
 
   const StaffDetailsScreen({
     super.key,
@@ -25,6 +26,7 @@ class StaffDetailsScreen extends ConsumerStatefulWidget {
     this.onToggleTheme,
     this.onNavigate,
     this.onEditStaff,
+    this.onExitToGateway,
   });
 
   @override
@@ -175,6 +177,7 @@ class _StaffDetailsScreenState extends ConsumerState<StaffDetailsScreen> {
       isDark: isDark,
       onToggleTheme: widget.onToggleTheme,
       onNavigate: widget.onNavigate,
+      onExitToGateway: widget.onExitToGateway,
       body: Container(
         color: bgColor,
         child: bodyContent,

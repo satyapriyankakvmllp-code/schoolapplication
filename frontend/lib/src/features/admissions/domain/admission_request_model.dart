@@ -6,13 +6,18 @@ import '../../authentication/domain/user_model.dart';
 
 enum AdmissionRequestStatus {
   pending,
+  pendingReview,
+  correctionRequested,
   approved,
   rejected;
 
   String get displayName {
     switch (this) {
       case AdmissionRequestStatus.pending:
-        return 'Pending';
+      case AdmissionRequestStatus.pendingReview:
+        return 'Pending Review';
+      case AdmissionRequestStatus.correctionRequested:
+        return 'Correction Requested';
       case AdmissionRequestStatus.approved:
         return 'Approved';
       case AdmissionRequestStatus.rejected:
@@ -20,15 +25,24 @@ enum AdmissionRequestStatus {
     }
   }
 
+  bool get isPendingReview =>
+      this == AdmissionRequestStatus.pending || this == AdmissionRequestStatus.pendingReview;
+
   static AdmissionRequestStatus fromString(String? status) {
     switch (status?.toUpperCase()) {
       case 'APPROVED':
         return AdmissionRequestStatus.approved;
       case 'REJECTED':
         return AdmissionRequestStatus.rejected;
+      case 'CORRECTION_REQUESTED':
+      case 'CORRECTIONREQUESTED':
+        return AdmissionRequestStatus.correctionRequested;
+      case 'PENDING_REVIEW':
+      case 'PENDINGREVIEW':
+        return AdmissionRequestStatus.pendingReview;
       case 'PENDING':
       default:
-        return AdmissionRequestStatus.pending;
+        return AdmissionRequestStatus.pendingReview;
     }
   }
 }
@@ -83,8 +97,10 @@ class AdmissionRequestModel {
   final String? permanentAddress;
   final String? previousSchoolName;
   final String emergencyContactPhone;
+  final String? studentPhotoUrl;
   final List<String> documents;
   final String? notes;
+  final String? correctionNotes;
 
   const AdmissionRequestModel({
     required this.id,
@@ -96,10 +112,11 @@ class AdmissionRequestModel {
     required this.gradeApplied,
     this.academicYear = '2026-2027',
     this.source = AdmissionRequestSource.parentPortal,
-    this.status = AdmissionRequestStatus.pending,
+    this.status = AdmissionRequestStatus.pendingReview,
     required this.appliedAt,
     this.reviewedAt,
     this.rejectionReason,
+    this.correctionNotes,
     required this.parentFullName,
     this.parentRelationship = 'Father',
     required this.parentPhone,
@@ -109,6 +126,7 @@ class AdmissionRequestModel {
     this.permanentAddress,
     this.previousSchoolName,
     required this.emergencyContactPhone,
+    this.studentPhotoUrl,
     this.documents = const [],
     this.notes,
   });
@@ -145,11 +163,14 @@ class AdmissionRequestModel {
       emergencyContactPhone: json['emergency_contact_phone'] as String? ??
           json['parent_phone'] as String? ??
           '',
+      studentPhotoUrl: json['student_photo_url'] as String? ??
+          json['profile_photo_url'] as String?,
       documents: (json['documents'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           [],
       notes: json['notes'] as String?,
+      correctionNotes: json['correction_notes'] as String?,
     );
   }
 
@@ -168,6 +189,7 @@ class AdmissionRequestModel {
       'applied_at': appliedAt.toIso8601String(),
       'reviewed_at': reviewedAt?.toIso8601String(),
       'rejection_reason': rejectionReason,
+      'correction_notes': correctionNotes,
       'parent_full_name': parentFullName,
       'parent_relationship': parentRelationship,
       'parent_phone': parentPhone,
@@ -177,6 +199,7 @@ class AdmissionRequestModel {
       'permanent_address': permanentAddress,
       'previous_school_name': previousSchoolName,
       'emergency_contact_phone': emergencyContactPhone,
+      'student_photo_url': studentPhotoUrl,
       'documents': documents,
       'notes': notes,
     };
@@ -196,6 +219,7 @@ class AdmissionRequestModel {
     DateTime? appliedAt,
     DateTime? reviewedAt,
     String? rejectionReason,
+    String? correctionNotes,
     String? parentFullName,
     String? parentRelationship,
     String? parentPhone,
@@ -205,6 +229,7 @@ class AdmissionRequestModel {
     String? permanentAddress,
     String? previousSchoolName,
     String? emergencyContactPhone,
+    String? studentPhotoUrl,
     List<String>? documents,
     String? notes,
   }) {
@@ -222,6 +247,7 @@ class AdmissionRequestModel {
       appliedAt: appliedAt ?? this.appliedAt,
       reviewedAt: reviewedAt ?? this.reviewedAt,
       rejectionReason: rejectionReason ?? this.rejectionReason,
+      correctionNotes: correctionNotes ?? this.correctionNotes,
       parentFullName: parentFullName ?? this.parentFullName,
       parentRelationship: parentRelationship ?? this.parentRelationship,
       parentPhone: parentPhone ?? this.parentPhone,
@@ -232,6 +258,7 @@ class AdmissionRequestModel {
       previousSchoolName: previousSchoolName ?? this.previousSchoolName,
       emergencyContactPhone:
           emergencyContactPhone ?? this.emergencyContactPhone,
+      studentPhotoUrl: studentPhotoUrl ?? this.studentPhotoUrl,
       documents: documents ?? this.documents,
       notes: notes ?? this.notes,
     );
@@ -259,6 +286,9 @@ class AdmissionRequestModel {
       userRole: UserRole.student,
       firstName: applicantFirstName,
       lastName: applicantLastName,
+      profilePhotoUrl: (studentPhotoUrl != null && studentPhotoUrl!.isNotEmpty)
+          ? studentPhotoUrl
+          : '${applicantFirstName.toLowerCase()}_photo.jpg',
       gender: Gender.fromString(gender),
       dateOfBirth: dateOfBirth,
       status: AccountStatus.active,
@@ -266,13 +296,22 @@ class AdmissionRequestModel {
       updatedAt: DateTime.now(),
     );
 
+    final effectiveDocuments = documents.isNotEmpty
+        ? documents
+        : [
+            '${applicantFirstName}_Birth_Certificate.pdf',
+            '${applicantFirstName}_Previous_Academic_Record.pdf',
+            'Parent_ID_Verification.pdf',
+          ];
+
     String? dobCert;
-    for (final doc in documents) {
-      if (doc.toLowerCase().contains('birth')) {
+    for (final doc in effectiveDocuments) {
+      if (doc.toLowerCase().contains('birth') || doc.toLowerCase().contains('dob')) {
         dobCert = doc;
         break;
       }
     }
+    dobCert ??= effectiveDocuments.first;
 
     final student = StudentProfileModel(
       id: generatedStudentId,
@@ -285,13 +324,13 @@ class AdmissionRequestModel {
       admissionDate: DateTime.now(),
       academicYear: academicYear,
       category: 'General',
-      bloodGroup: bloodGroup,
+      bloodGroup: bloodGroup ?? 'B+',
       emergencyContactPhone: emergencyContactPhone,
       currentAddress: currentAddress,
       residentialAddress: currentAddress,
       permanentAddress: permanentAddress ?? currentAddress,
       enrollmentStatus: EnrollmentStatus.enrolled,
-      previousSchoolName: previousSchoolName,
+      previousSchoolName: previousSchoolName ?? 'St. Xavier Preschool',
       dobCertificate: dobCert,
       additionalDetails: notes ?? 'Admission submitted via ${source.displayName}.',
     );
@@ -336,14 +375,14 @@ class AdmissionRequestModel {
       );
     }
 
-    final docModels = documents.asMap().entries.map((entry) {
+    final docModels = effectiveDocuments.asMap().entries.map((entry) {
       final idx = entry.key;
       final docName = entry.value;
       final dLower = docName.toLowerCase();
-      String title = 'Document';
-      if (dLower.contains('birth')) {
+      String title = 'Supporting Document';
+      if (dLower.contains('birth') || dLower.contains('dob')) {
         title = 'Birth Certificate';
-      } else if (dLower.contains('transfer') || dLower.contains('tc') || dLower.contains('report') || dLower.contains('marks')) {
+      } else if (dLower.contains('transfer') || dLower.contains('tc') || dLower.contains('report') || dLower.contains('marks') || dLower.contains('academic')) {
         title = 'Previous Academic Record';
       } else if (dLower.contains('govt') || dLower.contains('id') || dLower.contains('aadhaar') || dLower.contains('parent')) {
         title = 'Government ID';
@@ -355,7 +394,7 @@ class AdmissionRequestModel {
         title: title,
         fileName: docName,
         fileUrl: docName,
-        fileSize: '1.2 MB',
+        fileSize: '${1.2 + (idx * 0.4)} MB',
         fileType: docName.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image',
         isVerified: true,
         uploadedAt: appliedAt,

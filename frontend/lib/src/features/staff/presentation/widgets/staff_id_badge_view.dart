@@ -27,8 +27,10 @@ class _StaffIdBadgeViewState extends State<StaffIdBadgeView> {
       mainAxisSize: MainAxisSize.min,
       children: [
         // Side Selector Pills
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 8,
+          runSpacing: 6,
           children: [
             ChoiceChip(
               label: const Text('Front Side', style: TextStyle(fontSize: 12)),
@@ -38,7 +40,6 @@ class _StaffIdBadgeViewState extends State<StaffIdBadgeView> {
                 if (val) setState(() => _showFront = true);
               },
             ),
-            const SizedBox(width: 8),
             ChoiceChip(
               label: const Text('Reverse Side', style: TextStyle(fontSize: 12)),
               selected: !_showFront,
@@ -132,28 +133,31 @@ class _StaffIdBadgeViewState extends State<StaffIdBadgeView> {
                   ),
                   child: const Icon(Icons.school, size: 18, color: Colors.white),
                 ),
-                const SizedBox(width: 8),
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'EDUPULSE ACADEMY',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 0.5,
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'EDUPULSE ACADEMY',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    Text(
-                      'FACULTY & STAFF IDENTIFICATION',
-                      style: TextStyle(
-                        fontSize: 7.5,
-                        color: Colors.white70,
-                        letterSpacing: 0.4,
+                      Text(
+                        'FACULTY & STAFF IDENTIFICATION',
+                        style: TextStyle(
+                          fontSize: 7.5,
+                          color: Colors.white70,
+                          letterSpacing: 0.4,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),

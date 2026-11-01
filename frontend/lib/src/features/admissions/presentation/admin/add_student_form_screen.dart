@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +26,7 @@ class AddStudentFormScreen extends ConsumerStatefulWidget {
   final StudentAdmissionModel? admissionToEdit;
   final bool isEditMode;
   final ValueChanged<String>? onSelectStudentForEdit;
+  final VoidCallback? onExitToGateway;
 
   const AddStudentFormScreen({
     super.key,
@@ -36,6 +38,7 @@ class AddStudentFormScreen extends ConsumerStatefulWidget {
     this.admissionToEdit,
     this.isEditMode = false,
     this.onSelectStudentForEdit,
+    this.onExitToGateway,
   });
 
   @override
@@ -69,6 +72,7 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
   late String _selectedClass;
   late String _selectedSection;
   late final TextEditingController _step2RollNumberController;
+  late final TextEditingController _previousSchoolController;
   late String _mediumOfInstruction;
   late String _houseGroup;
   late String _secondLanguage;
@@ -80,6 +84,7 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
   late final TextEditingController _primaryGuardianPhoneController;
   late final TextEditingController _primaryGuardianEmailController;
   late final TextEditingController _primaryGuardianAddressController;
+  late final TextEditingController _primaryGuardianOccupationController;
   bool _primaryIsPrimaryContact = true;
   bool _primaryIsFeePayer = true;
 
@@ -98,6 +103,8 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
   late final TextEditingController _idNumberController;
   DateTime? _idExpiryDate;
   String? _govtIdFile;
+  List<AdmissionDocumentModel> _prefilledDocuments = [];
+  String? _prefilledNotes;
 
   // C. Declaration & Submission
   bool _certifyAuthentic = true;
@@ -132,6 +139,7 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
     _selectedClass = 'Class 1';
     _selectedSection = 'A';
     _step2RollNumberController = TextEditingController();
+    _previousSchoolController = TextEditingController();
     _mediumOfInstruction = 'English';
     _houseGroup = 'Shivaji House';
     _secondLanguage = 'Hindi';
@@ -141,6 +149,7 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
     _primaryGuardianPhoneController = TextEditingController();
     _primaryGuardianEmailController = TextEditingController();
     _primaryGuardianAddressController = TextEditingController();
+    _primaryGuardianOccupationController = TextEditingController();
 
     _secondaryGuardianNameController = TextEditingController();
     _secondaryGuardianRelation = 'Mother';
@@ -157,10 +166,26 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
     _birthCertificateFile = null;
     _academicRecordFile = null;
     _govtIdFile = null;
+    _prefilledDocuments = [];
+    _prefilledNotes = null;
   }
 
   void _populateFromAdmission(StudentAdmissionModel edit) {
     _studentPhotoUrl = edit.user.profilePhotoUrl;
+    if (_studentPhotoUrl != null && _studentPhotoUrl!.isNotEmpty) {
+      _studentPhotoFileName = _studentPhotoUrl!.split('/').last;
+      if (_studentPhotoUrl!.startsWith('data:')) {
+        try {
+          final commaIdx = _studentPhotoUrl!.indexOf(',');
+          final base64Str = commaIdx != -1 ? _studentPhotoUrl!.substring(commaIdx + 1) : _studentPhotoUrl!;
+          _studentPhotoBytes = base64Decode(base64Str);
+        } catch (_) {}
+      }
+    } else {
+      _studentPhotoFileName = null;
+      _studentPhotoBytes = null;
+    }
+
     _firstNameController.text = edit.user.firstName;
     _lastNameController.text = edit.user.lastName;
     _dateOfBirth = edit.user.dateOfBirth ?? DateTime(2008, 4, 15);
@@ -174,11 +199,13 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
 
     final guardianName = edit.father?.fullName ?? edit.guardian?.fullName ?? edit.mother?.fullName ?? '';
     final guardianRel = edit.selectedGuardianType;
+    final guardianOcc = edit.father?.occupation ?? edit.guardian?.occupation ?? edit.mother?.occupation ?? 'Service / Business';
 
     _academicYear = edit.student.academicYear;
     _selectedClass = edit.student.className;
     _selectedSection = edit.student.section;
     _step2RollNumberController.text = edit.student.rollNumber ?? '';
+    _previousSchoolController.text = edit.student.previousSchoolName ?? '';
     _mediumOfInstruction = edit.student.mediumOfInstruction ?? 'English';
     _houseGroup = edit.student.houseGroup ?? 'Shivaji House';
     _secondLanguage = edit.student.secondLanguage ?? 'Hindi';
@@ -188,11 +215,15 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
     _primaryGuardianPhoneController.text = edit.father?.phoneNumber ?? edit.guardian?.phoneNumber ?? edit.mother?.phoneNumber ?? '';
     _primaryGuardianEmailController.text = edit.father?.email ?? edit.guardian?.email ?? edit.mother?.email ?? '';
     _primaryGuardianAddressController.text = edit.father?.residentialAddress ?? edit.student.currentAddress;
+    _primaryGuardianOccupationController.text = guardianOcc;
 
     _secondaryGuardianNameController.text = edit.mother?.fullName ?? '';
     _secondaryGuardianRelation = 'Mother';
     _secondaryGuardianPhoneController.text = edit.mother?.phoneNumber ?? '';
     _secondaryGuardianEmailController.text = edit.mother?.email ?? '';
+
+    _prefilledDocuments = List.from(edit.documents);
+    _prefilledNotes = edit.student.additionalDetails;
 
     _birthCertificateFile = edit.student.dobCertificate;
     _academicRecordFile = null;
@@ -203,7 +234,7 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
         final f = doc.fileName.toLowerCase();
         if (t.contains('birth') || f.contains('birth') || f.contains('dob')) {
           _birthCertificateFile = doc.fileName;
-        } else if (t.contains('academic') || t.contains('marksheet') || t.contains('transfer') || t.contains('tc') || f.contains('transfer') || f.contains('tc') || f.contains('marks') || f.contains('report')) {
+        } else if (t.contains('academic') || t.contains('marksheet') || t.contains('transfer') || t.contains('tc') || f.contains('transfer') || f.contains('tc') || f.contains('marks') || f.contains('report') || f.contains('academic')) {
           _academicRecordFile = doc.fileName;
         } else if (t.contains('govt') || t.contains('aadhaar') || t.contains('id') || f.contains('govt') || f.contains('aadhaar') || f.contains('id') || f.contains('passport')) {
           _govtIdFile = doc.fileName;
@@ -233,6 +264,7 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
     _selectedClass = 'Class 1';
     _selectedSection = 'A';
     _step2RollNumberController.clear();
+    _previousSchoolController.clear();
     _mediumOfInstruction = 'English';
     _houseGroup = 'Shivaji House';
     _secondLanguage = 'Hindi';
@@ -242,6 +274,7 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
     _primaryGuardianPhoneController.clear();
     _primaryGuardianEmailController.clear();
     _primaryGuardianAddressController.clear();
+    _primaryGuardianOccupationController.clear();
 
     _secondaryGuardianNameController.clear();
     _secondaryGuardianRelation = 'Mother';
@@ -258,6 +291,8 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
     _birthCertificateFile = null;
     _academicRecordFile = null;
     _govtIdFile = null;
+    _prefilledDocuments = [];
+    _prefilledNotes = null;
   }
 
   @override
@@ -285,10 +320,12 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
     _currentAddressController.dispose();
     _studentIdController.dispose();
     _step2RollNumberController.dispose();
+    _previousSchoolController.dispose();
     _primaryGuardianNameController.dispose();
     _primaryGuardianPhoneController.dispose();
     _primaryGuardianEmailController.dispose();
     _primaryGuardianAddressController.dispose();
+    _primaryGuardianOccupationController.dispose();
     _secondaryGuardianNameController.dispose();
     _secondaryGuardianPhoneController.dispose();
     _secondaryGuardianEmailController.dispose();
@@ -335,6 +372,48 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
               ? widget.admissionToEdit!.user.id
               : 'usr-${DateTime.now().millisecondsSinceEpoch}');
 
+      // Preserve and merge pre-filled dossier documents with newly uploaded files
+      final Map<String, AdmissionDocumentModel> docMap = {};
+      for (final doc in _prefilledDocuments) {
+        docMap[doc.title.toLowerCase()] = doc;
+      }
+      if (_birthCertificateFile != null && _birthCertificateFile!.isNotEmpty) {
+        docMap['birth certificate'] = AdmissionDocumentModel(
+          id: 'doc-01',
+          title: 'Birth Certificate',
+          fileName: _birthCertificateFile!,
+          fileUrl: _birthCertificateFile!,
+          fileSize: '1.4 MB',
+          fileType: _birthCertificateFile!.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image',
+          isVerified: true,
+          uploadedAt: DateTime.now(),
+        );
+      }
+      if (_academicRecordFile != null && _academicRecordFile!.isNotEmpty) {
+        docMap['previous academic record'] = AdmissionDocumentModel(
+          id: 'doc-02',
+          title: 'Previous Academic Record',
+          fileName: _academicRecordFile!,
+          fileUrl: _academicRecordFile!,
+          fileSize: '2.1 MB',
+          fileType: _academicRecordFile!.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image',
+          isVerified: true,
+          uploadedAt: DateTime.now(),
+        );
+      }
+      if (_govtIdFile != null && _govtIdFile!.isNotEmpty) {
+        docMap['government id'] = AdmissionDocumentModel(
+          id: 'doc-03',
+          title: 'Government ID ($_idType)',
+          fileName: _govtIdFile!,
+          fileUrl: _govtIdFile!,
+          fileSize: '2.8 MB',
+          fileType: _govtIdFile!.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image',
+          isVerified: true,
+          uploadedAt: DateTime.now(),
+        );
+      }
+
       final newAdmission = StudentAdmissionModel(
         user: UserModel(
           id: userId,
@@ -365,11 +444,15 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
               : _primaryGuardianPhoneController.text.trim(),
           currentAddress: _currentAddressController.text.trim(),
           residentialAddress: _currentAddressController.text.trim(),
+          previousSchoolName: _previousSchoolController.text.trim().isNotEmpty
+              ? _previousSchoolController.text.trim()
+              : _activeAdmissionToEdit?.student.previousSchoolName,
           dobCertificate: _birthCertificateFile,
           mediumOfInstruction: _mediumOfInstruction,
           houseGroup: _houseGroup,
           secondLanguage: _secondLanguage,
           nationalIdNumber: _idNumberController.text.trim(),
+          additionalDetails: _prefilledNotes ?? 'Admission processed via Admin Intake Portal.',
         ),
         father: ParentProfileModel(
           id: 'par-p-${DateTime.now().millisecondsSinceEpoch}',
@@ -378,6 +461,9 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
           relationship: _primaryGuardianRelation,
           phoneNumber: _primaryGuardianPhoneController.text.trim(),
           email: _primaryGuardianEmailController.text.trim(),
+          occupation: _primaryGuardianOccupationController.text.trim().isNotEmpty
+              ? _primaryGuardianOccupationController.text.trim()
+              : 'Service / Business',
           residentialAddress: _primaryGuardianAddressController.text.trim(),
         ),
         mother: ParentProfileModel(
@@ -387,6 +473,7 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
           relationship: _secondaryGuardianRelation,
           phoneNumber: _secondaryGuardianPhoneController.text.trim(),
           email: _secondaryGuardianEmailController.text.trim(),
+          occupation: 'Home Maker / Professional',
           residentialAddress: _primaryGuardianAddressController.text.trim(),
         ),
         guardian: ParentProfileModel(
@@ -396,41 +483,13 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
           relationship: _primaryGuardianRelation,
           phoneNumber: _primaryGuardianPhoneController.text.trim(),
           email: _primaryGuardianEmailController.text.trim(),
+          occupation: _primaryGuardianOccupationController.text.trim().isNotEmpty
+              ? _primaryGuardianOccupationController.text.trim()
+              : 'Guardian',
           residentialAddress: _primaryGuardianAddressController.text.trim(),
         ),
         selectedGuardianType: _primaryGuardianRelation,
-        documents: [
-          if (_birthCertificateFile != null)
-            AdmissionDocumentModel(
-              id: 'doc-01',
-              title: 'Birth Certificate',
-              fileName: _birthCertificateFile!,
-              fileSize: '1.4 MB',
-              fileType: _birthCertificateFile!.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image',
-              isVerified: true,
-              uploadedAt: DateTime.now(),
-            ),
-          if (_academicRecordFile != null)
-            AdmissionDocumentModel(
-              id: 'doc-02',
-              title: 'Previous Academic Record',
-              fileName: _academicRecordFile!,
-              fileSize: '2.1 MB',
-              fileType: _academicRecordFile!.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image',
-              isVerified: true,
-              uploadedAt: DateTime.now(),
-            ),
-          if (_govtIdFile != null)
-            AdmissionDocumentModel(
-              id: 'doc-03',
-              title: 'Government ID ($_idType)',
-              fileName: _govtIdFile!,
-              fileSize: '2.8 MB',
-              fileType: _govtIdFile!.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image',
-              isVerified: true,
-              uploadedAt: DateTime.now(),
-            ),
-        ],
+        documents: docMap.values.toList(),
         loginEmail: '${_firstNameController.text.toLowerCase().trim()}.${_lastNameController.text.toLowerCase().trim()}@example.com',
         loginPassword: '••••••••',
       );
@@ -478,10 +537,14 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
       activePage: widget.isEditMode ? EdupluseNavPage.editStudent : EdupluseNavPage.addNewStudent,
       onNavigate: widget.onNavigate,
       onToggleTheme: widget.onToggleTheme,
+      onExitToGateway: widget.onExitToGateway,
       isDark: widget.isDark,
       body: LayoutBuilder(
         builder: (context, constraints) {
           final isMobile = constraints.maxWidth < 650;
+          final originatingReqId = ref.watch(originatingRequestIdProvider);
+          final hasPrefilledData = originatingReqId != null || (!widget.isEditMode && _activeAdmissionToEdit != null);
+
           return Form(
             key: _formKey,
             child: SingleChildScrollView(
@@ -496,6 +559,14 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
                       isMobile: isMobile,
                       isDark: widget.isDark,
                       allStudents: allStudents,
+                    ),
+                  ],
+                  if (hasPrefilledData && !widget.isEditMode) ...[
+                    const SizedBox(height: 16),
+                    _buildPrefilledDossierBanner(
+                      isMobile: isMobile,
+                      isDark: widget.isDark,
+                      originatingReqId: originatingReqId,
                     ),
                   ],
                   const SizedBox(height: 18),
@@ -641,7 +712,7 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: hasActiveStudent
-              ? const Color(0xFF109F83).withOpacity(0.4)
+              ? const Color(0xFF109F83).withValues(alpha: 0.4)
               : (isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1)),
           width: 1.2,
         ),
@@ -657,7 +728,7 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
                   Container(
                     padding: const EdgeInsets.all(5),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF109F83).withOpacity(0.12),
+                      color: const Color(0xFF109F83).withValues(alpha: 0.12),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.manage_accounts_outlined, size: 16, color: Color(0xFF109F83)),
@@ -676,7 +747,7 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: Colors.amber.withOpacity(0.15),
+                        color: Colors.amber.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: const Text(
@@ -709,7 +780,175 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
     );
   }
 
-  // --- TOP BAR ---
+  // --- PRE-FILLED DOSSIER SUMMARY BANNER ---
+  Widget _buildPrefilledDossierBanner({
+    required bool isMobile,
+    required bool isDark,
+    required String? originatingReqId,
+  }) {
+    final applicantName = '${_firstNameController.text} ${_lastNameController.text}'.trim();
+    final effectiveName = applicantName.isNotEmpty ? applicantName : (_activeAdmissionToEdit?.user.fullName ?? 'Applicant');
+    final grade = _selectedClass;
+    final parent = _primaryGuardianNameController.text.isNotEmpty
+        ? '${_primaryGuardianNameController.text} ($_primaryGuardianRelation)'
+        : 'Primary Guardian';
+    final docsCount = _prefilledDocuments.length;
+    final hasPhoto = (_studentPhotoUrl != null && _studentPhotoUrl!.isNotEmpty) || _studentPhotoBytes != null;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(isMobile ? 14 : 18),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF0FDF4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFF109F83).withValues(alpha: 0.5),
+          width: 1.5,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0C109F83),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: const BoxDecoration(
+                  color: Color(0xFF109F83),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.assignment_turned_in_outlined, size: 16, color: Colors.white),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        'Pre-filled from Application Dossier',
+                        style: TextStyle(
+                          fontSize: isMobile ? 13 : 14.5,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF109F83).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: const Color(0xFF109F83).withValues(alpha: 0.4)),
+                      ),
+                      child: Text(
+                        originatingReqId != null ? 'REQ: $originatingReqId' : 'DOSSIER IMPORT',
+                        style: const TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF109F83),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'All applicant information, passport photo, and submitted documents have been imported. Review below, complete Class & Section assignment in Step 2, and submit to finalize enrollment.',
+            style: TextStyle(
+              fontSize: 12.5,
+              height: 1.4,
+              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _buildDossierChip(
+                icon: Icons.person_outline,
+                label: '$effectiveName ($grade)',
+                isDark: isDark,
+              ),
+              _buildDossierChip(
+                icon: hasPhoto ? Icons.photo_camera_back_outlined : Icons.no_photography_outlined,
+                label: hasPhoto ? 'Photo Attached (${_studentPhotoFileName ?? 'Ready'})' : 'No Photo',
+                isDark: isDark,
+                accentColor: hasPhoto ? const Color(0xFF059669) : null,
+              ),
+              _buildDossierChip(
+                icon: Icons.attach_file,
+                label: '$docsCount Submitted Document${docsCount == 1 ? '' : 's'}',
+                isDark: isDark,
+                accentColor: const Color(0xFF0284C7),
+              ),
+              _buildDossierChip(
+                icon: Icons.family_restroom_outlined,
+                label: parent,
+                isDark: isDark,
+              ),
+              if (_previousSchoolController.text.isNotEmpty)
+                _buildDossierChip(
+                  icon: Icons.school_outlined,
+                  label: 'Prior: ${_previousSchoolController.text}',
+                  isDark: isDark,
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDossierChip({
+    required IconData icon,
+    required String label,
+    required bool isDark,
+    Color? accentColor,
+  }) {
+    final color = accentColor ?? (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155));
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0F172A) : Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
   Widget _buildTopBar({required bool isMobile, required bool isEditing}) {
     final isDark = Theme.of(context).brightness == Brightness.dark || widget.isDark;
 
@@ -1119,7 +1358,9 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
   }
 
   Widget _buildPhotoUploader() {
-    final isFulfilled = _studentPhotoUrl != null && _studentPhotoUrl!.isNotEmpty;
+    final isDark = Theme.of(context).brightness == Brightness.dark || widget.isDark;
+    final isFulfilled = (_studentPhotoUrl != null && _studentPhotoUrl!.isNotEmpty) || _studentPhotoBytes != null;
+    final displayPhotoName = _studentPhotoFileName ?? (_studentPhotoUrl != null && _studentPhotoUrl!.isNotEmpty ? _studentPhotoUrl!.split('/').last : null);
 
     return Center(
       child: Column(
@@ -1163,31 +1404,37 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
                                 width: 120,
                                 height: 120,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => const Icon(
-                                  Icons.account_circle,
-                                  size: 48,
-                                  color: Color(0xFF109F83),
-                                ),
+                                errorBuilder: (context, error, stackTrace) => _buildInitialsPhotoAvatar(),
                               )
-                            : Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    isFulfilled ? Icons.account_circle : Icons.camera_alt_outlined,
-                                    size: 36,
-                                    color: isFulfilled ? const Color(0xFF109F83) : const Color(0xFF64748B),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    isFulfilled ? 'Photo Added' : 'Upload Photo',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: isFulfilled ? const Color(0xFF109F83) : const Color(0xFF64748B),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                            : (_studentPhotoUrl != null && _studentPhotoUrl!.startsWith('assets/'))
+                                ? Image.asset(
+                                    _studentPhotoUrl!,
+                                    width: 120,
+                                    height: 120,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => _buildInitialsPhotoAvatar(),
+                                  )
+                                : isFulfilled
+                                    ? _buildInitialsPhotoAvatar()
+                                    : Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          const Icon(
+                                            Icons.camera_alt_outlined,
+                                            size: 36,
+                                            color: Color(0xFF64748B),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          const Text(
+                                            'Upload Photo',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                              color: Color(0xFF64748B),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                   ),
                 ),
               ),
@@ -1226,7 +1473,7 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  isFulfilled ? 'Fulfilled' : 'Pending',
+                  isFulfilled ? 'Photo Attached' : 'Pending',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
@@ -1237,15 +1484,15 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
             ),
           ),
           const SizedBox(height: 4),
-          if (isFulfilled && _studentPhotoFileName != null)
+          if (isFulfilled && displayPhotoName != null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
               child: Text(
-                _studentPhotoFileName!,
-                style: const TextStyle(
+                displayPhotoName,
+                style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF0F172A),
+                  color: isDark ? Colors.white70 : const Color(0xFF0F172A),
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -1284,6 +1531,55 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
               'JPG, PNG max 2MB',
               style: TextStyle(fontSize: 11, color: Colors.grey.shade400),
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInitialsPhotoAvatar() {
+    final name = _firstNameController.text.trim();
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : 'S';
+
+    return Container(
+      width: 120,
+      height: 120,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF109F83), Color(0xFF059669)],
+        ),
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Text(
+            initial,
+            style: const TextStyle(
+              fontSize: 42,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+            ),
+          ),
+          Positioned(
+            bottom: 8,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.35),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: const Text(
+                'PHOTO ATTACHED',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 8.5,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.4,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -1449,6 +1745,14 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
           ], (v) => setState(() => _houseGroup = v!)),
           _buildDropdown('Second Language / Elective', _secondLanguage, ['Hindi', 'Sanskrit', 'Spanish', 'French', 'German', 'Computer Science'], (v) => setState(() => _secondLanguage = v!)),
         ]),
+
+        const SizedBox(height: 28),
+        // D. Previous Schooling
+        _buildSectionHeader('D. Previous Schooling & Prior Academic Record'),
+        const SizedBox(height: 14),
+        _buildGridRow([
+          _buildField('Previous School / Institution', 'Enter previous school or preschool name', _previousSchoolController),
+        ]),
       ],
     );
   }
@@ -1471,6 +1775,7 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
         _buildGridRow([
           _buildField('Phone Number', 'Enter phone number', _primaryGuardianPhoneController),
           _buildField('Email Address', 'Enter email address', _primaryGuardianEmailController),
+          _buildField('Occupation / Profession', 'Enter occupation (e.g. Architect, Engineer)', _primaryGuardianOccupationController),
         ]),
         const SizedBox(height: 14),
         _buildField('Current Address', 'Enter current address', _primaryGuardianAddressController, maxLines: 2),
@@ -1550,6 +1855,7 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
         const SizedBox(height: 14),
         _buildGridRow([
           FileUploadBox(
+            key: ValueKey('bc_$_birthCertificateFile'),
             label: 'Birth Certificate',
             helperText: 'Click to upload or drag & drop\nSupport PDF, JPEG, PNG (max 5MB)',
             initialFileName: _birthCertificateFile,
@@ -1558,6 +1864,7 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
             onFileRemoved: () => setState(() => _birthCertificateFile = null),
           ),
           FileUploadBox(
+            key: ValueKey('ar_$_academicRecordFile'),
             label: 'Previous Academic Record / Transcript (Optional)',
             helperText: 'Click to upload or drag & drop\nSupport PDF, JPEG, PNG (max 5MB)',
             initialFileName: _academicRecordFile,
@@ -1578,6 +1885,7 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
         ]),
         const SizedBox(height: 16),
         FileUploadBox(
+          key: ValueKey('gid_$_govtIdFile'),
           label: 'Upload Government ID (Optional)',
           helperText: 'Click to upload or drag & drop\nSupport PDF, JPEG, PNG (max 10MB)',
           initialFileName: _govtIdFile,
@@ -1586,9 +1894,21 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
           onFileRemoved: () => setState(() => _govtIdFile = null),
         ),
 
+        if (_prefilledDocuments.isNotEmpty) ...[
+          const SizedBox(height: 28),
+          _buildSectionHeader('C. Pre-filled Submitted Documents from Application Dossier'),
+          const SizedBox(height: 6),
+          const Text(
+            'The following documents were attached during initial application submission and are already preserved in this student dossier:',
+            style: TextStyle(fontSize: 12.5, color: Color(0xFF64748B)),
+          ),
+          const SizedBox(height: 12),
+          _buildPrefilledDocumentsList(),
+        ],
+
         const SizedBox(height: 28),
-        // C. Declaration & Submission
-        _buildSectionHeader('C. Declaration & Submission'),
+        // C/D. Declaration & Submission
+        _buildSectionHeader(_prefilledDocuments.isNotEmpty ? 'D. Declaration & Submission' : 'C. Declaration & Submission'),
         const SizedBox(height: 14),
         Wrap(
           spacing: 32,
@@ -1607,6 +1927,107 @@ class _AddStudentFormScreenState extends ConsumerState<AddStudentFormScreen> {
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildPrefilledDocumentsList() {
+    final isDark = Theme.of(context).brightness == Brightness.dark || widget.isDark;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+        ),
+      ),
+      child: ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: _prefilledDocuments.length,
+        separatorBuilder: (_, _) => Divider(
+          height: 1,
+          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+        ),
+        itemBuilder: (context, index) {
+          final doc = _prefilledDocuments[index];
+          final isPdf = doc.fileName.toLowerCase().endsWith('.pdf') || doc.fileType.toLowerCase() == 'pdf';
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: isPdf
+                        ? const Color(0xFFEF4444).withValues(alpha: 0.12)
+                        : const Color(0xFF0284C7).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    isPdf ? Icons.picture_as_pdf : Icons.image_outlined,
+                    size: 20,
+                    color: isPdf ? const Color(0xFFEF4444) : const Color(0xFF0284C7),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        doc.title,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${doc.fileName} • ${doc.fileSize}',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF109F83).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: const Color(0xFF109F83).withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Icon(Icons.verified_outlined, size: 12, color: Color(0xFF109F83)),
+                      SizedBox(width: 4),
+                      Text(
+                        'Dossier Verified',
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF109F83),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 

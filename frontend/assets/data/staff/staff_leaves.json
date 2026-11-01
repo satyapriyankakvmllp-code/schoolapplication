@@ -103,5 +103,17 @@
     "status": "Approved",
     "reason": "Home renovation and electrical clearance",
     "admin_remarks": "Approved by Vice Principal"
+  },
+  {
+    "id": "sl-0002-01",
+    "staff_id": "STF-2026-0002",
+    "sl": "01",
+    "staff_name": "Dr. Anand Roy",
+    "leave_type": "Special Duty Leave",
+    "date_range": "10 Nov 2026 - 12 Nov 2026",
+    "duration_days": 3,
+    "apply_date": "21 Oct 2026",
+    "status": "Pending",
+    "reason": "CBSE Annual Principals Leadership Conclave in New Delhi"
   }
 ]

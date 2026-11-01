@@ -2,7 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../commonwidgets/edupluse_scaffold.dart';
 import '../../application/staff_controller.dart';
+import '../../application/staff_auth_controller.dart';
+import '../../data/leave_repository.dart';
 import '../../domain/staff_member_model.dart';
+import '../../domain/staff_menu_item.dart';
+import '../../../../themes/app_colors.dart';
+import '../../../authentication/application/auth_controller.dart';
+import '../../../authentication/domain/user_model.dart';
 import '../widgets/staff_card.dart';
 import '../widgets/staff_id_badge_view.dart';
 
@@ -12,6 +18,8 @@ class StaffListScreen extends ConsumerStatefulWidget {
   final ValueChanged<EdupluseNavPage>? onNavigate;
   final ValueChanged<String>? onSelectStaff;
   final ValueChanged<StaffMemberModel>? onEditStaff;
+  final VoidCallback? onExitToGateway;
+  final bool isEmbedded;
 
   const StaffListScreen({
     super.key,
@@ -20,6 +28,8 @@ class StaffListScreen extends ConsumerStatefulWidget {
     this.onNavigate,
     this.onSelectStaff,
     this.onEditStaff,
+    this.onExitToGateway,
+    this.isEmbedded = false,
   });
 
   @override
@@ -86,12 +96,18 @@ class _StaffListScreenState extends ConsumerState<StaffListScreen> {
     final borderColor = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
     final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
     final subColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final currentStaff = ref.watch(currentLoggedInStaffProvider);
+    final activeRole = ref.watch(activeUserRoleProvider);
+    final isSuperAdminUser = activeRole == UserRole.admin || isSuperAdmin(currentStaff?.effectiveRole);
+    final pendingPrincipalLeaves = ref.watch(pendingPrincipalLeavesForAdminProvider);
 
     return EdupluseScaffold(
       activePage: EdupluseNavPage.staffList,
       isDark: isDark,
+      isEmbedded: widget.isEmbedded,
       onToggleTheme: widget.onToggleTheme,
       onNavigate: widget.onNavigate,
+      onExitToGateway: widget.onExitToGateway,
       body: Container(
         color: bgColor,
         child: staffAsync.when(
@@ -128,18 +144,20 @@ class _StaffListScreenState extends ConsumerState<StaffListScreen> {
                                   'Unified directory of teaching faculty, administrative officers, and operational personnel.',
                                   style: TextStyle(fontSize: 13, color: subColor),
                                 ),
-                                const SizedBox(height: 12),
-                                ElevatedButton.icon(
-                                  onPressed: () => widget.onNavigate?.call(EdupluseNavPage.addNewStaff),
-                                  icon: const Icon(Icons.person_add_alt_1_outlined, size: 16),
-                                  label: const Text('Add New Staff'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF109F83),
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                if (isSuperAdminUser) ...[
+                                  const SizedBox(height: 12),
+                                  ElevatedButton.icon(
+                                    onPressed: () => widget.onNavigate?.call(EdupluseNavPage.addNewStaff),
+                                    icon: const Icon(Icons.person_add_alt_1_outlined, size: 16),
+                                    label: const Text('Add New Staff'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF109F83),
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    ),
                                   ),
-                                ),
+                                ],
                               ],
                             )
                           : Row(
@@ -164,18 +182,20 @@ class _StaffListScreenState extends ConsumerState<StaffListScreen> {
                                     ],
                                   ),
                                 ),
-                                const SizedBox(width: 16),
-                                ElevatedButton.icon(
-                                  onPressed: () => widget.onNavigate?.call(EdupluseNavPage.addNewStaff),
-                                  icon: const Icon(Icons.person_add_alt_1_outlined, size: 18),
-                                  label: const Text('Add New Staff'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF109F83),
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                if (isSuperAdminUser) ...[
+                                  const SizedBox(width: 16),
+                                  ElevatedButton.icon(
+                                    onPressed: () => widget.onNavigate?.call(EdupluseNavPage.addNewStaff),
+                                    icon: const Icon(Icons.person_add_alt_1_outlined, size: 18),
+                                    label: const Text('Add New Staff'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF109F83),
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    ),
                                   ),
-                                ),
+                                ],
                               ],
                             );
                     },
@@ -262,6 +282,154 @@ class _StaffListScreenState extends ConsumerState<StaffListScreen> {
                   ),
 
                   const SizedBox(height: 20),
+
+                  // Executive & Principal Leave Approvals Board (Management sign-off)
+                  if (isSuperAdminUser && pendingPrincipalLeaves.isNotEmpty) ...[
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 20),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: cardBg,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.5)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.verified_user_outlined, color: Color(0xFF6366F1), size: 20),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        'Principal & Executive Leave Requests (Awaiting Management Sign-off)',
+                                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textColor),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  '${pendingPrincipalLeaves.length} Pending',
+                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF6366F1)),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          ...pendingPrincipalLeaves.map((leave) => Container(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: borderColor),
+                                ),
+                                child: LayoutBuilder(
+                                  builder: (context, itemConstraints) {
+                                    final isNarrow = itemConstraints.maxWidth < 500;
+                                    final details = Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '${leave.staffName} • ${leave.leaveType}',
+                                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: textColor),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Dates: ${leave.dateRange} (${leave.durationDays} days) • Reason: ${leave.reason}',
+                                          style: TextStyle(fontSize: 11, color: subColor),
+                                        ),
+                                      ],
+                                    );
+                                    final buttons = Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        ElevatedButton.icon(
+                                          icon: const Icon(Icons.check, size: 14),
+                                          label: const Text('Approve'),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: AppColors.success,
+                                            foregroundColor: Colors.white,
+                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                            textStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                          ),
+                                          onPressed: () async {
+                                            await ref.read(leaveListProvider.notifier).approveLeave(leave.id, remarks: 'Approved by Management / Board');
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text('Leave for ${leave.staffName} approved by Management!'),
+                                                  backgroundColor: AppColors.success,
+                                                  behavior: SnackBarBehavior.floating,
+                                                ),
+                                              );
+                                            }
+                                          },
+                                        ),
+                                        const SizedBox(width: 8),
+                                        OutlinedButton.icon(
+                                          icon: const Icon(Icons.close, size: 14),
+                                          label: const Text('Decline'),
+                                          style: OutlinedButton.styleFrom(
+                                            foregroundColor: AppColors.error,
+                                            side: const BorderSide(color: AppColors.error),
+                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                            textStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                          ),
+                                          onPressed: () async {
+                                            await ref.read(leaveListProvider.notifier).rejectLeave(leave.id, remarks: 'Declined by Management');
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text('Leave for ${leave.staffName} declined.'),
+                                                  backgroundColor: AppColors.error,
+                                                  behavior: SnackBarBehavior.floating,
+                                                ),
+                                              );
+                                            }
+                                          },
+                                        ),
+                                      ],
+                                    );
+
+                                    if (isNarrow) {
+                                      return Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          details,
+                                          const SizedBox(height: 10),
+                                          buttons,
+                                        ],
+                                      );
+                                    }
+
+                                    return Row(
+                                      children: [
+                                        Expanded(child: details),
+                                        const SizedBox(width: 12),
+                                        buttons,
+                                      ],
+                                    );
+                                  },
+                                ),
+                              )),
+                        ],
+                      ),
+                    ),
+                  ],
 
                   // Search & Multi-facet Filter Container
                   Container(

@@ -20,6 +20,7 @@
     "permanent_address": "Villa 14, Palm Meadows, Whitefield, Bengaluru, Karnataka 560066",
     "previous_school_name": "Greenwood High International School",
     "emergency_contact_phone": "+91 98234 11223",
+    "student_photo_url": "reyansh_photo.jpg",
     "documents": [
       "Reyansh_Birth_Certificate.pdf",
       "Transfer_Certificate_Greenwood.pdf"
@@ -47,6 +48,7 @@
     "permanent_address": "Apt 301, Silver Crest, HSR Layout Sector 2, Bengaluru 560102",
     "previous_school_name": "EuroKids Preschool HSR",
     "emergency_contact_phone": "+91 97412 88990",
+    "student_photo_url": "ananya_photo.png",
     "documents": [
       "Ananya_Birth_Certificate.pdf",
       "Medical_Immunization_Record.pdf"
@@ -74,6 +76,7 @@
     "permanent_address": "House No. 88, 14th Main, Indiranagar, Bengaluru 560038",
     "previous_school_name": "National Public School (NPS)",
     "emergency_contact_phone": "+91 99001 54321",
+    "student_photo_url": "kavya_photo.jpg",
     "documents": [
       "Kavya_Birth_Certificate.pdf",
       "NPS_Transfer_Certificate.pdf",
@@ -102,6 +105,7 @@
     "permanent_address": "Tower C, Flat 1204, Prestige Lakeside, Varthur, Bengaluru 560087",
     "previous_school_name": "Oakridge International School",
     "emergency_contact_phone": "+91 98450 77123",
+    "student_photo_url": "kabir_photo.jpg",
     "documents": [
       "Kabir_Birth_Certificate.pdf"
     ],
@@ -129,6 +133,7 @@
     "permanent_address": "Flat 502, Orchid Woods, Hennur Main Road, Bengaluru 560043",
     "previous_school_name": "Delhi Public School Bangalore North",
     "emergency_contact_phone": "+91 98860 33445",
+    "student_photo_url": "isha_photo.png",
     "documents": [
       "Isha_Birth_Certificate.pdf",
       "TC_DPS_North.pdf"
@@ -157,6 +162,7 @@
     "permanent_address": "No 45, 7th Cross, Koramangala 4th Block, Bengaluru 560034",
     "previous_school_name": "Bethany High School",
     "emergency_contact_phone": "+91 98200 44556",
+    "student_photo_url": "rohan_photo.jpg",
     "documents": [
       "Rohan_Birth_Certificate.pdf",
       "Bethany_TC.pdf"
@@ -186,6 +192,7 @@
     "permanent_address": "Penthouse 12, Sobha Iris, Outer Ring Road, Bengaluru 560103",
     "previous_school_name": "Bishop Cotton Boys School",
     "emergency_contact_phone": "+91 99450 12890",
+    "student_photo_url": "manav_photo.jpg",
     "documents": [
       "Manav_Birth_Certificate.pdf"
     ],
@@ -214,6 +221,7 @@
     "permanent_address": "Flat 204, Sobha Quartz, Bellandur, Bengaluru 560103",
     "previous_school_name": "First Steps Montessori",
     "emergency_contact_phone": "+91 98100 88221",
+    "student_photo_url": "tanya_photo.png",
     "documents": [
       "Tanya_Birth_Certificate.pdf"
     ],

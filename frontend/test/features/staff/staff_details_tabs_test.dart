@@ -11,6 +11,8 @@ import 'package:frontend/src/features/staff/presentation/admin/tabs/staff_attend
 import 'package:frontend/src/features/staff/presentation/admin/tabs/staff_leave_tab.dart';
 import 'package:frontend/src/features/staff/presentation/admin/tabs/staff_payroll_tab.dart';
 import 'package:frontend/src/features/staff/presentation/admin/tabs/staff_library_tab.dart';
+import 'package:frontend/src/features/staff/presentation/admin/staff_accounts_ledger_screen.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 void main() {
   setUp(() {
@@ -204,6 +206,151 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('staff_details_subtab_5')), warnIfMissed: false);
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Attendance tab renders Attendance Performance Matrix graph with fl_chart and mode toggle', (tester) async {
+      tester.view.physicalSize = const Size(1440, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(
+        buildTestableWidget(
+          const StaffDetailsScreen(staffId: 'STF-2026-0101', isDark: false),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('staff_details_subtab_2')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(StaffAttendanceTab), findsOneWidget);
+      expect(find.text('Staff Attendance Performance Matrix'), findsOneWidget);
+      expect(find.text('Rate Trend (Line)'), findsOneWidget);
+      expect(find.text('Days Breakdown (Bar)'), findsOneWidget);
+      expect(find.byType(LineChart), findsOneWidget);
+      expect(find.text('Present Days'), findsWidgets);
+      expect(find.text('Absent Days'), findsWidgets);
+      expect(find.text('Attendance Rate'), findsWidgets);
+      expect(find.text('Total Present'), findsOneWidget);
+      expect(find.text('Total Absent'), findsOneWidget);
+      expect(find.text('Total Holiday'), findsOneWidget);
+
+      // Toggle to Days Breakdown Bar Chart
+      await tester.tap(find.text('Days Breakdown (Bar)'));
+      await tester.pumpAndSettle();
+      expect(find.byType(BarChart), findsOneWidget);
+    });
+
+    testWidgets('Leave tab renders Leave Matrix BarChart and Quota meters, and sorts newest applications first', (tester) async {
+      tester.view.physicalSize = const Size(1440, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(
+        buildTestableWidget(
+          const StaffDetailsScreen(staffId: 'STF-2026-0101', isDark: false),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('staff_details_subtab_3')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(StaffLeaveTab), findsOneWidget);
+      expect(find.text('Leave Allocation & Consumption Matrix'), findsOneWidget);
+      expect(find.byType(BarChart), findsOneWidget);
+      expect(find.text('Annual Quota Utilization & Entitlement Status'), findsOneWidget);
+      expect(find.text('Casual Leave'), findsWidgets);
+      expect(find.text('Medical Leave'), findsWidgets);
+      expect(find.text('Earned Leave'), findsWidgets);
+    });
+
+    testWidgets('Class routine tab renders Month and Week filters, day columns, and Subject / Purpose cards', (tester) async {
+      tester.view.physicalSize = const Size(1440, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(
+        buildTestableWidget(
+          const StaffDetailsScreen(staffId: 'STF-2026-0101', isDark: false),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('staff_details_subtab_1')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(StaffClassRoutineTab), findsOneWidget);
+      expect(find.text('August 2026'), findsOneWidget);
+      expect(find.text('Week 1'), findsOneWidget);
+      expect(find.text('Week 2'), findsOneWidget);
+      expect(find.text('Subject / Purpose'), findsWidgets);
+    });
+
+    testWidgets('Class routine tab allows updating mutable Subject and Purpose on a duty card', (tester) async {
+      tester.view.physicalSize = const Size(1440, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(
+        buildTestableWidget(
+          const StaffDetailsScreen(staffId: 'STF-2026-0101', isDark: false),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('staff_details_subtab_1')));
+      await tester.pumpAndSettle();
+
+      // Tap on the first period card
+      final firstCard = find.text('Subject / Purpose').first;
+      await tester.tap(firstCard);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Work Schedule & Duty Purpose'), findsOneWidget);
+      expect(find.byKey(const ValueKey('edit_routine_subject_input')), findsOneWidget);
+      expect(find.byKey(const ValueKey('edit_routine_purpose_input')), findsOneWidget);
+
+      // Enter new subject and purpose
+      await tester.enterText(find.byKey(const ValueKey('edit_routine_subject_input')), 'Advanced Robotics Lab');
+      await tester.enterText(find.byKey(const ValueKey('edit_routine_purpose_input')), 'Hands-on Arduino micro-controller workshop');
+      await tester.pumpAndSettle();
+
+      // Save changes
+      await tester.tap(find.byKey(const ValueKey('edit_routine_save_button')));
+      await tester.pumpAndSettle();
+
+      // Verify updated subject and purpose appear on the card
+      expect(find.text('Advanced Robotics Lab'), findsOneWidget);
+      expect(find.text('Hands-on Arduino micro-controller workshop'), findsOneWidget);
+    });
+
+    testWidgets('Payroll tab redirects to Accounts section on clicking Open in Accounts', (tester) async {
+      tester.view.physicalSize = const Size(1440, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(
+        buildTestableWidget(
+          const StaffDetailsScreen(staffId: 'STF-2026-0101', isDark: false),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('staff_details_subtab_4')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(StaffPayrollTab), findsOneWidget);
+      final accountsBtn = find.text('Open in Accounts');
+      expect(accountsBtn, findsOneWidget);
+
+      await tester.tap(accountsBtn);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(StaffAccountsLedgerScreen), findsOneWidget);
+      expect(find.text('Accounts & Salary Disbursement Ledger'), findsOneWidget);
+      expect(find.text('Official Registry'), findsOneWidget);
+      expect(find.text('Salary Clearing & Bank Transfer Registry'), findsOneWidget);
     });
   });
 }

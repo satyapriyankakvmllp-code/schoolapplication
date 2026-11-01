@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:frontend/src/utils/dynamic_data_client.dart';
 import '../../../domain/staff_member_model.dart';
+import '../../../data/leave_repository.dart';
 
 class StaffLeaveRecord {
   final String id;
@@ -52,8 +55,8 @@ class StaffLeaveRecord {
 
 /// Tab 4: Leave (matching Screenshot 4)
 /// Displays staff leave applications with inline Approve/Reject action buttons.
-/// No "Apply Leave" button (Admin views staff requests).
-class StaffLeaveTab extends StatefulWidget {
+/// Integrated with shared leaveListProvider & MockLeaveRepository.
+class StaffLeaveTab extends ConsumerStatefulWidget {
   final StaffMemberModel staff;
   final bool isDark;
 
@@ -64,10 +67,10 @@ class StaffLeaveTab extends StatefulWidget {
   });
 
   @override
-  State<StaffLeaveTab> createState() => _StaffLeaveTabState();
+  ConsumerState<StaffLeaveTab> createState() => _StaffLeaveTabState();
 }
 
-class _StaffLeaveTabState extends State<StaffLeaveTab> {
+class _StaffLeaveTabState extends ConsumerState<StaffLeaveTab> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   String _selectedYear = 'Year 2026/2027';
@@ -86,7 +89,33 @@ class _StaffLeaveTabState extends State<StaffLeaveTab> {
   void initState() {
     super.initState();
     _leaves = _buildInitialLeaves();
+    _sortLeavesLatestFirst();
     _loadLeaves();
+  }
+
+  void _sortLeavesLatestFirst() {
+    _leaves.sort((a, b) => _parseApplyDate(b.applyDate).compareTo(_parseApplyDate(a.applyDate)));
+  }
+
+  static DateTime _parseApplyDate(String dateStr) {
+    try {
+      final parts = dateStr.trim().split(RegExp(r'[\s\-]+'));
+      if (parts.length == 3) {
+        if (parts[0].length == 4) {
+          return DateTime(int.parse(parts[0]), int.tryParse(parts[1]) ?? 1, int.tryParse(parts[2]) ?? 1);
+        }
+        final day = int.tryParse(parts[0]) ?? 1;
+        const mNames = {
+          'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
+          'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12,
+        };
+        final mKey = parts[1].length >= 3 ? parts[1].substring(0, 3) : parts[1];
+        final month = mNames[mKey] ?? 1;
+        final year = int.tryParse(parts[2]) ?? 2026;
+        return DateTime(year, month, day);
+      }
+    } catch (_) {}
+    return DateTime(2026, 1, 1);
   }
 
   @override
@@ -98,6 +127,32 @@ class _StaffLeaveTabState extends State<StaffLeaveTab> {
   }
 
   Future<void> _loadLeaves() async {
+    try {
+      final repo = ref.read(leaveRepositoryProvider);
+      final repoLeaves = await repo.getLeaves();
+      if (repoLeaves.isNotEmpty) {
+        final staffRecords = repoLeaves.where((r) => r.staffId == widget.staff.id).toList();
+        final effectiveRecords = staffRecords.isNotEmpty ? staffRecords : repoLeaves;
+        if (mounted) {
+          setState(() {
+            _leaves = effectiveRecords.map((r) => StaffLeaveRecord(
+              id: r.id,
+              sl: r.id.replaceAll('sl-', '').replaceAll('lv-', ''),
+              leaveType: r.leaveType,
+              dateRange: r.dateRange,
+              durationDays: r.durationDays,
+              applyDate: r.applyDate,
+              status: r.status,
+              reason: r.reason,
+              adminRemarks: r.adminRemarks,
+            )).toList();
+            _sortLeavesLatestFirst();
+          });
+          return;
+        }
+      }
+    } catch (_) {}
+
     try {
       final records = await DynamicDataClient.instance.getAll(
         assetPath: 'assets/data/staff/staff_leaves.json',
@@ -119,6 +174,7 @@ class _StaffLeaveTabState extends State<StaffLeaveTab> {
               reason: r['reason']?.toString(),
               adminRemarks: r['admin_remarks']?.toString(),
             )).toList();
+            _sortLeavesLatestFirst();
           });
         }
       }
@@ -251,6 +307,15 @@ class _StaffLeaveTabState extends State<StaffLeaveTab> {
     });
 
     try {
+      if (newStatus == 'Approved') {
+        await ref.read(leaveListProvider.notifier).approveLeave(id, remarks: remarks);
+      } else {
+        await ref.read(leaveListProvider.notifier).rejectLeave(id, remarks: remarks);
+      }
+      ref.invalidate(leaveListProvider);
+    } catch (_) {}
+
+    try {
       final allRaw = await DynamicDataClient.instance.getAll(
         assetPath: 'assets/data/staff/staff_leaves.json',
         storageKey: 'edupulse_staff_leaves_records',
@@ -339,6 +404,28 @@ class _StaffLeaveTabState extends State<StaffLeaveTab> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(leaveListProvider, (_, next) {
+      final leaves = next.valueOrNull;
+      if (leaves != null && leaves.isNotEmpty && mounted) {
+        final staffRecords = leaves.where((r) => r.staffId == widget.staff.id).toList();
+        final effectiveRecords = staffRecords.isNotEmpty ? staffRecords : leaves;
+        setState(() {
+          _leaves = effectiveRecords.map((r) => StaffLeaveRecord(
+            id: r.id,
+            sl: r.id.replaceAll('sl-', '').replaceAll('lv-', ''),
+            leaveType: r.leaveType,
+            dateRange: r.dateRange,
+            durationDays: r.durationDays,
+            applyDate: r.applyDate,
+            status: r.status,
+            reason: r.reason,
+            adminRemarks: r.adminRemarks,
+          )).toList();
+          _sortLeavesLatestFirst();
+        });
+      }
+    });
+
     final cardBg = widget.isDark ? const Color(0xFF1E293B) : Colors.white;
     final borderColor = widget.isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
     final textColor = widget.isDark ? Colors.white : const Color(0xFF0F172A);
@@ -381,7 +468,7 @@ class _StaffLeaveTabState extends State<StaffLeaveTab> {
         children: [
           // Header Row
           Text(
-            'Leave',
+            'Leave Management & Approvals',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -389,7 +476,19 @@ class _StaffLeaveTabState extends State<StaffLeaveTab> {
               letterSpacing: -0.2,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 6),
+          Text(
+            'Staff leave history sorted latest-first with annual leave entitlement quota analysis.',
+            style: TextStyle(
+              fontSize: 12,
+              color: subColor,
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Leave Matrix Heatmap Graph
+          _buildLeaveMatrixGraph(cardBg, borderColor, textColor, subColor, widget.isDark),
+          const SizedBox(height: 24),
 
           // Search, Filter & Rows Per Page Bar
           LayoutBuilder(
@@ -797,6 +896,387 @@ class _StaffLeaveTabState extends State<StaffLeaveTab> {
       child: Text(
         status,
         style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: fg),
+      ),
+    );
+  }
+
+  /// Builds the Leave Type vs Month Matrix Heatmap Graph
+  Widget _buildLeaveMatrixGraph(
+    Color cardBg,
+    Color borderColor,
+    Color textColor,
+    Color subColor,
+    bool isDark,
+  ) {
+    const months = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
+
+    final leaveTypes = [
+      ('Casual Leave', 12, const Color(0xFF109F83)),
+      ('Medical Leave', 10, const Color(0xFF0284C7)),
+      ('Earned Leave', 15, const Color(0xFF9333EA)),
+      ('Special Duty Leave', 5, const Color(0xFFF59E0B)),
+      ('Special Leave', 5, const Color(0xFFEC4899)),
+    ];
+
+    // Tally days taken per leave type per month from _leaves
+    final Map<String, Map<String, int>> matrixData = {};
+    for (final lt in leaveTypes) {
+      matrixData[lt.$1] = {for (final m in months) m: 0};
+    }
+
+    for (final l in _leaves) {
+      if (l.status.toLowerCase() == 'rejected') continue;
+      final dt = _parseApplyDate(l.applyDate);
+      const mArr = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      final mName = mArr[dt.month];
+      if (matrixData.containsKey(l.leaveType) && matrixData[l.leaveType]!.containsKey(mName)) {
+        matrixData[l.leaveType]![mName] = (matrixData[l.leaveType]![mName] ?? 0) + l.durationDays;
+      }
+    }
+
+    // Monthly totals across all leave types
+    final Map<String, int> monthlyTotals = {for (final m in months) m: 0};
+    for (final lt in leaveTypes) {
+      for (final m in months) {
+        monthlyTotals[m] = (monthlyTotals[m] ?? 0) + (matrixData[lt.$1]?[m] ?? 0);
+      }
+    }
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: borderColor),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Matrix Header & Legend
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 8,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF109F83).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.calendar_view_month_rounded, size: 18, color: Color(0xFF109F83)),
+                  ),
+                  const SizedBox(width: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Leave Allocation & Consumption Matrix',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: textColor),
+                      ),
+                      Text(
+                        'Monthly distribution by leave category & annual entitlement quotas',
+                        style: TextStyle(fontSize: 11, color: subColor),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: [
+                  _buildMatrixLegendBadge('Healthy (<50%)', const Color(0xFF10B981)),
+                  _buildMatrixLegendBadge('Moderate (50-80%)', const Color(0xFFF59E0B)),
+                  _buildMatrixLegendBadge('Near Limit (>80%)', const Color(0xFFEF4444)),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Monthly Leave Consumption Bar Chart
+          SizedBox(
+            height: 230,
+            child: _buildLeaveBarChart(months, leaveTypes, matrixData, monthlyTotals, textColor, subColor, borderColor, isDark),
+          ),
+          const SizedBox(height: 20),
+
+          // Quota Utilization Progress Meters
+          Text(
+            'Annual Quota Utilization & Entitlement Status',
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: textColor),
+          ),
+          const SizedBox(height: 12),
+
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isNarrow = constraints.maxWidth < 650;
+              return Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: leaveTypes.map((lt) {
+                  final typeName = lt.$1;
+                  final quota = lt.$2;
+                  final color = lt.$3;
+                  final rowMonthData = matrixData[typeName] ?? {};
+                  final totalTaken = rowMonthData.values.fold(0, (a, b) => a + b);
+                  final remaining = (quota - totalTaken).clamp(0, quota);
+                  final pct = quota > 0 ? (totalTaken / quota) * 100 : 0.0;
+                  final Color statusColor = pct > 80
+                      ? const Color(0xFFEF4444)
+                      : (pct >= 50 ? const Color(0xFFF59E0B) : const Color(0xFF10B981));
+                  final statusLabel = pct > 80 ? 'Near Limit' : (pct >= 50 ? 'Moderate' : 'Healthy');
+
+                  final cardWidth = isNarrow ? constraints.maxWidth : (constraints.maxWidth - 12) / 2;
+
+                  return Container(
+                    width: cardWidth,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: borderColor),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  typeName,
+                                  style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: textColor),
+                                ),
+                              ],
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: statusColor.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: statusColor.withValues(alpha: 0.3)),
+                              ),
+                              child: Text(
+                                statusLabel,
+                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: statusColor),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+
+                        // Progress Bar
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: (pct / 100).clamp(0.0, 1.0),
+                            minHeight: 6,
+                            backgroundColor: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                            valueColor: AlwaysStoppedAnimation<Color>(color),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '$totalTaken / $quota Days Used (${pct.toStringAsFixed(0)}%)',
+                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: subColor),
+                            ),
+                            Text(
+                              '$remaining days left',
+                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLeaveBarChart(
+    List<String> months,
+    List<(String, int, Color)> leaveTypes,
+    Map<String, Map<String, int>> matrixData,
+    Map<String, int> monthlyTotals,
+    Color textColor,
+    Color subColor,
+    Color borderColor,
+    bool isDark,
+  ) {
+    final barGroups = <BarChartGroupData>[];
+    int maxMonthly = 4;
+    for (final t in monthlyTotals.values) {
+      if (t > maxMonthly) maxMonthly = t;
+    }
+
+    for (int i = 0; i < months.length; i++) {
+      final m = months[i];
+      final total = monthlyTotals[m] ?? 0;
+
+      // Build stacked rods for each category in this month
+      double currentY = 0;
+      final stackItems = <BarChartRodStackItem>[];
+      for (final lt in leaveTypes) {
+        final count = (matrixData[lt.$1]?[m] ?? 0).toDouble();
+        if (count > 0) {
+          stackItems.add(BarChartRodStackItem(currentY, currentY + count, lt.$3));
+          currentY += count;
+        }
+      }
+
+      barGroups.add(
+        BarChartGroupData(
+          x: i,
+          barRods: [
+            BarChartRodData(
+              toY: total > 0 ? total.toDouble() : 0.0,
+              width: 16,
+              borderRadius: BorderRadius.circular(4),
+              color: total == 0 ? Colors.transparent : null,
+              rodStackItems: stackItems.isNotEmpty ? stackItems : null,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return BarChart(
+      BarChartData(
+        maxY: (maxMonthly + 1).toDouble(),
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: false,
+          horizontalInterval: 1,
+          getDrawingHorizontalLine: (val) => FlLine(
+            color: borderColor.withValues(alpha: 0.6),
+            strokeWidth: 1,
+            dashArray: [4, 4],
+          ),
+        ),
+        titlesData: FlTitlesData(
+          show: true,
+          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 28,
+              getTitlesWidget: (val, meta) {
+                final idx = val.toInt();
+                if (idx < 0 || idx >= months.length) return const SizedBox.shrink();
+                return SideTitleWidget(
+                  meta: meta,
+                  child: Text(
+                    months[idx],
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: subColor),
+                  ),
+                );
+              },
+            ),
+          ),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 30,
+              interval: 1,
+              getTitlesWidget: (val, meta) {
+                return SideTitleWidget(
+                  meta: meta,
+                  child: Text(
+                    '${val.toInt()}d',
+                    style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: subColor),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+        borderData: FlBorderData(show: false),
+        barGroups: barGroups,
+        barTouchData: BarTouchData(
+          touchTooltipData: BarTouchTooltipData(
+            getTooltipColor: (_) => isDark ? const Color(0xFF0F172A) : Colors.white,
+            getTooltipItem: (group, groupIndex, rod, rodIndex) {
+              final m = months[group.x.toInt()];
+              final total = monthlyTotals[m] ?? 0;
+              final breakdownSpans = <TextSpan>[];
+              for (final lt in leaveTypes) {
+                final count = matrixData[lt.$1]?[m] ?? 0;
+                if (count > 0) {
+                  breakdownSpans.add(
+                    TextSpan(
+                      text: '• ${lt.$1}: $count days\n',
+                      style: TextStyle(color: lt.$3, fontSize: 10.5, fontWeight: FontWeight.w600),
+                    ),
+                  );
+                }
+              }
+
+              return BarTooltipItem(
+                '$m Leave Summary (Total: $total days)\n',
+                TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: textColor),
+                children: breakdownSpans.isNotEmpty
+                    ? breakdownSpans
+                    : [
+                        const TextSpan(
+                          text: 'No leaves taken this month',
+                          style: TextStyle(fontSize: 10.5, color: Colors.grey),
+                        ),
+                      ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMatrixLegendBadge(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: color),
+          ),
+        ],
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/src/utils/dynamic_data_client.dart';
 import '../../../domain/staff_member_model.dart';
 
@@ -57,7 +58,8 @@ class StaffBookBorrowRecord {
 /// Tab 6: Library Circulation & Borrowing
 /// Features search, year filter, dynamic pagination slide buttons,
 /// and live return/renewal actions for faculty borrowed reference books.
-class StaffLibraryTab extends StatefulWidget {
+/// Allows Super Admin to directly issue and return books.
+class StaffLibraryTab extends ConsumerStatefulWidget {
   final StaffMemberModel staff;
   final bool isDark;
 
@@ -68,10 +70,10 @@ class StaffLibraryTab extends StatefulWidget {
   });
 
   @override
-  State<StaffLibraryTab> createState() => _StaffLibraryTabState();
+  ConsumerState<StaffLibraryTab> createState() => _StaffLibraryTabState();
 }
 
-class _StaffLibraryTabState extends State<StaffLibraryTab> {
+class _StaffLibraryTabState extends ConsumerState<StaffLibraryTab> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   String _selectedYear = 'Year 2026/2027';
@@ -333,6 +335,131 @@ class _StaffLibraryTabState extends State<StaffLibraryTab> {
     }
   }
 
+  void _showIssueBookDialog() {
+    final titleCtrl = TextEditingController();
+    final catCtrl = TextEditingController(text: 'Science');
+    final numCtrl = TextEditingController(text: 'LIB-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}');
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: const Row(
+          children: [
+            Icon(Icons.library_add_outlined, color: Color(0xFF109F83)),
+            SizedBox(width: 8),
+            Text('Issue Book to Faculty'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Borrower: ${widget.staff.fullName} (${widget.staff.id})'),
+            const SizedBox(height: 12),
+            TextField(
+              controller: titleCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Book Title',
+                border: OutlineInputBorder(),
+                hintText: 'e.g., Quantum Mechanics (Griffiths)',
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: catCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Category / Subject',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: numCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Accession / Book Code',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF109F83),
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              if (titleCtrl.text.trim().isEmpty) return;
+              Navigator.pop(ctx);
+              _issueNewBook(titleCtrl.text.trim(), catCtrl.text.trim(), numCtrl.text.trim());
+            },
+            child: const Text('Issue Book'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _issueNewBook(String title, String category, String bookNumber) async {
+    final newBook = StaffBookBorrowRecord(
+      id: 'bk-${DateTime.now().millisecondsSinceEpoch}',
+      sl: (_books.length + 1).toString().padLeft(2, '0'),
+      bookName: title,
+      bookCategory: category,
+      bookNumber: bookNumber,
+      takenOn: 'Today',
+      lastDate: '30 Days Later',
+      status: 'Issued',
+      coverColor: const Color(0xFF109F83),
+      coverIcon: Icons.menu_book,
+    );
+
+    setState(() {
+      _books.insert(0, newBook);
+    });
+
+    try {
+      final allRaw = await DynamicDataClient.instance.getAll(
+        assetPath: 'assets/data/staff/staff_library.json',
+        storageKey: 'edupulse_staff_library_records',
+      );
+      final rawItem = {
+        'id': newBook.id,
+        'sl': newBook.sl,
+        'book_name': newBook.bookName,
+        'book_category': newBook.bookCategory,
+        'book_number': newBook.bookNumber,
+        'taken_on': newBook.takenOn,
+        'last_date': newBook.lastDate,
+        'status': newBook.status,
+        'staff_id': widget.staff.id,
+        'cover_color_hex': '0xFF109F83',
+      };
+      allRaw.insert(0, rawItem);
+      await DynamicDataClient.instance.syncAll(
+        assetPath: 'assets/data/staff/staff_library.json',
+        storageKey: 'edupulse_staff_library_records',
+        items: allRaw,
+      );
+    } catch (_) {}
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Issued "$title" to ${widget.staff.fullName}!'),
+          backgroundColor: const Color(0xFF109F83),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final cardBg = widget.isDark ? const Color(0xFF1E293B) : Colors.white;
@@ -446,6 +573,18 @@ class _StaffLibraryTabState extends State<StaffLibraryTab> {
                         },
                       ),
                     ),
+                  ),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.library_add_outlined, size: 15),
+                    label: const Text('Issue Book'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF109F83),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      elevation: 1,
+                    ),
+                    onPressed: _showIssueBookDialog,
                   ),
                   Row(
                     mainAxisSize: MainAxisSize.min,

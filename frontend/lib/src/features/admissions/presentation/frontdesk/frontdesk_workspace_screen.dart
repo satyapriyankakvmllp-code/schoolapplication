@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../application/admissions_controller.dart';
 import '../../application/frontdesk_controller.dart';
 import '../../domain/admission_request_model.dart';
 import 'frontdesk_new_application_screen.dart';
@@ -9,7 +10,7 @@ import 'document_verification_queue_screen.dart';
 import 'interview_scheduler_screen.dart';
 import 'id_badge_studio_screen.dart';
 import 'frontdesk_student_lookup_screen.dart';
-import '../../../../commonwidgets/logout_button.dart';
+import '../../../../commonwidgets/common_app_header.dart';
 import '../../../authentication/application/auth_controller.dart';
 
 class FrontDeskWorkspaceScreen extends ConsumerStatefulWidget {
@@ -43,7 +44,6 @@ class _FrontDeskWorkspaceScreenState extends ConsumerState<FrontDeskWorkspaceScr
     final activePage = ref.watch(frontDeskActivePageProvider);
     final screenWidth = MediaQuery.sizeOf(context).width;
     final isDesktop = screenWidth >= 1024;
-    final isMobile = screenWidth < 768;
     final isDark = widget.isDark;
 
     return Scaffold(
@@ -82,7 +82,19 @@ class _FrontDeskWorkspaceScreenState extends ConsumerState<FrontDeskWorkspaceScr
           Expanded(
             child: Column(
               children: [
-                _buildTopHeader(isDesktop: isDesktop, isMobile: isMobile, isDark: isDark),
+                CommonAppHeader(
+                  isDark: isDark,
+                  isSidebarCollapsed: _isSidebarCollapsed,
+                  onToggleSidebar: () {
+                    setState(() {
+                      _isSidebarCollapsed = !_isSidebarCollapsed;
+                    });
+                  },
+                  onToggleTheme: widget.onToggleTheme,
+                  onLogout: widget.onExitToGateway,
+                  roleOverride: 'Front Desk',
+                  roleColorOverride: const Color(0xFFF59E0B),
+                ),
                 Expanded(
                   child: Container(
                     color: isDark ? const Color(0xFF0B1120) : const Color(0xFFF1F5F9),
@@ -97,106 +109,12 @@ class _FrontDeskWorkspaceScreenState extends ConsumerState<FrontDeskWorkspaceScr
     );
   }
 
-  Widget _buildTopHeader({required bool isDesktop, required bool isMobile, required bool isDark}) {
-    return Container(
-      height: 70,
-      padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 24),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        border: Border(
-          bottom: BorderSide(
-            color: isDark ? const Color(0xFF334155) : Colors.grey.shade200,
-            width: 1,
-          ),
-        ),
-      ),
-      child: Row(
-        children: [
-          if (isDesktop)
-            IconButton(
-              icon: Icon(
-                _isSidebarCollapsed ? Icons.menu_open : Icons.menu,
-                color: isDark ? Colors.white : Colors.grey.shade700,
-              ),
-              tooltip: _isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar',
-              onPressed: () => setState(() => _isSidebarCollapsed = !_isSidebarCollapsed),
-            )
-          else
-            Builder(
-              builder: (ctx) => IconButton(
-                icon: Icon(Icons.menu, color: isDark ? Colors.white : Colors.grey.shade700),
-                tooltip: 'Open Menu',
-                onPressed: () => Scaffold.of(ctx).openDrawer(),
-              ),
-            ),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: const Text(
-              'FRONT-DESK DESK',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFFF59E0B),
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
-          const Spacer(),
-          // Officer Identity Chip
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: isMobile ? 6 : 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: isDark ? const Color(0xFF334155) : Colors.grey.shade300),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircleAvatar(
-                  radius: 10,
-                  backgroundColor: Color(0xFFF59E0B),
-                  child: Text('P', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                ),
-                if (!isMobile) ...[
-                  const SizedBox(width: 6),
-                  Text(
-                    'Priya Verma',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: isDark ? Colors.white : const Color(0xFF0F172A),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          // Logout Button
-          LogoutButton(onLogout: widget.onExitToGateway),
-          const SizedBox(width: 8),
-          IconButton(
-            icon: Icon(
-              isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
-              size: 20,
-              color: isDark ? const Color(0xFFFBBF24) : Colors.grey.shade700,
-            ),
-            onPressed: widget.onToggleTheme,
-            tooltip: 'Toggle Theme',
-          ),
-        ],
-      ),
-    );
-  }
+
 
   Widget _buildSidebarContent(FrontDeskPage activePage, {required bool isDrawer, required bool isDark}) {
     final showLabels = isDrawer || !_isSidebarCollapsed;
+    final requests = ref.watch(admissionRequestsListProvider).valueOrNull ?? [];
+    final pendingCount = requests.where((r) => r.status.isPendingReview).length;
 
     return Column(
       children: [
@@ -314,6 +232,15 @@ class _FrontDeskWorkspaceScreenState extends ConsumerState<FrontDeskWorkspaceScr
                 onTap: () => _navigateTo(FrontDeskPage.draftIntake, isDrawer: isDrawer),
               ),
               _buildNavItem(
+                icon: Icons.assignment_turned_in_outlined,
+                title: 'Applications Tracker',
+                isActive: activePage == FrontDeskPage.applicationsTracker,
+                showLabels: showLabels,
+                isDark: isDark,
+                badgeCount: pendingCount > 0 ? pendingCount : null,
+                onTap: () => _navigateTo(FrontDeskPage.applicationsTracker, isDrawer: isDrawer),
+              ),
+              _buildNavItem(
                 icon: Icons.fact_check_outlined,
                 title: 'Document Verification',
                 isActive: activePage == FrontDeskPage.documentQueue,
@@ -382,6 +309,7 @@ class _FrontDeskWorkspaceScreenState extends ConsumerState<FrontDeskWorkspaceScr
     required bool showLabels,
     required bool isDark,
     required VoidCallback onTap,
+    int? badgeCount,
   }) {
     final activeColor = const Color(0xFFF59E0B);
 
@@ -424,6 +352,24 @@ class _FrontDeskWorkspaceScreenState extends ConsumerState<FrontDeskWorkspaceScr
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  if (badgeCount != null) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: activeColor,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '$badgeCount',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ],
             ),
@@ -460,7 +406,7 @@ class _FrontDeskWorkspaceScreenState extends ConsumerState<FrontDeskWorkspaceScr
             currentAddress: '',
             emergencyContactPhone: draftInq.parentPhone,
             source: AdmissionRequestSource.frontDesk,
-            status: AdmissionRequestStatus.pending,
+            status: AdmissionRequestStatus.pendingReview,
             appliedAt: DateTime.now(),
             notes: 'Converted from Front-Desk Inquiry ${draftInq.id}. ${draftInq.notes}',
           );
@@ -468,13 +414,29 @@ class _FrontDeskWorkspaceScreenState extends ConsumerState<FrontDeskWorkspaceScr
         return FrontDeskNewApplicationScreen(
           isDark: isDark,
           prefilledData: initialModel,
+          initialShowSubmittedList: false,
+          onNavigateFrontDesk: (p) => ref.read(frontDeskActivePageProvider.notifier).state = p,
           onCancel: () {
             ref.read(frontDeskDraftInquiryProvider.notifier).state = null;
             ref.read(frontDeskActivePageProvider.notifier).state = FrontDeskPage.dashboard;
           },
           onSubmittedSuccess: () {
             ref.read(frontDeskDraftInquiryProvider.notifier).state = null;
+            ref.read(frontDeskActivePageProvider.notifier).state = FrontDeskPage.applicationsTracker;
+          },
+        );
+      case FrontDeskPage.applicationsTracker:
+        return FrontDeskNewApplicationScreen(
+          isDark: isDark,
+          initialShowSubmittedList: true,
+          onNavigateFrontDesk: (p) => ref.read(frontDeskActivePageProvider.notifier).state = p,
+          onCancel: () {
+            ref.read(frontDeskDraftInquiryProvider.notifier).state = null;
             ref.read(frontDeskActivePageProvider.notifier).state = FrontDeskPage.dashboard;
+          },
+          onSubmittedSuccess: () {
+            ref.read(frontDeskDraftInquiryProvider.notifier).state = null;
+            ref.read(frontDeskActivePageProvider.notifier).state = FrontDeskPage.applicationsTracker;
           },
         );
       case FrontDeskPage.documentQueue:

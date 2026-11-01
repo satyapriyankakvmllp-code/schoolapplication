@@ -17,16 +17,23 @@ class StaffCompensationModel {
     this.epfUan,
   });
 
-  /// Returns masked account number showing only last 4 digits (e.g. •••• •••• 4512)
+  /// Global session state flag: set to true when an admin/administrator is logged in.
+  static bool isAdminSession = false;
+
+  /// Returns masked account number showing only last 4 digits (e.g. •••• •••• 4512).
+  /// If admin session is active, returns unmasked account number.
   String get maskedAccountNumber {
+    if (isAdminSession) return accountNumber;
     if (accountNumber.length <= 4) return accountNumber;
     final last4 = accountNumber.substring(accountNumber.length - 4);
     final maskedPrefix = '•••• ' * ((accountNumber.length - 4) ~/ 4).clamp(1, 3);
     return '$maskedPrefix$last4';
   }
 
-  /// Returns masked PAN number showing only first 2 and last 2 characters (e.g. AB••••••1F)
+  /// Returns masked PAN number showing only first 2 and last 2 characters (e.g. AB••••••1F).
+  /// If admin session is active, returns unmasked PAN number.
   String get maskedPanNumber {
+    if (isAdminSession) return panNumber;
     if (panNumber.length <= 4) return panNumber;
     final prefix = panNumber.substring(0, 2);
     final suffix = panNumber.substring(panNumber.length - 2);

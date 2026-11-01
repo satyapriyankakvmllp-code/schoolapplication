@@ -17,6 +17,7 @@ class EditStaffScreen extends ConsumerStatefulWidget {
   final ValueChanged<String>? onSubmitted;
   final VoidCallback? onCancel;
   final ValueChanged<StaffMemberModel>? onSelectStaffForEdit;
+  final VoidCallback? onExitToGateway;
 
   const EditStaffScreen({
     super.key,
@@ -27,6 +28,7 @@ class EditStaffScreen extends ConsumerStatefulWidget {
     this.onSubmitted,
     this.onCancel,
     this.onSelectStaffForEdit,
+    this.onExitToGateway,
   });
 
   @override
@@ -407,6 +409,7 @@ class _EditStaffScreenState extends ConsumerState<EditStaffScreen> {
       isDark: isDark,
       onToggleTheme: widget.onToggleTheme,
       onNavigate: widget.onNavigate,
+      onExitToGateway: widget.onExitToGateway,
       body: Container(
         color: bgColor,
         child: SingleChildScrollView(

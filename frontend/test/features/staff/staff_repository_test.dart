@@ -104,7 +104,7 @@ void main() {
 
     test('Generates next sequential Staff ID', () async {
       final nextId = await repository.generateNextStaffId();
-      expect(nextId, 'STF-2026-0111');
+      expect(nextId, 'STF-2026-0112');
     });
 
     test('Saves new staff member and retrieves by ID', () async {
@@ -155,7 +155,7 @@ void main() {
 
       // Next ID should now be incremented
       final followingId = await repository.generateNextStaffId();
-      expect(followingId, 'STF-2026-0112');
+      expect(followingId, 'STF-2026-0113');
     });
 
     test('Deactivates staff member properly', () async {

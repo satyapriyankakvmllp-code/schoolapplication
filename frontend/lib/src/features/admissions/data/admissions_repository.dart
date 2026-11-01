@@ -17,6 +17,7 @@ abstract class AdmissionsRepository {
     String requestId,
     AdmissionRequestStatus status, {
     String? rejectionReason,
+    String? correctionNotes,
   });
   Future<AdmissionRequestModel> createAdmissionRequest(AdmissionRequestModel request);
 }
@@ -381,6 +382,7 @@ class MockAdmissionsRepository implements AdmissionsRepository {
         permanentAddress: 'Villa 14, Palm Meadows, Whitefield, Bengaluru, Karnataka 560066',
         previousSchoolName: 'Greenwood High International School',
         emergencyContactPhone: '+91 98234 11223',
+        studentPhotoUrl: 'reyansh_photo.jpg',
         documents: const [
           'Reyansh_Birth_Certificate.pdf',
           'Transfer_Certificate_Greenwood.pdf',
@@ -408,6 +410,7 @@ class MockAdmissionsRepository implements AdmissionsRepository {
         permanentAddress: 'Apt 301, Silver Crest, HSR Layout Sector 2, Bengaluru 560102',
         previousSchoolName: 'EuroKids Preschool HSR',
         emergencyContactPhone: '+91 97412 88990',
+        studentPhotoUrl: 'ananya_photo.png',
         documents: const [
           'Ananya_Birth_Certificate.pdf',
           'Medical_Immunization_Record.pdf',
@@ -435,6 +438,7 @@ class MockAdmissionsRepository implements AdmissionsRepository {
         permanentAddress: 'House No. 88, 14th Main, Indiranagar, Bengaluru 560038',
         previousSchoolName: 'National Public School (NPS)',
         emergencyContactPhone: '+91 99001 54321',
+        studentPhotoUrl: 'kavya_photo.jpg',
         documents: const [
           'Kavya_Birth_Certificate.pdf',
           'NPS_Transfer_Certificate.pdf',
@@ -462,6 +466,7 @@ class MockAdmissionsRepository implements AdmissionsRepository {
         permanentAddress: 'Tower C, Flat 1204, Prestige Lakeside, Varthur, Bengaluru 560087',
         previousSchoolName: 'Oakridge International School',
         emergencyContactPhone: '+91 98450 77123',
+        studentPhotoUrl: 'kabir_photo.jpg',
         documents: const [
           'Kabir_Birth_Certificate.pdf',
         ],
@@ -489,6 +494,7 @@ class MockAdmissionsRepository implements AdmissionsRepository {
         permanentAddress: 'Flat 502, Orchid Woods, Hennur Main Road, Bengaluru 560043',
         previousSchoolName: 'Delhi Public School Bangalore North',
         emergencyContactPhone: '+91 98860 33445',
+        studentPhotoUrl: 'isha_photo.png',
         documents: const [
           'Isha_Birth_Certificate.pdf',
           'TC_DPS_North.pdf',
@@ -517,6 +523,7 @@ class MockAdmissionsRepository implements AdmissionsRepository {
         permanentAddress: 'No 45, 7th Cross, Koramangala 4th Block, Bengaluru 560034',
         previousSchoolName: 'Bethany High School',
         emergencyContactPhone: '+91 98200 44556',
+        studentPhotoUrl: 'rohan_photo.jpg',
         documents: const [
           'Rohan_Birth_Certificate.pdf',
         ],
@@ -545,6 +552,7 @@ class MockAdmissionsRepository implements AdmissionsRepository {
         permanentAddress: 'Penthouse 12, Sobha Iris, Outer Ring Road, Bengaluru 560103',
         previousSchoolName: 'Bishop Cotton Boys School',
         emergencyContactPhone: '+91 99450 12890',
+        studentPhotoUrl: 'manav_photo.jpg',
         documents: const [
           'Manav_Birth_Certificate.pdf',
         ],
@@ -573,6 +581,7 @@ class MockAdmissionsRepository implements AdmissionsRepository {
         permanentAddress: 'Flat 204, Sobha Quartz, Bellandur, Bengaluru 560103',
         previousSchoolName: 'First Steps Montessori',
         emergencyContactPhone: '+91 98100 88221',
+        studentPhotoUrl: 'tanya_photo.png',
         documents: const [
           'Tanya_Birth_Certificate.pdf',
         ],
@@ -592,6 +601,7 @@ class MockAdmissionsRepository implements AdmissionsRepository {
     String requestId,
     AdmissionRequestStatus status, {
     String? rejectionReason,
+    String? correctionNotes,
   }) async {
     await _ensureRequestsLoaded();
     final index = _cachedRequests!.indexWhere((r) => r.id == requestId);
@@ -601,6 +611,7 @@ class MockAdmissionsRepository implements AdmissionsRepository {
         status: status,
         reviewedAt: DateTime.now(),
         rejectionReason: rejectionReason ?? current.rejectionReason,
+        correctionNotes: correctionNotes ?? current.correctionNotes,
       );
       _cachedRequests![index] = updated;
       await _persistRequests();
@@ -613,9 +624,40 @@ class MockAdmissionsRepository implements AdmissionsRepository {
   @override
   Future<AdmissionRequestModel> createAdmissionRequest(AdmissionRequestModel request) async {
     await _ensureRequestsLoaded();
+
+    // Idempotency / Anti-duplicate guard: only match if same ticket ID or exact same student name + DOB + grade
+    final normalizedApplicant = request.applicantFullName.trim().toLowerCase();
+
+    final existingIndex = _cachedRequests!.indexWhere((r) {
+      if (r.id == request.id) return true;
+      final existingApplicant = r.applicantFullName.trim().toLowerCase();
+      final isSamePerson = normalizedApplicant.isNotEmpty &&
+          normalizedApplicant == existingApplicant &&
+          r.dateOfBirth.year == request.dateOfBirth.year &&
+          r.dateOfBirth.month == request.dateOfBirth.month &&
+          r.dateOfBirth.day == request.dateOfBirth.day;
+      final isPending = r.status.isPendingReview ||
+          r.status == AdmissionRequestStatus.correctionRequested;
+      return isSamePerson && r.gradeApplied == request.gradeApplied && isPending;
+    });
+
+    if (existingIndex >= 0) {
+      // Re-submission / update for the exact same applicant ticket
+      final existing = _cachedRequests![existingIndex];
+      final updated = request.copyWith(
+        id: existing.id,
+        appliedAt: existing.appliedAt,
+        status: AdmissionRequestStatus.pendingReview,
+        correctionNotes: null,
+      );
+      _cachedRequests![existingIndex] = updated;
+      await _persistRequests();
+      return updated;
+    }
+
     _cachedRequests!.insert(0, request);
     await _persistRequests();
-    await Future<void>.delayed(const Duration(milliseconds: 300));
+    await Future<void>.delayed(const Duration(milliseconds: 100));
     return request;
   }
 }

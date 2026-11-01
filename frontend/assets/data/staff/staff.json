@@ -1,5 +1,81 @@
 [
   {
+    "id": "STF-2026-0001",
+    "fullName": "Dr. Sarah Jenkins",
+    "photoUrl": null,
+    "category": "administrative",
+    "designation": "School Administrator",
+    "department": "Administration",
+    "qualification": "Ph.D. in Educational Administration, M.Ed.",
+    "specialization": null,
+    "phone": "+91 98000 00001",
+    "email": "admin@edupulse.edu.in",
+    "currentAddress": "Administrative Block, EduPulse Campus, Bengaluru, KA 560038",
+    "permanentAddress": "Administrative Block, EduPulse Campus, Bengaluru, KA 560038",
+    "joiningDate": "2015-01-01T09:00:00.000",
+    "employmentType": "permanent",
+    "assignedClasses": [],
+    "compensation": {
+      "basicSalary": 150000.0,
+      "payFrequency": "Monthly",
+      "bankName": "State Bank of India",
+      "accountNumber": "98765432101",
+      "ifscCode": "SBIN0001234",
+      "panNumber": "ADMPS9999Z",
+      "epfUan": "100999999999"
+    },
+    "loginAccount": {
+      "isEnabled": true,
+      "institutionalEmail": "admin@edupulse.edu.in",
+      "temporaryPassword": "123456",
+      "systemRole": "admin",
+      "isFirstLoginPasswordChangeRequired": false
+    },
+    "status": "active",
+    "gender": "Female",
+    "dateOfBirth": "1980-01-01T00:00:00.000",
+    "bloodGroup": "O+",
+    "emergencyContact": "+91 98000 00002"
+  },
+  {
+    "id": "STF-2026-0100",
+    "fullName": "Dr. Anand Roy",
+    "photoUrl": null,
+    "category": "administrative",
+    "designation": "Principal & Executive Superintendent",
+    "department": "Administration",
+    "qualification": "Ph.D. in Educational Administration, M.Ed., M.Sc.",
+    "specialization": null,
+    "phone": "+91 98111 00001",
+    "email": "anand.roy@edupulse.edu.in",
+    "currentAddress": "Villa 1, Principal Bungalow, EduPulse Campus, Bengaluru, KA 560038",
+    "permanentAddress": "Villa 1, Principal Bungalow, EduPulse Campus, Bengaluru, KA 560038",
+    "joiningDate": "2015-04-01T09:00:00.000",
+    "employmentType": "permanent",
+    "assignedClasses": [],
+    "compensation": {
+      "basicSalary": 120000.0,
+      "payFrequency": "Monthly",
+      "bankName": "State Bank of India",
+      "accountNumber": "10928374651",
+      "ifscCode": "SBIN0001234",
+      "panNumber": "AAAPR1234K",
+      "epfUan": "100112233445"
+    },
+    "loginAccount": {
+      "isEnabled": true,
+      "institutionalEmail": "anand.roy@edupulse.edu.in",
+      "temporaryPassword": "123456",
+      "systemRole": "principal",
+      "isFirstLoginPasswordChangeRequired": false
+    },
+    "status": "active",
+    "gender": "Male",
+    "dateOfBirth": "1972-08-14T00:00:00.000",
+    "bloodGroup": "O+",
+    "emergencyContact": "+91 98111 99999"
+  },
+  {
     "id": "STF-2026-0101",
     "fullName": "Dr. Rajeshwari Swaminathan",
     "photoUrl": null,
@@ -292,7 +368,7 @@
       "isEnabled": true,
       "institutionalEmail": "sunita.verma@edupulse.edu.in",
       "temporaryPassword": null,
-      "systemRole": "admin",
+      "systemRole": "accountant",
       "isFirstLoginPasswordChangeRequired": false
     },
     "status": "active",
@@ -330,7 +406,7 @@
       "isEnabled": true,
       "institutionalEmail": "priya.sharma@edupulse.edu.in",
       "temporaryPassword": null,
-      "systemRole": "frontDesk",
+      "systemRole": "receptionist",
       "isFirstLoginPasswordChangeRequired": false
     },
     "status": "active",
@@ -418,13 +494,13 @@
       "epfUan": "100218093745"
     },
     "loginAccount": {
-      "isEnabled": false,
+      "isEnabled": true,
       "institutionalEmail": "meenakshi.sundaram@edupulse.edu.in",
       "temporaryPassword": null,
-      "systemRole": "admin",
+      "systemRole": "librarian",
       "isFirstLoginPasswordChangeRequired": false
     },
-    "status": "onLeave",
+    "status": "active",
     "gender": "Female",
     "dateOfBirth": "1978-03-15T00:00:00.000",
     "bloodGroup": "A-",
@@ -514,5 +590,43 @@
     "dateOfBirth": "1975-01-10T00:00:00.000",
     "bloodGroup": "B+",
     "emergencyContact": "+91 96110 99880"
+  },
+  {
+    "id": "STF-2026-0111",
+    "fullName": "Harpreet Singh Gill",
+    "photoUrl": null,
+    "category": "support",
+    "designation": "Senior Fleet & Transport Manager",
+    "department": "Transport & Logistics",
+    "qualification": "Diploma in Automobile Engineering & Logistics",
+    "specialization": null,
+    "phone": "+91 98760 11223",
+    "email": "harpreet.singh@edupulse.edu.in",
+    "currentAddress": "Plot 45, Sector 4, HSR Layout, Bengaluru, KA 560102",
+    "permanentAddress": "Village Gill, Ludhiana, PB 141001",
+    "joiningDate": "2019-08-01T09:00:00.000",
+    "employmentType": "permanent",
+    "assignedClasses": [],
+    "compensation": {
+      "basicSalary": 45000.0,
+      "payFrequency": "Monthly",
+      "bankName": "Punjab National Bank",
+      "accountNumber": "089201924512",
+      "ifscCode": "PUNB0089200",
+      "panNumber": "BHPG9876R",
+      "epfUan": "100088776655"
+    },
+    "loginAccount": {
+      "isEnabled": true,
+      "institutionalEmail": "harpreet.singh@edupulse.edu.in",
+      "temporaryPassword": null,
+      "systemRole": "transport_manager",
+      "isFirstLoginPasswordChangeRequired": false
+    },
+    "status": "active",
+    "gender": "Male",
+    "dateOfBirth": "1984-11-20T00:00:00.000",
+    "bloodGroup": "O+",
+    "emergencyContact": "+91 98760 99887"
   }
 ]

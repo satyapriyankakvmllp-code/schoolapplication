@@ -42,7 +42,20 @@ class MockStaffRepository implements StaffRepository {
         storageKey: _prefsKey,
       );
       if (raw.isNotEmpty) {
-        _cachedStaff = raw.map((item) => StaffMemberModel.fromMap(item)).toList();
+        _cachedStaff = raw.map((item) {
+          final s = StaffMemberModel.fromMap(item);
+          if (s.id == 'STF-2026-0001' &&
+              (s.fullName == 'Super Administrator' ||
+                  s.designation.contains('Super Administrator'))) {
+            return s.copyWith(
+              fullName: 'Dr. Sarah Jenkins',
+              designation: 'School Administrator',
+              qualification: 'Ph.D. in Educational Administration, M.Ed.',
+            );
+          }
+          return s;
+        }).toList();
+        await _persistCache();
         return;
       }
     } catch (_) {}
@@ -131,6 +144,74 @@ class MockStaffRepository implements StaffRepository {
 
   List<StaffMemberModel> _buildDefaultStaff() {
     return [
+      StaffMemberModel(
+        id: 'STF-2026-0001',
+        fullName: 'Dr. Sarah Jenkins',
+        category: StaffCategory.administrative,
+        designation: 'School Administrator',
+        department: 'Administration',
+        qualification: 'Ph.D. in Educational Administration, M.Ed.',
+        specialization: null,
+        phone: '+91 98000 00001',
+        email: 'admin@edupulse.edu.in',
+        currentAddress: 'Administrative Block, EduPulse Campus, Bengaluru, KA 560038',
+        permanentAddress: 'Administrative Block, EduPulse Campus, Bengaluru, KA 560038',
+        joiningDate: DateTime(2015, 1, 1),
+        employmentType: EmploymentType.permanent,
+        assignedClasses: const [],
+        compensation: const StaffCompensationModel(
+          basicSalary: 150000.0,
+          payFrequency: 'Monthly',
+          bankName: 'State Bank of India',
+          accountNumber: '98765432101',
+          ifscCode: 'SBIN0001234',
+          panNumber: 'ADMPS9999Z',
+          epfUan: '100999999999',
+        ),
+        loginAccount: const StaffLoginAccountModel(
+          isEnabled: true,
+          institutionalEmail: 'admin@edupulse.edu.in',
+          temporaryPassword: '123456',
+          systemRole: 'admin',
+          isFirstLoginPasswordChangeRequired: false,
+        ),
+      ),
+      StaffMemberModel(
+        id: 'STF-2026-0100',
+        fullName: 'Dr. Anand Roy',
+        category: StaffCategory.administrative,
+        designation: 'Principal & Executive Superintendent',
+        department: 'Administration',
+        qualification: 'Ph.D. in Educational Administration, M.Ed., M.Sc.',
+        specialization: null,
+        phone: '+91 98111 00001',
+        email: 'anand.roy@edupulse.edu.in',
+        currentAddress: 'Villa 1, Principal Bungalow, EduPulse Campus, Bengaluru, KA 560038',
+        permanentAddress: 'Villa 1, Principal Bungalow, EduPulse Campus, Bengaluru, KA 560038',
+        joiningDate: DateTime(2015, 4, 1),
+        employmentType: EmploymentType.permanent,
+        assignedClasses: const [],
+        compensation: const StaffCompensationModel(
+          basicSalary: 120000.0,
+          payFrequency: 'Monthly',
+          bankName: 'State Bank of India',
+          accountNumber: '10928374651',
+          ifscCode: 'SBIN0001234',
+          panNumber: 'AAAPR1234K',
+          epfUan: '100112233445',
+        ),
+        loginAccount: const StaffLoginAccountModel(
+          isEnabled: true,
+          institutionalEmail: 'anand.roy@edupulse.edu.in',
+          systemRole: 'principal',
+          isFirstLoginPasswordChangeRequired: false
+        ),
+        status: StaffStatus.active,
+        gender: 'Male',
+        dateOfBirth: DateTime(1972, 8, 14),
+        bloodGroup: 'O+',
+        emergencyContact: '+91 98111 99999',
+      ),
       StaffMemberModel(
         id: 'STF-2026-0101',
         fullName: 'Dr. Rajeshwari Swaminathan',
@@ -362,7 +443,7 @@ class MockStaffRepository implements StaffRepository {
         loginAccount: const StaffLoginAccountModel(
           isEnabled: true,
           institutionalEmail: 'sunita.verma@edupulse.edu.in',
-          systemRole: 'admin',
+          systemRole: 'accountant',
           isFirstLoginPasswordChangeRequired: false,
         ),
         status: StaffStatus.active,
@@ -398,7 +479,7 @@ class MockStaffRepository implements StaffRepository {
         loginAccount: const StaffLoginAccountModel(
           isEnabled: true,
           institutionalEmail: 'priya.sharma@edupulse.edu.in',
-          systemRole: 'frontDesk',
+          systemRole: 'receptionist',
           isFirstLoginPasswordChangeRequired: false,
         ),
         status: StaffStatus.active,
@@ -483,12 +564,12 @@ class MockStaffRepository implements StaffRepository {
           epfUan: '100218093745',
         ),
         loginAccount: const StaffLoginAccountModel(
-          isEnabled: false,
+          isEnabled: true,
           institutionalEmail: 'meenakshi.sundaram@edupulse.edu.in',
-          systemRole: 'admin',
+          systemRole: 'librarian',
           isFirstLoginPasswordChangeRequired: false,
         ),
-        status: StaffStatus.onLeave,
+        status: StaffStatus.active,
         gender: 'Female',
         dateOfBirth: DateTime(1978, 3, 15),
         bloodGroup: 'A-',
@@ -575,6 +656,42 @@ class MockStaffRepository implements StaffRepository {
         dateOfBirth: DateTime(1975, 1, 10),
         bloodGroup: 'B+',
         emergencyContact: '+91 96110 99880',
+      ),
+      StaffMemberModel(
+        id: 'STF-2026-0111',
+        fullName: 'Harpreet Singh Gill',
+        category: StaffCategory.support,
+        designation: 'Senior Fleet & Transport Manager',
+        department: 'Transport & Logistics',
+        qualification: 'Diploma in Automobile Engineering & Logistics',
+        specialization: null,
+        phone: '+91 98760 11223',
+        email: 'harpreet.singh@edupulse.edu.in',
+        currentAddress: 'Plot 45, Sector 4, HSR Layout, Bengaluru, KA 560102',
+        permanentAddress: 'Village Gill, Ludhiana, PB 141001',
+        joiningDate: DateTime(2019, 8, 1),
+        employmentType: EmploymentType.permanent,
+        assignedClasses: const [],
+        compensation: const StaffCompensationModel(
+          basicSalary: 45000.0,
+          payFrequency: 'Monthly',
+          bankName: 'Punjab National Bank',
+          accountNumber: '089201924512',
+          ifscCode: 'PUNB0089200',
+          panNumber: 'BHPG9876R',
+          epfUan: '100088776655',
+        ),
+        loginAccount: const StaffLoginAccountModel(
+          isEnabled: true,
+          institutionalEmail: 'harpreet.singh@edupulse.edu.in',
+          systemRole: 'transport_manager',
+          isFirstLoginPasswordChangeRequired: false,
+        ),
+        status: StaffStatus.active,
+        gender: 'Male',
+        dateOfBirth: DateTime(1984, 11, 20),
+        bloodGroup: 'O+',
+        emergencyContact: '+91 98760 99887',
       ),
     ];
   }

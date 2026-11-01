@@ -83,26 +83,33 @@ void main() {
       await tester.tap(examTab);
       await tester.pumpAndSettle();
 
-      // Verify all 5 Exam items from screenshots
-      expect(find.text('First Semester'), findsOneWidget);
-      expect(find.text('Monthly Test (Jun-2025)'), findsOneWidget);
-      expect(find.text('Weekly Test(Jun-2025)'), findsOneWidget);
-      expect(find.text('Weekly Test(May-2025)'), findsOneWidget);
-      expect(find.text('weeklyTestMay'), findsOneWidget);
+      // Verify Performance Matrix, Monthly Tests & Weekly Tests sections (no Semesters)
+      expect(find.text('Student Performance Matrix'), findsOneWidget);
+      expect(find.text('First Semester'), findsNothing);
+      expect(find.text('Monthly Tests'), findsWidgets);
+      expect(find.text('Weekly Tests'), findsWidgets);
 
-      // First Semester marks visible
+      // Verify new Exam Date and Exam Time table headers
+      expect(find.text('Exam Date'), findsWidgets);
+      expect(find.text('Exam Time'), findsWidgets);
+
+      // Monthly Test marks visible
       expect(find.text('Bangla'), findsWidgets);
       expect(find.text('Physics'), findsWidgets);
-      expect(find.text('Total:'), findsOneWidget);
-      expect(find.text('600'), findsOneWidget);
+      expect(find.text('Total:'), findsWidgets);
 
-      // Tap 'Monthly Test (Jun-2025)' to test single-accordion expansion
-      final monthlyExam = find.text('Monthly Test (Jun-2025)');
-      await tester.ensureVisible(monthlyExam);
+      // Verify Week selector pills in Weekly Tests card
+      expect(find.text('Week 1'), findsWidgets);
+      expect(find.text('Week 2'), findsWidgets);
+      expect(find.text('Week 3'), findsWidgets);
+      expect(find.text('Week 4'), findsWidgets);
+
+      // Tap 'Week 2' pill tab to verify interactivity
+      final week2Pill = find.text('Week 2').first;
+      await tester.ensureVisible(week2Pill);
       await tester.pumpAndSettle();
-      await tester.tap(monthlyExam);
+      await tester.tap(week2Pill);
       await tester.pumpAndSettle();
-      expect(find.text('Bangla'), findsWidgets);
 
       // 6. Switch to Library Tab
       final libraryTab = find.widgetWithText(InkWell, 'Library').last;

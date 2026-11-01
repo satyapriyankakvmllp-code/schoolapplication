@@ -9,6 +9,7 @@ class StaffDepartmentsScreen extends ConsumerWidget {
   final VoidCallback? onToggleTheme;
   final ValueChanged<EdupluseNavPage>? onNavigate;
   final ValueChanged<String>? onSelectStaff;
+  final VoidCallback? onExitToGateway;
 
   const StaffDepartmentsScreen({
     super.key,
@@ -16,6 +17,7 @@ class StaffDepartmentsScreen extends ConsumerWidget {
     this.onToggleTheme,
     this.onNavigate,
     this.onSelectStaff,
+    this.onExitToGateway,
   });
 
   @override
@@ -33,6 +35,7 @@ class StaffDepartmentsScreen extends ConsumerWidget {
       isDark: isDark,
       onToggleTheme: onToggleTheme,
       onNavigate: onNavigate,
+      onExitToGateway: onExitToGateway,
       body: Container(
         color: bgColor,
         child: staffAsync.when(

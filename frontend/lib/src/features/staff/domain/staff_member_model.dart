@@ -259,6 +259,33 @@ class StaffMemberModel {
     return '$firstChar$lastChar'.toUpperCase();
   }
 
+  /// Whether this staff member holds full Super Admin / Administrator privileges
+  bool get isSuperAdmin => effectiveRole == 'admin' || effectiveRole == 'administrator';
+
+  /// Effective institutional staff role:
+  /// 'admin', 'principal', 'teacher', 'accountant', 'librarian', 'transport_manager', 'receptionist'
+  String get effectiveRole {
+    final role = loginAccount?.systemRole.toLowerCase().trim() ?? '';
+    if (role == 'admin' || role == 'administrator') return 'admin';
+    if (role == 'principal') return 'principal';
+    if (role == 'accountant') return 'accountant';
+    if (role == 'librarian') return 'librarian';
+    if (role == 'transport_manager' || role == 'transport') return 'transport_manager';
+    if (role == 'receptionist' || role == 'frontdesk') return 'receptionist';
+    if (role == 'teacher') return 'teacher';
+
+    final desig = designation.toLowerCase();
+    final dept = department.toLowerCase();
+    if (desig.contains('super admin') || desig.contains('administrator')) return 'admin';
+    if (desig.contains('principal') || desig.contains('head of school') || desig.contains('superintendent')) return 'principal';
+    if (desig.contains('account') || desig.contains('bursar') || dept.contains('account')) return 'accountant';
+    if (desig.contains('librar') || dept.contains('library')) return 'librarian';
+    if (desig.contains('transport') || desig.contains('driver') || desig.contains('fleet') || dept.contains('transport')) return 'transport_manager';
+    if (desig.contains('reception') || desig.contains('front-desk') || desig.contains('front desk') || desig.contains('admissions')) return 'receptionist';
+    if (category == StaffCategory.teaching) return 'teacher';
+    return 'principal';
+  }
+
   StaffMemberModel copyWith({
     String? id,
     String? fullName,

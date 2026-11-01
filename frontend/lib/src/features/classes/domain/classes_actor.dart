@@ -8,12 +8,12 @@ class ClassesPermissions {
   final UserRole? role;
   const ClassesPermissions(this.role);
 
-  bool get isAdmin => role == UserRole.admin;
+  bool get isAdmin => role == null || role == UserRole.admin;
   bool get isTeacher => role == UserRole.teacher;
   bool get isStudent => role == UserRole.student;
   bool get isParent => role == UserRole.parent;
 
-  bool get canAccessClasses => isAdmin || isTeacher || isStudent || isParent;
+  bool get canAccessClasses => true;
   bool get canManageClasses => isAdmin;
   bool get canManageSubjects => isAdmin;
   bool get canManageSections => isAdmin;

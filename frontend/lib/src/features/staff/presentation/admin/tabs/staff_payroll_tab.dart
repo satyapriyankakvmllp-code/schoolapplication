@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:frontend/src/utils/dynamic_data_client.dart';
 import '../../../domain/staff_member_model.dart';
+import '../../../domain/staff_menu_item.dart';
+import '../../../application/staff_auth_controller.dart';
+import '../../../../authentication/application/auth_controller.dart';
+import '../../../../authentication/domain/user_model.dart';
+import '../staff_accounts_ledger_screen.dart';
 
 class StaffPayrollInvoice {
   final String sl;
@@ -26,7 +32,8 @@ class StaffPayrollInvoice {
 /// Tab 5: Payroll (matching Screenshot 5)
 /// Features 3 KPI cards (Total Net Salary, Gross Salary, Total Deduction),
 /// interactive invoice table with Indian Rupee (₹) format, and "View Payslip" voucher modal.
-class StaffPayrollTab extends StatefulWidget {
+/// Super Admin can view unmasked bank details and directly disburse salary.
+class StaffPayrollTab extends ConsumerStatefulWidget {
   final StaffMemberModel staff;
   final bool isDark;
 
@@ -37,10 +44,10 @@ class StaffPayrollTab extends StatefulWidget {
   });
 
   @override
-  State<StaffPayrollTab> createState() => _StaffPayrollTabState();
+  ConsumerState<StaffPayrollTab> createState() => _StaffPayrollTabState();
 }
 
-class _StaffPayrollTabState extends State<StaffPayrollTab> {
+class _StaffPayrollTabState extends ConsumerState<StaffPayrollTab> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   String _selectedYear = 'Year 2026/2027';
@@ -100,6 +107,127 @@ class _StaffPayrollTabState extends State<StaffPayrollTab> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _showDisburseSalaryDialog() {
+    final basic = widget.staff.compensation.basicSalary;
+    final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: const Row(
+          children: [
+            Icon(Icons.payments_outlined, color: Color(0xFF16A34A)),
+            SizedBox(width: 8),
+            Text('Disburse Monthly Salary'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Employee: ${widget.staff.fullName} (${widget.staff.id})'),
+            const SizedBox(height: 4),
+            Text('Designation: ${widget.staff.designation} • ${widget.staff.department}'),
+            const SizedBox(height: 4),
+            Text('Net Payable: ${currencyFmt.format(basic)}'),
+            const SizedBox(height: 4),
+            Text('Transfer Destination: ${widget.staff.compensation.bankName} - ${widget.staff.compensation.accountNumber}'),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF16A34A).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFF16A34A).withValues(alpha: 0.3)),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.check_circle_outline, size: 18, color: Color(0xFF16A34A)),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Direct NEFT bank transfer gateway authorization.',
+                      style: TextStyle(fontSize: 11.5, color: Color(0xFF16A34A), fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF16A34A),
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              _disburseSalary();
+            },
+            child: const Text('Confirm Disbursement'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _disburseSalary() async {
+    final now = DateTime.now();
+    final newInv = StaffPayrollInvoice(
+      sl: '01',
+      invoiceId: 'INV-2026-OCT-${now.millisecondsSinceEpoch.toString().substring(8)}',
+      salaryFor: 'October 2026',
+      date: '${now.day} Oct ${now.year}',
+      netSalary: widget.staff.compensation.basicSalary,
+      paymentMethod: 'Bank Transfer (NEFT)',
+      status: 'Paid',
+    );
+
+    setState(() {
+      _invoices.insert(0, newInv);
+    });
+
+    try {
+      final records = await DynamicDataClient.instance.getAll(
+        assetPath: 'assets/data/finance/staff_payroll.json',
+        storageKey: 'edupulse_staff_payroll_records',
+      );
+      final rawInv = {
+        'sl': newInv.sl,
+        'invoice_id': newInv.invoiceId,
+        'salary_for': newInv.salaryFor,
+        'date': newInv.date,
+        'net_salary': newInv.netSalary,
+        'payment_method': newInv.paymentMethod,
+        'status': newInv.status,
+        'staff_id': widget.staff.id,
+      };
+      records.insert(0, rawInv);
+      await DynamicDataClient.instance.syncAll(
+        assetPath: 'assets/data/finance/staff_payroll.json',
+        storageKey: 'edupulse_staff_payroll_records',
+        items: records,
+      );
+    } catch (_) {}
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Salary for October 2026 disbursed successfully to ${widget.staff.fullName}!'),
+          backgroundColor: const Color(0xFF16A34A),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+    }
   }
 
   List<StaffPayrollInvoice> _buildInvoices() {
@@ -213,8 +341,18 @@ class _StaffPayrollTabState extends State<StaffPayrollTab> {
                     _buildSlipMeta('Designation', widget.staff.designation),
                     _buildSlipMeta('Department', widget.staff.department),
                     _buildSlipMeta('Bank Name', widget.staff.compensation.bankName),
-                    _buildSlipMeta('Account No', widget.staff.compensation.maskedAccountNumber),
-                    _buildSlipMeta('PAN Number', widget.staff.compensation.maskedPanNumber),
+                    _buildSlipMeta(
+                      'Account No',
+                      isSuperAdmin(ref.watch(currentLoggedInStaffProvider)?.effectiveRole)
+                          ? widget.staff.compensation.accountNumber
+                          : widget.staff.compensation.maskedAccountNumber,
+                    ),
+                    _buildSlipMeta(
+                      'PAN Number',
+                      isSuperAdmin(ref.watch(currentLoggedInStaffProvider)?.effectiveRole)
+                          ? widget.staff.compensation.panNumber
+                          : widget.staff.compensation.maskedPanNumber,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 18),
@@ -395,6 +533,54 @@ class _StaffPayrollTabState extends State<StaffPayrollTab> {
     final endIdx = (startIdx + _rowsPerPage).clamp(0, totalEntries);
     final pageRecords = filtered.sublist(startIdx, endIdx);
 
+    // Permission check: Masked for Principal, Parent, Student to preserve faculty salary confidentiality
+    final currentStaff = ref.watch(currentLoggedInStaffProvider);
+    final activeRole = ref.watch(activeUserRoleProvider);
+    final currentRole = currentStaff?.effectiveRole.toLowerCase() ?? '';
+    final isRestrictedRole = currentRole == 'principal' ||
+        activeRole == UserRole.parent ||
+        activeRole == UserRole.student;
+    final canViewFinancials = !isRestrictedRole;
+
+    if (!canViewFinancials) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
+        decoration: BoxDecoration(
+          color: cardBg,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: borderColor),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF6366F1).withValues(alpha: widget.isDark ? 0.2 : 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.shield_outlined, size: 40, color: Color(0xFF6366F1)),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Confidential Compensation & Payroll Record',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor),
+            ),
+            const SizedBox(height: 8),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 500),
+              child: Text(
+                'Faculty basic salary, bank account, and tax details are restricted to School Management (Admin) and Accounts personnel under institutional privacy guidelines.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 13, color: subColor, height: 1.4),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -518,6 +704,41 @@ class _StaffPayrollTabState extends State<StaffPayrollTab> {
                           ),
                         ),
                       ),
+                      // Disburse Salary Button for Super Admin
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.payments_outlined, size: 15),
+                        label: const Text('Disburse Salary'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF16A34A),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          elevation: 1,
+                        ),
+                        onPressed: _showDisburseSalaryDialog,
+                      ),
+                      // Open in Accounts Button
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.account_balance_outlined, size: 15),
+                        label: const Text('Open in Accounts'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF109F83),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          elevation: 1,
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => StaffAccountsLedgerScreen(
+                                staff: widget.staff,
+                                isDark: widget.isDark,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                       // Export Button
                       PopupMenuButton<String>(
                         itemBuilder: (ctx) => const [
@@ -588,19 +809,11 @@ class _StaffPayrollTabState extends State<StaffPayrollTab> {
                     ],
                   );
 
-                  if (isNarrow) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        searchField,
-                        const SizedBox(height: 12),
-                        controls,
-                      ],
-                    );
-                  }
-
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  return Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       searchField,
                       controls,

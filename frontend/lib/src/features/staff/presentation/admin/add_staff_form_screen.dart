@@ -17,6 +17,7 @@ class AddStaffFormScreen extends ConsumerStatefulWidget {
   final ValueChanged<EdupluseNavPage>? onNavigate;
   final ValueChanged<String>? onSubmitted;
   final VoidCallback? onCancel;
+  final VoidCallback? onExitToGateway;
 
   const AddStaffFormScreen({
     super.key,
@@ -27,6 +28,7 @@ class AddStaffFormScreen extends ConsumerStatefulWidget {
     this.onNavigate,
     this.onSubmitted,
     this.onCancel,
+    this.onExitToGateway,
   });
 
   @override
@@ -369,6 +371,7 @@ class _AddStaffFormScreenState extends ConsumerState<AddStaffFormScreen> {
       isDark: isDark,
       onToggleTheme: widget.onToggleTheme,
       onNavigate: widget.onNavigate,
+      onExitToGateway: widget.onExitToGateway,
       body: Container(
         color: bgColor,
         child: SingleChildScrollView(

@@ -16,6 +16,8 @@ class AppColors {
   static const Color secondaryContainer = Color(0xFFCCFBF1);
 
   // Accent / Status Palette
+  static const Color accent = Color(0xFF8B5CF6);
+  static const Color superAdmin = Color(0xFFDC2626);
   static const Color success = Color(0xFF10B981);
   static const Color warning = Color(0xFFF59E0B);
   static const Color error = Color(0xFFEF4444);
