@@ -16,6 +16,7 @@ class SectionsController extends AsyncNotifier<List<SectionModel>> {
   Future<void> save(SectionModel section, {bool isNew = false}) async {
     await ref.read(classesRepositoryProvider).saveSection(ref.read(classesActorProvider), section, isNew: isNew);
     ref.invalidateSelf();
+    ref.invalidate(timetableControllerProvider);
   }
 
   Future<void> delete(String id) async {

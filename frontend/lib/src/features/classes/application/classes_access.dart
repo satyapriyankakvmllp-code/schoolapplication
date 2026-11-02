@@ -2,8 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../authentication/domain/user_model.dart';
 import '../../admissions/application/admissions_controller.dart';
 import '../../authentication/application/auth_controller.dart';
-import '../../staff/application/staff_auth_controller.dart';
-import '../../staff/domain/staff_menu_item.dart';
 import '../data/classes_repository.dart';
 import '../domain/classes_actor.dart';
 
@@ -20,42 +18,44 @@ final classesRepositoryProvider = Provider<ClassesRepository>((ref) {
 /// real auth backend exists; the permission checks downstream stay the same.
 final classesActorProvider = Provider<ClassesActor>((ref) {
   final user = ref.watch(currentUserProfileProvider);
-  final staff = ref.watch(currentLoggedInStaffProvider);
+  final admissions = ref.watch(admissionsListProvider).valueOrNull ?? const [];
+  final activeParentChildId = ref.watch(parentActiveChildIdProvider);
+  final admission = switch (user?.userRole) {
+    UserRole.student =>
+      admissions
+          .where(
+            (item) =>
+                item.student.userId == user!.id ||
+                item.user.id == user.id ||
+                item.student.id == user.id,
+          )
+          .firstOrNull,
+    UserRole.parent => admissions.where((item) {
+      final linkedToParent = [
+        item.father?.userId,
+        item.mother?.userId,
+        item.guardian?.userId,
+      ].contains(user!.id);
+      final isSelectedChild =
+          item.student.id == activeParentChildId ||
+          item.student.userId == activeParentChildId ||
+          item.user.id == activeParentChildId;
+      return linkedToParent && isSelectedChild;
+    }).firstOrNull,
+    _ => null,
+  };
 
-  UserRole? role = user?.userRole;
-  String userId = user?.id ?? '';
-
-  if (role == null && staff != null) {
-    userId = staff.id;
-    final r = staff.effectiveRole.toLowerCase();
-    if (r == 'admin' || isSuperAdmin(r) || r == 'principal') {
-      role = UserRole.admin;
-    } else if (r == 'teacher' || r.contains('teach')) {
-      role = UserRole.teacher;
-    } else {
-      role = UserRole.admin;
-    }
-  }
-
-  // Fallback to admin in local mock/demo session so classes never fail
-  role ??= UserRole.admin;
-
-  String? className;
-  String? section;
-  if (user != null && user.userRole == UserRole.student) {
-    final admissions = ref.watch(admissionsListProvider).valueOrNull ?? const [];
-    for (final a in admissions) {
-      if (a.user.firstName == user.firstName && a.user.lastName == user.lastName) {
-        className = a.student.className;
-        section = a.student.section;
-        break;
-      }
-    }
-  }
   return ClassesActor(
-    role: role,
-    userId: userId,
-    studentClassName: className,
-    studentSection: section,
+    role: user?.userRole,
+    userId: user?.id ?? '',
+    studentClassName: admission?.student.className,
+    studentSection: admission?.student.section,
+    studentId: admission?.student.id,
+    studentUserId: admission?.student.userId,
+    studentClassId: admission?.student.currentClassId,
+    studentSectionId: admission?.student.sectionId,
+    linkedParentUserId: user?.userRole == UserRole.parent && admission != null
+        ? user?.id
+        : null,
   );
 });

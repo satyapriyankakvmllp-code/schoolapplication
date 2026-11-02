@@ -15,9 +15,13 @@ class ClassroomController extends AsyncNotifier<List<ClassroomModel>> {
     return ref.watch(classesRepositoryProvider).getClassrooms(actor);
   }
 
-  Future<void> save(ClassroomModel room, {bool isNew = false}) async {
-    await ref.read(classesRepositoryProvider).saveClassroom(ref.read(classesActorProvider), room, isNew: isNew);
+  Future<ClassroomModel> save(ClassroomModel room, {bool isNew = false}) async {
+    final saved = await ref.read(classesRepositoryProvider).saveClassroom(ref.read(classesActorProvider), room, isNew: isNew);
     ref.invalidateSelf();
+    ref.invalidate(classesControllerProvider);
+    ref.invalidate(sectionsControllerProvider);
+    ref.invalidate(timetableControllerProvider);
+    return saved;
   }
 
   Future<void> delete(String id) async {

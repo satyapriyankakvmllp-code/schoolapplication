@@ -22,9 +22,14 @@ class SubjectsController extends AsyncNotifier<List<SubjectModel>> {
     ref.invalidate(timetableControllerProvider);
   }
 
-  Future<void> save(SubjectModel subject, {bool isNew = false}) async {
-    await ref.read(classesRepositoryProvider).saveSubject(ref.read(classesActorProvider), subject, isNew: isNew);
+  Future<SubjectModel> save(SubjectModel subject, {bool isNew = false}) async {
+    final saved = await ref.read(classesRepositoryProvider).saveSubject(
+          ref.read(classesActorProvider),
+          subject,
+          isNew: isNew,
+        );
     _refreshDependents();
+    return saved;
   }
 
   Future<void> delete(String id) async {

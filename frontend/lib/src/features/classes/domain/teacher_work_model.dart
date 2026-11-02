@@ -9,6 +9,7 @@ class TeacherWorkModel {
   final DateTime dueDate;
   final String status; // 'Assigned', 'In Progress', 'Submitted', 'Reviewed'
   final String instructions;
+  final String submissionGuidelines;
   final String academicYear;
 
   const TeacherWorkModel({
@@ -22,6 +23,7 @@ class TeacherWorkModel {
     required this.dueDate,
     this.status = 'Assigned',
     this.instructions = '',
+    this.submissionGuidelines = '',
     this.academicYear = '2026-2027',
   });
 
@@ -39,6 +41,7 @@ class TeacherWorkModel {
           : DateTime.now(),
       status: json['status'] as String? ?? 'Assigned',
       instructions: json['instructions'] as String? ?? '',
+      submissionGuidelines: json['submission_guidelines'] as String? ?? '',
       academicYear: json['academic_year'] as String? ?? '2026-2027',
     );
   }
@@ -55,6 +58,7 @@ class TeacherWorkModel {
       'due_date': dueDate.toIso8601String().split('T').first,
       'status': status,
       'instructions': instructions,
+      'submission_guidelines': submissionGuidelines,
       'academic_year': academicYear,
     };
   }
@@ -70,6 +74,7 @@ class TeacherWorkModel {
     DateTime? dueDate,
     String? status,
     String? instructions,
+    String? submissionGuidelines,
     String? academicYear,
   }) {
     return TeacherWorkModel(
@@ -83,6 +88,7 @@ class TeacherWorkModel {
       dueDate: dueDate ?? this.dueDate,
       status: status ?? this.status,
       instructions: instructions ?? this.instructions,
+      submissionGuidelines: submissionGuidelines ?? this.submissionGuidelines,
       academicYear: academicYear ?? this.academicYear,
     );
   }
