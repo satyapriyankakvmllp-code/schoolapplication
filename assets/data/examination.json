@@ -1,0 +1,2439 @@
+{
+  "exam_schedules": [
+    {
+      "exam_schedule_id": "exam-sch-001",
+      "exam_name": "Unit Test 1",
+      "exam_type": "UNIT_TEST",
+      "academic_year": "2026-2027",
+      "start_date": "2026-07-15",
+      "end_date": "2026-07-22",
+      "description": "First periodic unit assessment evaluating foundational syllabus.",
+      "status": "COMPLETED",
+      "cancel_reason": null,
+      "created_by": "u1",
+      "created_at": "2026-06-20T09:00:00.000Z",
+      "updated_at": "2026-07-22T17:00:00.000Z",
+      "status_manual": false
+    },
+    {
+      "exam_schedule_id": "exam-sch-002",
+      "exam_name": "Mid-Term Examination",
+      "exam_type": "MID_TERM",
+      "academic_year": "2026-2027",
+      "start_date": "2026-10-25",
+      "end_date": "2026-11-05",
+      "description": "Comprehensive mid-year evaluations across all grades and courses.",
+      "status": "ONGOING",
+      "cancel_reason": null,
+      "created_by": "u2",
+      "created_at": "2026-09-10T10:00:00.000Z",
+      "updated_at": "2026-10-25T08:00:00.000Z",
+      "status_manual": false
+    },
+    {
+      "exam_schedule_id": "exam-sch-003",
+      "exam_name": "Unit Test 2",
+      "exam_type": "UNIT_TEST",
+      "academic_year": "2026-2027",
+      "start_date": "2026-12-08",
+      "end_date": "2026-12-16",
+      "description": "Second term assessment prior to annual revisions and practicals.",
+      "status": "PLANNED",
+      "cancel_reason": null,
+      "created_by": "u1",
+      "created_at": "2026-10-01T11:00:00.000Z",
+      "updated_at": "2026-10-01T11:00:00.000Z",
+      "status_manual": false
+    },
+    {
+      "exam_schedule_id": "exam-sch-004",
+      "exam_name": "Half-Yearly Examination",
+      "exam_type": "HALF_YEARLY",
+      "academic_year": "2026-2027",
+      "start_date": "2027-01-12",
+      "end_date": "2027-01-24",
+      "description": "Semester benchmark exams testing second term coursework and practicals.",
+      "status": "PLANNED",
+      "cancel_reason": null,
+      "created_by": "u2",
+      "created_at": "2026-10-15T14:00:00.000Z",
+      "updated_at": "2026-10-15T14:00:00.000Z",
+      "status_manual": false
+    },
+    {
+      "exam_schedule_id": "exam-sch-005",
+      "exam_name": "Annual Examination",
+      "exam_type": "ANNUAL",
+      "academic_year": "2026-2027",
+      "start_date": "2027-03-10",
+      "end_date": "2027-03-26",
+      "description": "Cumulative summative board and final institutional assessments.",
+      "status": "PLANNED",
+      "cancel_reason": null,
+      "created_by": "u1",
+      "created_at": "2026-10-18T16:00:00.000Z",
+      "updated_at": "2026-10-18T16:00:00.000Z",
+      "status_manual": false
+    }
+  ],
+  "exam_papers": [
+    {
+      "id": "ex-paper-ut1-eng",
+      "exam_schedule_id": "exam-sch-001",
+      "class_section_id": "sec-10a",
+      "subject_id": "sub-102",
+      "exam_date": "2026-07-15",
+      "start_time": "09:30",
+      "end_time": "11:00",
+      "max_marks": 50,
+      "passing_marks": 18,
+      "invigilator_id": "STF-2026-0113",
+      "room_id": "room-205",
+      "status": "SCHEDULED",
+      "status_manual": false,
+      "cancel_reason": null,
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "id": "ex-paper-ut1-phy",
+      "exam_schedule_id": "exam-sch-001",
+      "class_section_id": "sec-10a",
+      "subject_id": "sub-103",
+      "exam_date": "2026-07-17",
+      "start_time": "09:30",
+      "end_time": "11:00",
+      "max_marks": 50,
+      "passing_marks": 18,
+      "invigilator_id": "STF-2026-0114",
+      "room_id": "room-205",
+      "status": "SCHEDULED",
+      "status_manual": false,
+      "cancel_reason": null,
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "id": "ex-paper-ut1-che",
+      "exam_schedule_id": "exam-sch-001",
+      "class_section_id": "sec-10a",
+      "subject_id": "sub-104",
+      "exam_date": "2026-07-20",
+      "start_time": "09:30",
+      "end_time": "11:00",
+      "max_marks": 50,
+      "passing_marks": 18,
+      "invigilator_id": "STF-2026-0115",
+      "room_id": "room-205",
+      "status": "SCHEDULED",
+      "status_manual": false,
+      "cancel_reason": null,
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "id": "ex-paper-mid-eng",
+      "exam_schedule_id": "exam-sch-002",
+      "class_section_id": "sec-10a",
+      "subject_id": "sub-102",
+      "exam_date": "2026-10-26",
+      "start_time": "09:30",
+      "end_time": "12:00",
+      "max_marks": 100,
+      "passing_marks": 35,
+      "invigilator_id": "STF-2026-0113",
+      "room_id": "room-205",
+      "status": "SCHEDULED",
+      "status_manual": false,
+      "cancel_reason": null,
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "id": "ex-paper-mid-phy",
+      "exam_schedule_id": "exam-sch-002",
+      "class_section_id": "sec-10a",
+      "subject_id": "sub-103",
+      "exam_date": "2026-10-28",
+      "start_time": "09:30",
+      "end_time": "11:00",
+      "max_marks": 50,
+      "passing_marks": 18,
+      "invigilator_id": "STF-2026-0114",
+      "room_id": "room-205",
+      "status": "SCHEDULED",
+      "status_manual": false,
+      "cancel_reason": null,
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "id": "ex-paper-mid-che",
+      "exam_schedule_id": "exam-sch-002",
+      "class_section_id": "sec-10a",
+      "subject_id": "sub-104",
+      "exam_date": "2026-10-30",
+      "start_time": "09:30",
+      "end_time": "12:00",
+      "max_marks": 100,
+      "passing_marks": 35,
+      "invigilator_id": "STF-2026-0115",
+      "room_id": "room-205",
+      "status": "SCHEDULED",
+      "status_manual": false,
+      "cancel_reason": null,
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "id": "ex-paper-mid-soc",
+      "exam_schedule_id": "exam-sch-002",
+      "class_section_id": "sec-10a",
+      "subject_id": "sub-105",
+      "exam_date": "2026-11-02",
+      "start_time": "09:30",
+      "end_time": "12:00",
+      "max_marks": 100,
+      "passing_marks": 35,
+      "invigilator_id": "STF-2026-0117",
+      "room_id": "room-205",
+      "status": "SCHEDULED",
+      "status_manual": false,
+      "cancel_reason": null,
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "id": "ex-paper-mid-hin",
+      "exam_schedule_id": "exam-sch-002",
+      "class_section_id": "sec-10a",
+      "subject_id": "sub-106",
+      "exam_date": "2026-11-04",
+      "start_time": "09:30",
+      "end_time": "12:00",
+      "max_marks": 100,
+      "passing_marks": 35,
+      "invigilator_id": "STF-2026-0111",
+      "room_id": "room-205",
+      "status": "SCHEDULED",
+      "status_manual": false,
+      "cancel_reason": null,
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "id": "ex-paper-mid-eng-b",
+      "exam_schedule_id": "exam-sch-002",
+      "class_section_id": "sec-10b",
+      "subject_id": "sub-102",
+      "exam_date": "2026-10-26",
+      "start_time": "09:30",
+      "end_time": "12:00",
+      "max_marks": 100,
+      "passing_marks": 35,
+      "invigilator_id": "STF-2026-0112",
+      "room_id": "room-204",
+      "status": "SCHEDULED",
+      "status_manual": false,
+      "cancel_reason": null,
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    }
+  ],
+  "hall_tickets": [
+    {
+      "hall_ticket_id": "hall-001-1010",
+      "exam_schedule_id": "exam-sch-001",
+      "student_id": "std-1010",
+      "hall_ticket_number": "UT26-10A-003",
+      "barcode_or_qr_token": "QR-0011010",
+      "issue_date": "2026-07-10",
+      "status": "ISSUED",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "hall_ticket_id": "hall-001-1011",
+      "exam_schedule_id": "exam-sch-001",
+      "student_id": "std-1011",
+      "hall_ticket_number": "UT26-10A-005",
+      "barcode_or_qr_token": "QR-0011011",
+      "issue_date": "2026-07-10",
+      "status": "ISSUED",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "hall_ticket_id": "hall-001-1012",
+      "exam_schedule_id": "exam-sch-001",
+      "student_id": "std-1012",
+      "hall_ticket_number": "UT26-10A-007",
+      "barcode_or_qr_token": "QR-0011012",
+      "issue_date": "2026-07-10",
+      "status": "ISSUED",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "hall_ticket_id": "hall-001-1001",
+      "exam_schedule_id": "exam-sch-001",
+      "student_id": "std-1001",
+      "hall_ticket_number": "UT26-10A-010",
+      "barcode_or_qr_token": "QR-0011001",
+      "issue_date": "2026-07-10",
+      "status": "ISSUED",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "hall_ticket_id": "hall-001-1013",
+      "exam_schedule_id": "exam-sch-001",
+      "student_id": "std-1013",
+      "hall_ticket_number": "UT26-10A-012",
+      "barcode_or_qr_token": "QR-0011013",
+      "issue_date": "2026-07-10",
+      "status": "ISSUED",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "hall_ticket_id": "hall-001-1014",
+      "exam_schedule_id": "exam-sch-001",
+      "student_id": "std-1014",
+      "hall_ticket_number": "UT26-10A-015",
+      "barcode_or_qr_token": "QR-0011014",
+      "issue_date": "2026-07-10",
+      "status": "ISSUED",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "hall_ticket_id": "hall-001-1015",
+      "exam_schedule_id": "exam-sch-001",
+      "student_id": "std-1015",
+      "hall_ticket_number": "UT26-10A-018",
+      "barcode_or_qr_token": "QR-0011015",
+      "issue_date": "2026-07-10",
+      "status": "ISSUED",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "hall_ticket_id": "hall-001-1016",
+      "exam_schedule_id": "exam-sch-001",
+      "student_id": "std-1016",
+      "hall_ticket_number": "UT26-10A-021",
+      "barcode_or_qr_token": "QR-0011016",
+      "issue_date": "2026-07-10",
+      "status": "ISSUED",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "hall_ticket_id": "hall-002-1010",
+      "exam_schedule_id": "exam-sch-002",
+      "student_id": "std-1010",
+      "hall_ticket_number": "MID26-10A-003",
+      "barcode_or_qr_token": "QR-0021010",
+      "issue_date": "2026-10-20",
+      "status": "ISSUED",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "hall_ticket_id": "hall-002-1011",
+      "exam_schedule_id": "exam-sch-002",
+      "student_id": "std-1011",
+      "hall_ticket_number": "MID26-10A-005",
+      "barcode_or_qr_token": "QR-0021011",
+      "issue_date": "2026-10-20",
+      "status": "ISSUED",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "hall_ticket_id": "hall-002-1012",
+      "exam_schedule_id": "exam-sch-002",
+      "student_id": "std-1012",
+      "hall_ticket_number": "MID26-10A-007",
+      "barcode_or_qr_token": "QR-0021012",
+      "issue_date": "2026-10-20",
+      "status": "ISSUED",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "hall_ticket_id": "hall-002-1001",
+      "exam_schedule_id": "exam-sch-002",
+      "student_id": "std-1001",
+      "hall_ticket_number": "MID26-10A-010",
+      "barcode_or_qr_token": "QR-0021001",
+      "issue_date": "2026-10-20",
+      "status": "ISSUED",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "hall_ticket_id": "hall-002-1013",
+      "exam_schedule_id": "exam-sch-002",
+      "student_id": "std-1013",
+      "hall_ticket_number": "MID26-10A-012",
+      "barcode_or_qr_token": "QR-0021013",
+      "issue_date": "2026-10-20",
+      "status": "ISSUED",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "hall_ticket_id": "hall-002-1014",
+      "exam_schedule_id": "exam-sch-002",
+      "student_id": "std-1014",
+      "hall_ticket_number": "MID26-10A-015",
+      "barcode_or_qr_token": "QR-0021014",
+      "issue_date": "2026-10-20",
+      "status": "ISSUED",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "hall_ticket_id": "hall-002-1015",
+      "exam_schedule_id": "exam-sch-002",
+      "student_id": "std-1015",
+      "hall_ticket_number": "MID26-10A-018",
+      "barcode_or_qr_token": "QR-0021015",
+      "issue_date": "2026-10-20",
+      "status": "ISSUED",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "hall_ticket_id": "hall-002-1016",
+      "exam_schedule_id": "exam-sch-002",
+      "student_id": "std-1016",
+      "hall_ticket_number": "MID26-10A-021",
+      "barcode_or_qr_token": "QR-0021016",
+      "issue_date": "2026-10-20",
+      "status": "ISSUED",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    }
+  ],
+  "student_exam_marks": [
+    {
+      "mark_id": "mark-ut1-eng-1010",
+      "exam_paper_id": "ex-paper-ut1-eng",
+      "student_id": "std-1010",
+      "marks_obtained": 39,
+      "status": "REVIEWED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-07-25T10:00:00.000Z",
+      "reviewed_by": "u4",
+      "reviewed_at": "2026-07-25T10:00:00.000Z",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-07-25T10:00:00.000Z",
+      "updated_at": "2026-07-25T10:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-ut1-eng-1011",
+      "exam_paper_id": "ex-paper-ut1-eng",
+      "student_id": "std-1011",
+      "marks_obtained": 23,
+      "status": "REVIEWED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-07-25T10:00:00.000Z",
+      "reviewed_by": "u4",
+      "reviewed_at": "2026-07-25T10:00:00.000Z",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-07-25T10:00:00.000Z",
+      "updated_at": "2026-07-25T10:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-ut1-eng-1012",
+      "exam_paper_id": "ex-paper-ut1-eng",
+      "student_id": "std-1012",
+      "marks_obtained": 30,
+      "status": "REVIEWED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-07-25T10:00:00.000Z",
+      "reviewed_by": "u4",
+      "reviewed_at": "2026-07-25T10:00:00.000Z",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-07-25T10:00:00.000Z",
+      "updated_at": "2026-07-25T10:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-ut1-eng-1001",
+      "exam_paper_id": "ex-paper-ut1-eng",
+      "student_id": "std-1001",
+      "marks_obtained": 45,
+      "status": "REVIEWED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-07-25T10:00:00.000Z",
+      "reviewed_by": "u4",
+      "reviewed_at": "2026-07-25T10:00:00.000Z",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-07-25T10:00:00.000Z",
+      "updated_at": "2026-07-25T10:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-ut1-eng-1013",
+      "exam_paper_id": "ex-paper-ut1-eng",
+      "student_id": "std-1013",
+      "marks_obtained": 38,
+      "status": "REVIEWED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-07-25T10:00:00.000Z",
+      "reviewed_by": "u4",
+      "reviewed_at": "2026-07-25T10:00:00.000Z",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-07-25T10:00:00.000Z",
+      "updated_at": "2026-07-25T10:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-ut1-eng-1014",
+      "exam_paper_id": "ex-paper-ut1-eng",
+      "student_id": "std-1014",
+      "marks_obtained": 38,
+      "status": "REVIEWED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-07-25T10:00:00.000Z",
+      "reviewed_by": "u4",
+      "reviewed_at": "2026-07-25T10:00:00.000Z",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-07-25T10:00:00.000Z",
+      "updated_at": "2026-07-25T10:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-ut1-eng-1015",
+      "exam_paper_id": "ex-paper-ut1-eng",
+      "student_id": "std-1015",
+      "marks_obtained": 46,
+      "status": "REVIEWED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-07-25T10:00:00.000Z",
+      "reviewed_by": "u4",
+      "reviewed_at": "2026-07-25T10:00:00.000Z",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-07-25T10:00:00.000Z",
+      "updated_at": "2026-07-25T10:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-ut1-eng-1016",
+      "exam_paper_id": "ex-paper-ut1-eng",
+      "student_id": "std-1016",
+      "marks_obtained": 28,
+      "status": "REVIEWED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-07-25T10:00:00.000Z",
+      "reviewed_by": "u4",
+      "reviewed_at": "2026-07-25T10:00:00.000Z",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-07-25T10:00:00.000Z",
+      "updated_at": "2026-07-25T10:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-ut1-phy-1010",
+      "exam_paper_id": "ex-paper-ut1-phy",
+      "student_id": "std-1010",
+      "marks_obtained": 38,
+      "status": "REVIEWED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-07-25T10:00:00.000Z",
+      "reviewed_by": "u4",
+      "reviewed_at": "2026-07-25T10:00:00.000Z",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-07-25T10:00:00.000Z",
+      "updated_at": "2026-07-25T10:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-ut1-phy-1011",
+      "exam_paper_id": "ex-paper-ut1-phy",
+      "student_id": "std-1011",
+      "marks_obtained": 27,
+      "status": "REVIEWED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-07-25T10:00:00.000Z",
+      "reviewed_by": "u4",
+      "reviewed_at": "2026-07-25T10:00:00.000Z",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-07-25T10:00:00.000Z",
+      "updated_at": "2026-07-25T10:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-ut1-phy-1012",
+      "exam_paper_id": "ex-paper-ut1-phy",
+      "student_id": "std-1012",
+      "marks_obtained": 34,
+      "status": "REVIEWED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-07-25T10:00:00.000Z",
+      "reviewed_by": "u4",
+      "reviewed_at": "2026-07-25T10:00:00.000Z",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-07-25T10:00:00.000Z",
+      "updated_at": "2026-07-25T10:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-ut1-phy-1001",
+      "exam_paper_id": "ex-paper-ut1-phy",
+      "student_id": "std-1001",
+      "marks_obtained": 41,
+      "status": "REVIEWED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-07-25T10:00:00.000Z",
+      "reviewed_by": "u4",
+      "reviewed_at": "2026-07-25T10:00:00.000Z",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-07-25T10:00:00.000Z",
+      "updated_at": "2026-07-25T10:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-ut1-phy-1013",
+      "exam_paper_id": "ex-paper-ut1-phy",
+      "student_id": "std-1013",
+      "marks_obtained": 44,
+      "status": "REVIEWED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-07-25T10:00:00.000Z",
+      "reviewed_by": "u4",
+      "reviewed_at": "2026-07-25T10:00:00.000Z",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-07-25T10:00:00.000Z",
+      "updated_at": "2026-07-25T10:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-ut1-phy-1015",
+      "exam_paper_id": "ex-paper-ut1-phy",
+      "student_id": "std-1015",
+      "marks_obtained": 47,
+      "status": "REVIEWED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-07-25T10:00:00.000Z",
+      "reviewed_by": "u4",
+      "reviewed_at": "2026-07-25T10:00:00.000Z",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-07-25T10:00:00.000Z",
+      "updated_at": "2026-07-25T10:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-ut1-phy-1016",
+      "exam_paper_id": "ex-paper-ut1-phy",
+      "student_id": "std-1016",
+      "marks_obtained": 27,
+      "status": "REVIEWED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-07-25T10:00:00.000Z",
+      "reviewed_by": "u4",
+      "reviewed_at": "2026-07-25T10:00:00.000Z",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-07-25T10:00:00.000Z",
+      "updated_at": "2026-07-25T10:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-ut1-che-1010",
+      "exam_paper_id": "ex-paper-ut1-che",
+      "student_id": "std-1010",
+      "marks_obtained": 37,
+      "status": "REVIEWED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-07-25T10:00:00.000Z",
+      "reviewed_by": "u4",
+      "reviewed_at": "2026-07-25T10:00:00.000Z",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-07-25T10:00:00.000Z",
+      "updated_at": "2026-07-25T10:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-ut1-che-1011",
+      "exam_paper_id": "ex-paper-ut1-che",
+      "student_id": "std-1011",
+      "marks_obtained": 30,
+      "status": "REVIEWED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-07-25T10:00:00.000Z",
+      "reviewed_by": "u4",
+      "reviewed_at": "2026-07-25T10:00:00.000Z",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-07-25T10:00:00.000Z",
+      "updated_at": "2026-07-25T10:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-ut1-che-1012",
+      "exam_paper_id": "ex-paper-ut1-che",
+      "student_id": "std-1012",
+      "marks_obtained": 31,
+      "status": "REVIEWED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-07-25T10:00:00.000Z",
+      "reviewed_by": "u4",
+      "reviewed_at": "2026-07-25T10:00:00.000Z",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-07-25T10:00:00.000Z",
+      "updated_at": "2026-07-25T10:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-ut1-che-1001",
+      "exam_paper_id": "ex-paper-ut1-che",
+      "student_id": "std-1001",
+      "marks_obtained": 42,
+      "status": "REVIEWED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-07-25T10:00:00.000Z",
+      "reviewed_by": "u4",
+      "reviewed_at": "2026-07-25T10:00:00.000Z",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-07-25T10:00:00.000Z",
+      "updated_at": "2026-07-25T10:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-ut1-che-1013",
+      "exam_paper_id": "ex-paper-ut1-che",
+      "student_id": "std-1013",
+      "marks_obtained": 39,
+      "status": "REVIEWED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-07-25T10:00:00.000Z",
+      "reviewed_by": "u4",
+      "reviewed_at": "2026-07-25T10:00:00.000Z",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-07-25T10:00:00.000Z",
+      "updated_at": "2026-07-25T10:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-ut1-che-1014",
+      "exam_paper_id": "ex-paper-ut1-che",
+      "student_id": "std-1014",
+      "marks_obtained": 43,
+      "status": "REVIEWED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-07-25T10:00:00.000Z",
+      "reviewed_by": "u4",
+      "reviewed_at": "2026-07-25T10:00:00.000Z",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-07-25T10:00:00.000Z",
+      "updated_at": "2026-07-25T10:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-ut1-che-1015",
+      "exam_paper_id": "ex-paper-ut1-che",
+      "student_id": "std-1015",
+      "marks_obtained": 46,
+      "status": "REVIEWED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-07-25T10:00:00.000Z",
+      "reviewed_by": "u4",
+      "reviewed_at": "2026-07-25T10:00:00.000Z",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-07-25T10:00:00.000Z",
+      "updated_at": "2026-07-25T10:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-ut1-che-1016",
+      "exam_paper_id": "ex-paper-ut1-che",
+      "student_id": "std-1016",
+      "marks_obtained": 30,
+      "status": "REVIEWED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-07-25T10:00:00.000Z",
+      "reviewed_by": "u4",
+      "reviewed_at": "2026-07-25T10:00:00.000Z",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-07-25T10:00:00.000Z",
+      "updated_at": "2026-07-25T10:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-mid-eng-1010",
+      "exam_paper_id": "ex-paper-mid-eng",
+      "student_id": "std-1010",
+      "marks_obtained": 82,
+      "status": "SUBMITTED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-10-29T15:00:00.000Z",
+      "reviewed_by": "",
+      "reviewed_at": "",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-10-29T15:00:00.000Z",
+      "updated_at": "2026-10-29T15:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-mid-eng-1012",
+      "exam_paper_id": "ex-paper-mid-eng",
+      "student_id": "std-1012",
+      "marks_obtained": 64,
+      "status": "SUBMITTED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-10-29T15:00:00.000Z",
+      "reviewed_by": "",
+      "reviewed_at": "",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-10-29T15:00:00.000Z",
+      "updated_at": "2026-10-29T15:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-mid-eng-1001",
+      "exam_paper_id": "ex-paper-mid-eng",
+      "student_id": "std-1001",
+      "marks_obtained": 96,
+      "status": "SUBMITTED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-10-29T15:00:00.000Z",
+      "reviewed_by": "",
+      "reviewed_at": "",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-10-29T15:00:00.000Z",
+      "updated_at": "2026-10-29T15:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-mid-eng-1013",
+      "exam_paper_id": "ex-paper-mid-eng",
+      "student_id": "std-1013",
+      "marks_obtained": 82,
+      "status": "SUBMITTED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-10-29T15:00:00.000Z",
+      "reviewed_by": "",
+      "reviewed_at": "",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-10-29T15:00:00.000Z",
+      "updated_at": "2026-10-29T15:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-mid-eng-1014",
+      "exam_paper_id": "ex-paper-mid-eng",
+      "student_id": "std-1014",
+      "marks_obtained": 82,
+      "status": "SUBMITTED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-10-29T15:00:00.000Z",
+      "reviewed_by": "",
+      "reviewed_at": "",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-10-29T15:00:00.000Z",
+      "updated_at": "2026-10-29T15:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-mid-eng-1015",
+      "exam_paper_id": "ex-paper-mid-eng",
+      "student_id": "std-1015",
+      "marks_obtained": 94,
+      "status": "SUBMITTED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-10-29T15:00:00.000Z",
+      "reviewed_by": "",
+      "reviewed_at": "",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-10-29T15:00:00.000Z",
+      "updated_at": "2026-10-29T15:00:00.000Z"
+    },
+    {
+      "mark_id": "mark-mid-eng-1016",
+      "exam_paper_id": "ex-paper-mid-eng",
+      "student_id": "std-1016",
+      "marks_obtained": 57,
+      "status": "SUBMITTED",
+      "entered_by_teacher_id": "u3",
+      "submitted_at": "2026-10-29T15:00:00.000Z",
+      "reviewed_by": "",
+      "reviewed_at": "",
+      "remarks": "",
+      "correction_comment": "",
+      "created_at": "2026-10-29T15:00:00.000Z",
+      "updated_at": "2026-10-29T15:00:00.000Z"
+    }
+  ],
+  "exam_attendance": [
+    {
+      "attendance_id": "att-ut1-eng-1010",
+      "exam_paper_id": "ex-paper-ut1-eng",
+      "student_id": "std-1010",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-07-15T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-ut1-eng-1011",
+      "exam_paper_id": "ex-paper-ut1-eng",
+      "student_id": "std-1011",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-07-15T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-ut1-eng-1012",
+      "exam_paper_id": "ex-paper-ut1-eng",
+      "student_id": "std-1012",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-07-15T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-ut1-eng-1001",
+      "exam_paper_id": "ex-paper-ut1-eng",
+      "student_id": "std-1001",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-07-15T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-ut1-eng-1013",
+      "exam_paper_id": "ex-paper-ut1-eng",
+      "student_id": "std-1013",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-07-15T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-ut1-eng-1014",
+      "exam_paper_id": "ex-paper-ut1-eng",
+      "student_id": "std-1014",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-07-15T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-ut1-eng-1015",
+      "exam_paper_id": "ex-paper-ut1-eng",
+      "student_id": "std-1015",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-07-15T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-ut1-eng-1016",
+      "exam_paper_id": "ex-paper-ut1-eng",
+      "student_id": "std-1016",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-07-15T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-ut1-phy-1010",
+      "exam_paper_id": "ex-paper-ut1-phy",
+      "student_id": "std-1010",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-07-15T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-ut1-phy-1011",
+      "exam_paper_id": "ex-paper-ut1-phy",
+      "student_id": "std-1011",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-07-15T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-ut1-phy-1012",
+      "exam_paper_id": "ex-paper-ut1-phy",
+      "student_id": "std-1012",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-07-15T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-ut1-phy-1001",
+      "exam_paper_id": "ex-paper-ut1-phy",
+      "student_id": "std-1001",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-07-15T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-ut1-phy-1013",
+      "exam_paper_id": "ex-paper-ut1-phy",
+      "student_id": "std-1013",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-07-15T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-ut1-phy-1014",
+      "exam_paper_id": "ex-paper-ut1-phy",
+      "student_id": "std-1014",
+      "status": "ABSENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-07-15T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-ut1-phy-1015",
+      "exam_paper_id": "ex-paper-ut1-phy",
+      "student_id": "std-1015",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-07-15T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-ut1-phy-1016",
+      "exam_paper_id": "ex-paper-ut1-phy",
+      "student_id": "std-1016",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-07-15T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-ut1-che-1010",
+      "exam_paper_id": "ex-paper-ut1-che",
+      "student_id": "std-1010",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-07-15T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-ut1-che-1011",
+      "exam_paper_id": "ex-paper-ut1-che",
+      "student_id": "std-1011",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-07-15T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-ut1-che-1012",
+      "exam_paper_id": "ex-paper-ut1-che",
+      "student_id": "std-1012",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-07-15T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-ut1-che-1001",
+      "exam_paper_id": "ex-paper-ut1-che",
+      "student_id": "std-1001",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-07-15T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-ut1-che-1013",
+      "exam_paper_id": "ex-paper-ut1-che",
+      "student_id": "std-1013",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-07-15T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-ut1-che-1014",
+      "exam_paper_id": "ex-paper-ut1-che",
+      "student_id": "std-1014",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-07-15T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-ut1-che-1015",
+      "exam_paper_id": "ex-paper-ut1-che",
+      "student_id": "std-1015",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-07-15T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-ut1-che-1016",
+      "exam_paper_id": "ex-paper-ut1-che",
+      "student_id": "std-1016",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-07-15T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-mid-eng-1010",
+      "exam_paper_id": "ex-paper-mid-eng",
+      "student_id": "std-1010",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-10-26T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-mid-eng-1011",
+      "exam_paper_id": "ex-paper-mid-eng",
+      "student_id": "std-1011",
+      "status": "ABSENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-10-26T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-mid-eng-1012",
+      "exam_paper_id": "ex-paper-mid-eng",
+      "student_id": "std-1012",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-10-26T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-mid-eng-1001",
+      "exam_paper_id": "ex-paper-mid-eng",
+      "student_id": "std-1001",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-10-26T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-mid-eng-1013",
+      "exam_paper_id": "ex-paper-mid-eng",
+      "student_id": "std-1013",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-10-26T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-mid-eng-1014",
+      "exam_paper_id": "ex-paper-mid-eng",
+      "student_id": "std-1014",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-10-26T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-mid-eng-1015",
+      "exam_paper_id": "ex-paper-mid-eng",
+      "student_id": "std-1015",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-10-26T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-mid-eng-1016",
+      "exam_paper_id": "ex-paper-mid-eng",
+      "student_id": "std-1016",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-10-26T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-mid-phy-1010",
+      "exam_paper_id": "ex-paper-mid-phy",
+      "student_id": "std-1010",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-10-28T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-mid-phy-1011",
+      "exam_paper_id": "ex-paper-mid-phy",
+      "student_id": "std-1011",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-10-28T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-mid-phy-1012",
+      "exam_paper_id": "ex-paper-mid-phy",
+      "student_id": "std-1012",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-10-28T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-mid-phy-1001",
+      "exam_paper_id": "ex-paper-mid-phy",
+      "student_id": "std-1001",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-10-28T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-mid-phy-1013",
+      "exam_paper_id": "ex-paper-mid-phy",
+      "student_id": "std-1013",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-10-28T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-mid-phy-1014",
+      "exam_paper_id": "ex-paper-mid-phy",
+      "student_id": "std-1014",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-10-28T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-mid-phy-1015",
+      "exam_paper_id": "ex-paper-mid-phy",
+      "student_id": "std-1015",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-10-28T09:20:00.000Z",
+      "remarks": ""
+    },
+    {
+      "attendance_id": "att-mid-phy-1016",
+      "exam_paper_id": "ex-paper-mid-phy",
+      "student_id": "std-1016",
+      "status": "PRESENT",
+      "marked_by_teacher_id": "u3",
+      "marked_at": "2026-10-28T09:20:00.000Z",
+      "remarks": ""
+    }
+  ],
+  "exam_student_remarks": [
+    {
+      "id": "rem-ut1-1001",
+      "exam_schedule_id": "exam-sch-001",
+      "student_id": "std-1001",
+      "class_section_id": "sec-10a",
+      "academic_performance": "Excellent",
+      "conduct": "Excellent",
+      "participation": "Very Good",
+      "improvement": "Keep practising numericals in Physics.",
+      "remarks": "Aarav is a focused and disciplined student.",
+      "updated_at": "2026-07-26T10:00:00.000Z"
+    }
+  ],
+  "report_cards": [
+    {
+      "report_card_id": "rc-ut1-1010",
+      "exam_schedule_id": "exam-sch-001",
+      "student_id": "std-1010",
+      "class_section_id": "sec-10a",
+      "total_marks": 114.0,
+      "total_max_marks": 150.0,
+      "percentage": 76.0,
+      "grade": "B+",
+      "gpa": 8.0,
+      "class_rank": 4,
+      "subject_results": [
+        {
+          "paper_id": "ex-paper-ut1-eng",
+          "subject_id": "sub-102",
+          "subject_name": "English",
+          "marks": 39.0,
+          "max_marks": 50.0,
+          "passing_marks": 18.0,
+          "absent": false
+        },
+        {
+          "paper_id": "ex-paper-ut1-phy",
+          "subject_id": "sub-103",
+          "subject_name": "Physics",
+          "marks": 38.0,
+          "max_marks": 50.0,
+          "passing_marks": 18.0,
+          "absent": false
+        },
+        {
+          "paper_id": "ex-paper-ut1-che",
+          "subject_id": "sub-104",
+          "subject_name": "Chemistry",
+          "marks": 37.0,
+          "max_marks": 50.0,
+          "passing_marks": 18.0,
+          "absent": false
+        }
+      ],
+      "class_incharge_remarks": "",
+      "status": "PUBLISHED",
+      "generated_at": "2026-07-26T11:00:00.000Z",
+      "approved_by_id": "u2",
+      "approved_at": "2026-07-27T09:00:00.000Z",
+      "is_published": true,
+      "published_at": "2026-07-27T10:00:00.000Z",
+      "send_back_reason": "",
+      "stale": false,
+      "updated_at": "2026-07-27T10:00:00.000Z"
+    },
+    {
+      "report_card_id": "rc-ut1-1011",
+      "exam_schedule_id": "exam-sch-001",
+      "student_id": "std-1011",
+      "class_section_id": "sec-10a",
+      "total_marks": 80.0,
+      "total_max_marks": 150.0,
+      "percentage": 53.33,
+      "grade": "C",
+      "gpa": 6.0,
+      "class_rank": 8,
+      "subject_results": [
+        {
+          "paper_id": "ex-paper-ut1-eng",
+          "subject_id": "sub-102",
+          "subject_name": "English",
+          "marks": 23.0,
+          "max_marks": 50.0,
+          "passing_marks": 18.0,
+          "absent": false
+        },
+        {
+          "paper_id": "ex-paper-ut1-phy",
+          "subject_id": "sub-103",
+          "subject_name": "Physics",
+          "marks": 27.0,
+          "max_marks": 50.0,
+          "passing_marks": 18.0,
+          "absent": false
+        },
+        {
+          "paper_id": "ex-paper-ut1-che",
+          "subject_id": "sub-104",
+          "subject_name": "Chemistry",
+          "marks": 30.0,
+          "max_marks": 50.0,
+          "passing_marks": 18.0,
+          "absent": false
+        }
+      ],
+      "class_incharge_remarks": "",
+      "status": "PUBLISHED",
+      "generated_at": "2026-07-26T11:00:00.000Z",
+      "approved_by_id": "u2",
+      "approved_at": "2026-07-27T09:00:00.000Z",
+      "is_published": true,
+      "published_at": "2026-07-27T10:00:00.000Z",
+      "send_back_reason": "",
+      "stale": false,
+      "updated_at": "2026-07-27T10:00:00.000Z"
+    },
+    {
+      "report_card_id": "rc-ut1-1012",
+      "exam_schedule_id": "exam-sch-001",
+      "student_id": "std-1012",
+      "class_section_id": "sec-10a",
+      "total_marks": 95.0,
+      "total_max_marks": 150.0,
+      "percentage": 63.33,
+      "grade": "B",
+      "gpa": 7.0,
+      "class_rank": 5,
+      "subject_results": [
+        {
+          "paper_id": "ex-paper-ut1-eng",
+          "subject_id": "sub-102",
+          "subject_name": "English",
+          "marks": 30.0,
+          "max_marks": 50.0,
+          "passing_marks": 18.0,
+          "absent": false
+        },
+        {
+          "paper_id": "ex-paper-ut1-phy",
+          "subject_id": "sub-103",
+          "subject_name": "Physics",
+          "marks": 34.0,
+          "max_marks": 50.0,
+          "passing_marks": 18.0,
+          "absent": false
+        },
+        {
+          "paper_id": "ex-paper-ut1-che",
+          "subject_id": "sub-104",
+          "subject_name": "Chemistry",
+          "marks": 31.0,
+          "max_marks": 50.0,
+          "passing_marks": 18.0,
+          "absent": false
+        }
+      ],
+      "class_incharge_remarks": "",
+      "status": "PUBLISHED",
+      "generated_at": "2026-07-26T11:00:00.000Z",
+      "approved_by_id": "u2",
+      "approved_at": "2026-07-27T09:00:00.000Z",
+      "is_published": true,
+      "published_at": "2026-07-27T10:00:00.000Z",
+      "send_back_reason": "",
+      "stale": false,
+      "updated_at": "2026-07-27T10:00:00.000Z"
+    },
+    {
+      "report_card_id": "rc-ut1-1001",
+      "exam_schedule_id": "exam-sch-001",
+      "student_id": "std-1001",
+      "class_section_id": "sec-10a",
+      "total_marks": 128.0,
+      "total_max_marks": 150.0,
+      "percentage": 85.33,
+      "grade": "A",
+      "gpa": 9.0,
+      "class_rank": 2,
+      "subject_results": [
+        {
+          "paper_id": "ex-paper-ut1-eng",
+          "subject_id": "sub-102",
+          "subject_name": "English",
+          "marks": 45.0,
+          "max_marks": 50.0,
+          "passing_marks": 18.0,
+          "absent": false
+        },
+        {
+          "paper_id": "ex-paper-ut1-phy",
+          "subject_id": "sub-103",
+          "subject_name": "Physics",
+          "marks": 41.0,
+          "max_marks": 50.0,
+          "passing_marks": 18.0,
+          "absent": false
+        },
+        {
+          "paper_id": "ex-paper-ut1-che",
+          "subject_id": "sub-104",
+          "subject_name": "Chemistry",
+          "marks": 42.0,
+          "max_marks": 50.0,
+          "passing_marks": 18.0,
+          "absent": false
+        }
+      ],
+      "class_incharge_remarks": "Aarav is a focused and disciplined student. | Academic: Excellent | Conduct: Excellent | Participation: Very Good | Improvement: Keep practising numericals in Physics.",
+      "status": "PUBLISHED",
+      "generated_at": "2026-07-26T11:00:00.000Z",
+      "approved_by_id": "u2",
+      "approved_at": "2026-07-27T09:00:00.000Z",
+      "is_published": true,
+      "published_at": "2026-07-27T10:00:00.000Z",
+      "send_back_reason": "",
+      "stale": false,
+      "updated_at": "2026-07-27T10:00:00.000Z"
+    },
+    {
+      "report_card_id": "rc-ut1-1013",
+      "exam_schedule_id": "exam-sch-001",
+      "student_id": "std-1013",
+      "class_section_id": "sec-10a",
+      "total_marks": 121.0,
+      "total_max_marks": 150.0,
+      "percentage": 80.67,
+      "grade": "A",
+      "gpa": 9.0,
+      "class_rank": 3,
+      "subject_results": [
+        {
+          "paper_id": "ex-paper-ut1-eng",
+          "subject_id": "sub-102",
+          "subject_name": "English",
+          "marks": 38.0,
+          "max_marks": 50.0,
+          "passing_marks": 18.0,
+          "absent": false
+        },
+        {
+          "paper_id": "ex-paper-ut1-phy",
+          "subject_id": "sub-103",
+          "subject_name": "Physics",
+          "marks": 44.0,
+          "max_marks": 50.0,
+          "passing_marks": 18.0,
+          "absent": false
+        },
+        {
+          "paper_id": "ex-paper-ut1-che",
+          "subject_id": "sub-104",
+          "subject_name": "Chemistry",
+          "marks": 39.0,
+          "max_marks": 50.0,
+          "passing_marks": 18.0,
+          "absent": false
+        }
+      ],
+      "class_incharge_remarks": "",
+      "status": "PUBLISHED",
+      "generated_at": "2026-07-26T11:00:00.000Z",
+      "approved_by_id": "u2",
+      "approved_at": "2026-07-27T09:00:00.000Z",
+      "is_published": true,
+      "published_at": "2026-07-27T10:00:00.000Z",
+      "send_back_reason": "",
+      "stale": false,
+      "updated_at": "2026-07-27T10:00:00.000Z"
+    },
+    {
+      "report_card_id": "rc-ut1-1014",
+      "exam_schedule_id": "exam-sch-001",
+      "student_id": "std-1014",
+      "class_section_id": "sec-10a",
+      "total_marks": 81.0,
+      "total_max_marks": 150.0,
+      "percentage": 54.0,
+      "grade": "C",
+      "gpa": 6.0,
+      "class_rank": 7,
+      "subject_results": [
+        {
+          "paper_id": "ex-paper-ut1-eng",
+          "subject_id": "sub-102",
+          "subject_name": "English",
+          "marks": 38.0,
+          "max_marks": 50.0,
+          "passing_marks": 18.0,
+          "absent": false
+        },
+        {
+          "paper_id": "ex-paper-ut1-phy",
+          "subject_id": "sub-103",
+          "subject_name": "Physics",
+          "marks": 0.0,
+          "max_marks": 50.0,
+          "passing_marks": 18.0,
+          "absent": true
+        },
+        {
+          "paper_id": "ex-paper-ut1-che",
+          "subject_id": "sub-104",
+          "subject_name": "Chemistry",
+          "marks": 43.0,
+          "max_marks": 50.0,
+          "passing_marks": 18.0,
+          "absent": false
+        }
+      ],
+      "class_incharge_remarks": "",
+      "status": "PUBLISHED",
+      "generated_at": "2026-07-26T11:00:00.000Z",
+      "approved_by_id": "u2",
+      "approved_at": "2026-07-27T09:00:00.000Z",
+      "is_published": true,
+      "published_at": "2026-07-27T10:00:00.000Z",
+      "send_back_reason": "",
+      "stale": false,
+      "updated_at": "2026-07-27T10:00:00.000Z"
+    },
+    {
+      "report_card_id": "rc-ut1-1015",
+      "exam_schedule_id": "exam-sch-001",
+      "student_id": "std-1015",
+      "class_section_id": "sec-10a",
+      "total_marks": 139.0,
+      "total_max_marks": 150.0,
+      "percentage": 92.67,
+      "grade": "A+",
+      "gpa": 10.0,
+      "class_rank": 1,
+      "subject_results": [
+        {
+          "paper_id": "ex-paper-ut1-eng",
+          "subject_id": "sub-102",
+          "subject_name": "English",
+          "marks": 46.0,
+          "max_marks": 50.0,
+          "passing_marks": 18.0,
+          "absent": false
+        },
+        {
+          "paper_id": "ex-paper-ut1-phy",
+          "subject_id": "sub-103",
+          "subject_name": "Physics",
+          "marks": 47.0,
+          "max_marks": 50.0,
+          "passing_marks": 18.0,
+          "absent": false
+        },
+        {
+          "paper_id": "ex-paper-ut1-che",
+          "subject_id": "sub-104",
+          "subject_name": "Chemistry",
+          "marks": 46.0,
+          "max_marks": 50.0,
+          "passing_marks": 18.0,
+          "absent": false
+        }
+      ],
+      "class_incharge_remarks": "",
+      "status": "PUBLISHED",
+      "generated_at": "2026-07-26T11:00:00.000Z",
+      "approved_by_id": "u2",
+      "approved_at": "2026-07-27T09:00:00.000Z",
+      "is_published": true,
+      "published_at": "2026-07-27T10:00:00.000Z",
+      "send_back_reason": "",
+      "stale": false,
+      "updated_at": "2026-07-27T10:00:00.000Z"
+    },
+    {
+      "report_card_id": "rc-ut1-1016",
+      "exam_schedule_id": "exam-sch-001",
+      "student_id": "std-1016",
+      "class_section_id": "sec-10a",
+      "total_marks": 85.0,
+      "total_max_marks": 150.0,
+      "percentage": 56.67,
+      "grade": "C",
+      "gpa": 6.0,
+      "class_rank": 6,
+      "subject_results": [
+        {
+          "paper_id": "ex-paper-ut1-eng",
+          "subject_id": "sub-102",
+          "subject_name": "English",
+          "marks": 28.0,
+          "max_marks": 50.0,
+          "passing_marks": 18.0,
+          "absent": false
+        },
+        {
+          "paper_id": "ex-paper-ut1-phy",
+          "subject_id": "sub-103",
+          "subject_name": "Physics",
+          "marks": 27.0,
+          "max_marks": 50.0,
+          "passing_marks": 18.0,
+          "absent": false
+        },
+        {
+          "paper_id": "ex-paper-ut1-che",
+          "subject_id": "sub-104",
+          "subject_name": "Chemistry",
+          "marks": 30.0,
+          "max_marks": 50.0,
+          "passing_marks": 18.0,
+          "absent": false
+        }
+      ],
+      "class_incharge_remarks": "",
+      "status": "PUBLISHED",
+      "generated_at": "2026-07-26T11:00:00.000Z",
+      "approved_by_id": "u2",
+      "approved_at": "2026-07-27T09:00:00.000Z",
+      "is_published": true,
+      "published_at": "2026-07-27T10:00:00.000Z",
+      "send_back_reason": "",
+      "stale": false,
+      "updated_at": "2026-07-27T10:00:00.000Z"
+    }
+  ],
+  "grade_scale": [
+    {
+      "min_percent": 90,
+      "max_percent": 100,
+      "grade": "A+",
+      "gpa_point": 10.0
+    },
+    {
+      "min_percent": 80,
+      "max_percent": 89.99,
+      "grade": "A",
+      "gpa_point": 9.0
+    },
+    {
+      "min_percent": 70,
+      "max_percent": 79.99,
+      "grade": "B+",
+      "gpa_point": 8.0
+    },
+    {
+      "min_percent": 60,
+      "max_percent": 69.99,
+      "grade": "B",
+      "gpa_point": 7.0
+    },
+    {
+      "min_percent": 50,
+      "max_percent": 59.99,
+      "grade": "C",
+      "gpa_point": 6.0
+    },
+    {
+      "min_percent": 35,
+      "max_percent": 49.99,
+      "grade": "D",
+      "gpa_point": 5.0
+    },
+    {
+      "min_percent": 0,
+      "max_percent": 34.99,
+      "grade": "F",
+      "gpa_point": 0.0
+    }
+  ],
+  "syllabus_topics": [
+    {
+      "topic_id": "syl-103-1",
+      "class_id": "cls-10",
+      "subject_id": "sub-103",
+      "chapter_name": "Light: Reflection and Refraction"
+    },
+    {
+      "topic_id": "syl-103-2",
+      "class_id": "cls-10",
+      "subject_id": "sub-103",
+      "chapter_name": "Electricity"
+    },
+    {
+      "topic_id": "syl-103-3",
+      "class_id": "cls-10",
+      "subject_id": "sub-103",
+      "chapter_name": "Magnetic Effects of Electric Current"
+    },
+    {
+      "topic_id": "syl-103-4",
+      "class_id": "cls-10",
+      "subject_id": "sub-103",
+      "chapter_name": "Sources of Energy"
+    },
+    {
+      "topic_id": "syl-104-1",
+      "class_id": "cls-10",
+      "subject_id": "sub-104",
+      "chapter_name": "Chemical Reactions and Equations"
+    },
+    {
+      "topic_id": "syl-104-2",
+      "class_id": "cls-10",
+      "subject_id": "sub-104",
+      "chapter_name": "Acids, Bases and Salts"
+    },
+    {
+      "topic_id": "syl-104-3",
+      "class_id": "cls-10",
+      "subject_id": "sub-104",
+      "chapter_name": "Metals and Non-metals"
+    },
+    {
+      "topic_id": "syl-104-4",
+      "class_id": "cls-10",
+      "subject_id": "sub-104",
+      "chapter_name": "Carbon and its Compounds"
+    },
+    {
+      "topic_id": "syl-102-1",
+      "class_id": "cls-10",
+      "subject_id": "sub-102",
+      "chapter_name": "Reading Comprehension"
+    },
+    {
+      "topic_id": "syl-102-2",
+      "class_id": "cls-10",
+      "subject_id": "sub-102",
+      "chapter_name": "Writing Skills"
+    },
+    {
+      "topic_id": "syl-102-3",
+      "class_id": "cls-10",
+      "subject_id": "sub-102",
+      "chapter_name": "Grammar"
+    },
+    {
+      "topic_id": "syl-102-4",
+      "class_id": "cls-10",
+      "subject_id": "sub-102",
+      "chapter_name": "Literature"
+    }
+  ],
+  "exam_syllabus_patterns": [
+    {
+      "pattern_id": "pat-mid-phy",
+      "exam_schedule_id": "exam-sch-002",
+      "class_section_id": "sec-10a",
+      "subject_id": "sub-103",
+      "pattern_name": "Physics Mid-Term Pattern",
+      "max_marks": 50.0,
+      "exam_duration": 90,
+      "syllabus_details": "Chapters 1 to 4 of the Class 10 Physics syllabus.",
+      "status": "ACTIVE",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    }
+  ],
+  "pattern_sections": [
+    {
+      "pattern_section_id": "psec-a",
+      "pattern_id": "pat-mid-phy",
+      "section_name": "Section A",
+      "question_type": "MCQ",
+      "no_of_questions": 10,
+      "marks_each": 1.0,
+      "choice_count": 0
+    },
+    {
+      "pattern_section_id": "psec-b",
+      "pattern_id": "pat-mid-phy",
+      "section_name": "Section B",
+      "question_type": "SHORT",
+      "no_of_questions": 5,
+      "marks_each": 4.0,
+      "choice_count": 0
+    },
+    {
+      "pattern_section_id": "psec-c",
+      "pattern_id": "pat-mid-phy",
+      "section_name": "Section C",
+      "question_type": "LONG",
+      "no_of_questions": 3,
+      "marks_each": 10.0,
+      "choice_count": 2
+    }
+  ],
+  "pattern_topics": [
+    {
+      "pattern_topic_id": "ptop-1",
+      "pattern_id": "pat-mid-phy",
+      "topic_id": "syl-103-1",
+      "topic_title": "Light: Reflection and Refraction",
+      "weightage_percent": 30.0
+    },
+    {
+      "pattern_topic_id": "ptop-2",
+      "pattern_id": "pat-mid-phy",
+      "topic_id": "syl-103-2",
+      "topic_title": "Electricity",
+      "weightage_percent": 30.0
+    },
+    {
+      "pattern_topic_id": "ptop-3",
+      "pattern_id": "pat-mid-phy",
+      "topic_id": "syl-103-3",
+      "topic_title": "Magnetic Effects of Electric Current",
+      "weightage_percent": 20.0
+    },
+    {
+      "pattern_topic_id": "ptop-4",
+      "pattern_id": "pat-mid-phy",
+      "topic_id": "syl-103-4",
+      "topic_title": "Sources of Energy",
+      "weightage_percent": 20.0
+    }
+  ],
+  "question_bank": [
+    {
+      "question_id": "q-phy-01",
+      "subject_id": "sub-103",
+      "syllabus_topic_id": "syl-103-1",
+      "question_text": "The angle of incidence is equal to the angle of reflection. This is the law of:",
+      "question_type": "MCQ",
+      "marks": 1.0,
+      "difficulty_level": "EASY",
+      "answer_key": "",
+      "status": "APPROVED",
+      "created_by_teacher_id": "u3",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "question_id": "q-phy-02",
+      "subject_id": "sub-103",
+      "syllabus_topic_id": "syl-103-1",
+      "question_text": "A concave mirror forms a real, inverted image of the same size when the object is placed at:",
+      "question_type": "MCQ",
+      "marks": 1.0,
+      "difficulty_level": "MEDIUM",
+      "answer_key": "",
+      "status": "APPROVED",
+      "created_by_teacher_id": "u3",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "question_id": "q-phy-03",
+      "subject_id": "sub-103",
+      "syllabus_topic_id": "syl-103-1",
+      "question_text": "The SI unit of power of a lens is:",
+      "question_type": "MCQ",
+      "marks": 1.0,
+      "difficulty_level": "EASY",
+      "answer_key": "",
+      "status": "APPROVED",
+      "created_by_teacher_id": "u3",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "question_id": "q-phy-04",
+      "subject_id": "sub-103",
+      "syllabus_topic_id": "syl-103-1",
+      "question_text": "Which mirror is used as a rear-view mirror in vehicles?",
+      "question_type": "MCQ",
+      "marks": 1.0,
+      "difficulty_level": "EASY",
+      "answer_key": "",
+      "status": "APPROVED",
+      "created_by_teacher_id": "u3",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "question_id": "q-phy-05",
+      "subject_id": "sub-103",
+      "syllabus_topic_id": "syl-103-2",
+      "question_text": "The SI unit of electric current is:",
+      "question_type": "MCQ",
+      "marks": 1.0,
+      "difficulty_level": "EASY",
+      "answer_key": "",
+      "status": "APPROVED",
+      "created_by_teacher_id": "u3",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "question_id": "q-phy-06",
+      "subject_id": "sub-103",
+      "syllabus_topic_id": "syl-103-2",
+      "question_text": "Ohm's law gives the relation between:",
+      "question_type": "MCQ",
+      "marks": 1.0,
+      "difficulty_level": "MEDIUM",
+      "answer_key": "",
+      "status": "APPROVED",
+      "created_by_teacher_id": "u3",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "question_id": "q-phy-07",
+      "subject_id": "sub-103",
+      "syllabus_topic_id": "syl-103-2",
+      "question_text": "The resistance of a wire increases when its:",
+      "question_type": "MCQ",
+      "marks": 1.0,
+      "difficulty_level": "MEDIUM",
+      "answer_key": "",
+      "status": "APPROVED",
+      "created_by_teacher_id": "u3",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "question_id": "q-phy-08",
+      "subject_id": "sub-103",
+      "syllabus_topic_id": "syl-103-2",
+      "question_text": "Which instrument measures potential difference?",
+      "question_type": "MCQ",
+      "marks": 1.0,
+      "difficulty_level": "EASY",
+      "answer_key": "",
+      "status": "APPROVED",
+      "created_by_teacher_id": "u3",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "question_id": "q-phy-09",
+      "subject_id": "sub-103",
+      "syllabus_topic_id": "syl-103-3",
+      "question_text": "The direction of force on a current-carrying conductor in a magnetic field is given by:",
+      "question_type": "MCQ",
+      "marks": 1.0,
+      "difficulty_level": "MEDIUM",
+      "answer_key": "",
+      "status": "APPROVED",
+      "created_by_teacher_id": "u3",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "question_id": "q-phy-10",
+      "subject_id": "sub-103",
+      "syllabus_topic_id": "syl-103-3",
+      "question_text": "A device that converts mechanical energy into electrical energy is:",
+      "question_type": "MCQ",
+      "marks": 1.0,
+      "difficulty_level": "HARD",
+      "answer_key": "",
+      "status": "APPROVED",
+      "created_by_teacher_id": "u3",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "question_id": "q-phy-11",
+      "subject_id": "sub-103",
+      "syllabus_topic_id": "syl-103-4",
+      "question_text": "Which of the following is a renewable source of energy?",
+      "question_type": "MCQ",
+      "marks": 1.0,
+      "difficulty_level": "EASY",
+      "answer_key": "",
+      "status": "APPROVED",
+      "created_by_teacher_id": "u3",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "question_id": "q-phy-12",
+      "subject_id": "sub-103",
+      "syllabus_topic_id": "syl-103-4",
+      "question_text": "The main component of biogas is:",
+      "question_type": "MCQ",
+      "marks": 1.0,
+      "difficulty_level": "MEDIUM",
+      "answer_key": "",
+      "status": "APPROVED",
+      "created_by_teacher_id": "u3",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "question_id": "q-phy-13",
+      "subject_id": "sub-103",
+      "syllabus_topic_id": "syl-103-2",
+      "question_text": "State Ohm's law.",
+      "question_type": "SHORT",
+      "marks": 4.0,
+      "difficulty_level": "EASY",
+      "answer_key": "Refer to the marking scheme.",
+      "status": "APPROVED",
+      "created_by_teacher_id": "u3",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "question_id": "q-phy-14",
+      "subject_id": "sub-103",
+      "syllabus_topic_id": "syl-103-1",
+      "question_text": "Define the principal focus of a concave mirror.",
+      "question_type": "SHORT",
+      "marks": 4.0,
+      "difficulty_level": "EASY",
+      "answer_key": "Refer to the marking scheme.",
+      "status": "APPROVED",
+      "created_by_teacher_id": "u3",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "question_id": "q-phy-15",
+      "subject_id": "sub-103",
+      "syllabus_topic_id": "syl-103-2",
+      "question_text": "Why is a fuse used in an electric circuit?",
+      "question_type": "SHORT",
+      "marks": 4.0,
+      "difficulty_level": "MEDIUM",
+      "answer_key": "Refer to the marking scheme.",
+      "status": "APPROVED",
+      "created_by_teacher_id": "u3",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "question_id": "q-phy-16",
+      "subject_id": "sub-103",
+      "syllabus_topic_id": "syl-103-3",
+      "question_text": "What is the function of a split-ring commutator in a DC motor?",
+      "question_type": "SHORT",
+      "marks": 4.0,
+      "difficulty_level": "MEDIUM",
+      "answer_key": "Refer to the marking scheme.",
+      "status": "APPROVED",
+      "created_by_teacher_id": "u3",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "question_id": "q-phy-17",
+      "subject_id": "sub-103",
+      "syllabus_topic_id": "syl-103-4",
+      "question_text": "List two advantages of solar cells.",
+      "question_type": "SHORT",
+      "marks": 4.0,
+      "difficulty_level": "EASY",
+      "answer_key": "Refer to the marking scheme.",
+      "status": "APPROVED",
+      "created_by_teacher_id": "u3",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "question_id": "q-phy-18",
+      "subject_id": "sub-103",
+      "syllabus_topic_id": "syl-103-1",
+      "question_text": "What is meant by refraction of light?",
+      "question_type": "SHORT",
+      "marks": 4.0,
+      "difficulty_level": "MEDIUM",
+      "answer_key": "Refer to the marking scheme.",
+      "status": "APPROVED",
+      "created_by_teacher_id": "u3",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "question_id": "q-phy-19",
+      "subject_id": "sub-103",
+      "syllabus_topic_id": "syl-103-1",
+      "question_text": "Describe the image formed by a concave mirror when the object is placed between the focus and the pole. Draw a ray diagram.",
+      "question_type": "LONG",
+      "marks": 10.0,
+      "difficulty_level": "MEDIUM",
+      "answer_key": "Refer to the marking scheme.",
+      "status": "APPROVED",
+      "created_by_teacher_id": "u3",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "question_id": "q-phy-20",
+      "subject_id": "sub-103",
+      "syllabus_topic_id": "syl-103-2",
+      "question_text": "Derive the expression for the equivalent resistance of three resistors connected in series.",
+      "question_type": "LONG",
+      "marks": 10.0,
+      "difficulty_level": "HARD",
+      "answer_key": "Refer to the marking scheme.",
+      "status": "APPROVED",
+      "created_by_teacher_id": "u3",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    },
+    {
+      "question_id": "q-phy-21",
+      "subject_id": "sub-103",
+      "syllabus_topic_id": "syl-103-3",
+      "question_text": "State Fleming's left-hand rule and explain the working of an electric motor.",
+      "question_type": "LONG",
+      "marks": 10.0,
+      "difficulty_level": "MEDIUM",
+      "answer_key": "Refer to the marking scheme.",
+      "status": "APPROVED",
+      "created_by_teacher_id": "u3",
+      "created_at": "2026-10-31T08:00:00.000Z",
+      "updated_at": "2026-10-31T08:00:00.000Z"
+    }
+  ],
+  "question_options": [
+    {
+      "option_id": "q-phy-01-o1",
+      "question_id": "q-phy-01",
+      "option_text": "Reflection",
+      "is_correct": true
+    },
+    {
+      "option_id": "q-phy-01-o2",
+      "question_id": "q-phy-01",
+      "option_text": "Refraction",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-01-o3",
+      "question_id": "q-phy-01",
+      "option_text": "Dispersion",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-01-o4",
+      "question_id": "q-phy-01",
+      "option_text": "Diffraction",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-02-o1",
+      "question_id": "q-phy-02",
+      "option_text": "Focus",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-02-o2",
+      "question_id": "q-phy-02",
+      "option_text": "Centre of curvature",
+      "is_correct": true
+    },
+    {
+      "option_id": "q-phy-02-o3",
+      "question_id": "q-phy-02",
+      "option_text": "Infinity",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-02-o4",
+      "question_id": "q-phy-02",
+      "option_text": "Between pole and focus",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-03-o1",
+      "question_id": "q-phy-03",
+      "option_text": "Dioptre",
+      "is_correct": true
+    },
+    {
+      "option_id": "q-phy-03-o2",
+      "question_id": "q-phy-03",
+      "option_text": "Metre",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-03-o3",
+      "question_id": "q-phy-03",
+      "option_text": "Watt",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-03-o4",
+      "question_id": "q-phy-03",
+      "option_text": "Newton",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-04-o1",
+      "question_id": "q-phy-04",
+      "option_text": "Convex mirror",
+      "is_correct": true
+    },
+    {
+      "option_id": "q-phy-04-o2",
+      "question_id": "q-phy-04",
+      "option_text": "Concave mirror",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-04-o3",
+      "question_id": "q-phy-04",
+      "option_text": "Plane mirror",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-04-o4",
+      "question_id": "q-phy-04",
+      "option_text": "Cylindrical mirror",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-05-o1",
+      "question_id": "q-phy-05",
+      "option_text": "Volt",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-05-o2",
+      "question_id": "q-phy-05",
+      "option_text": "Ampere",
+      "is_correct": true
+    },
+    {
+      "option_id": "q-phy-05-o3",
+      "question_id": "q-phy-05",
+      "option_text": "Ohm",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-05-o4",
+      "question_id": "q-phy-05",
+      "option_text": "Watt",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-06-o1",
+      "question_id": "q-phy-06",
+      "option_text": "Voltage and current",
+      "is_correct": true
+    },
+    {
+      "option_id": "q-phy-06-o2",
+      "question_id": "q-phy-06",
+      "option_text": "Power and energy",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-06-o3",
+      "question_id": "q-phy-06",
+      "option_text": "Charge and mass",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-06-o4",
+      "question_id": "q-phy-06",
+      "option_text": "Force and distance",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-07-o1",
+      "question_id": "q-phy-07",
+      "option_text": "Length increases",
+      "is_correct": true
+    },
+    {
+      "option_id": "q-phy-07-o2",
+      "question_id": "q-phy-07",
+      "option_text": "Length decreases",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-07-o3",
+      "question_id": "q-phy-07",
+      "option_text": "Area increases",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-07-o4",
+      "question_id": "q-phy-07",
+      "option_text": "Temperature decreases",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-08-o1",
+      "question_id": "q-phy-08",
+      "option_text": "Ammeter",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-08-o2",
+      "question_id": "q-phy-08",
+      "option_text": "Voltmeter",
+      "is_correct": true
+    },
+    {
+      "option_id": "q-phy-08-o3",
+      "question_id": "q-phy-08",
+      "option_text": "Galvanometer",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-08-o4",
+      "question_id": "q-phy-08",
+      "option_text": "Ohmmeter",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-09-o1",
+      "question_id": "q-phy-09",
+      "option_text": "Fleming's left-hand rule",
+      "is_correct": true
+    },
+    {
+      "option_id": "q-phy-09-o2",
+      "question_id": "q-phy-09",
+      "option_text": "Fleming's right-hand rule",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-09-o3",
+      "question_id": "q-phy-09",
+      "option_text": "Ampere's rule",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-09-o4",
+      "question_id": "q-phy-09",
+      "option_text": "Snell's law",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-10-o1",
+      "question_id": "q-phy-10",
+      "option_text": "Electric motor",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-10-o2",
+      "question_id": "q-phy-10",
+      "option_text": "Generator",
+      "is_correct": true
+    },
+    {
+      "option_id": "q-phy-10-o3",
+      "question_id": "q-phy-10",
+      "option_text": "Transformer",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-10-o4",
+      "question_id": "q-phy-10",
+      "option_text": "Battery",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-11-o1",
+      "question_id": "q-phy-11",
+      "option_text": "Coal",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-11-o2",
+      "question_id": "q-phy-11",
+      "option_text": "Petroleum",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-11-o3",
+      "question_id": "q-phy-11",
+      "option_text": "Solar energy",
+      "is_correct": true
+    },
+    {
+      "option_id": "q-phy-11-o4",
+      "question_id": "q-phy-11",
+      "option_text": "Natural gas",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-12-o1",
+      "question_id": "q-phy-12",
+      "option_text": "Methane",
+      "is_correct": true
+    },
+    {
+      "option_id": "q-phy-12-o2",
+      "question_id": "q-phy-12",
+      "option_text": "Oxygen",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-12-o3",
+      "question_id": "q-phy-12",
+      "option_text": "Hydrogen",
+      "is_correct": false
+    },
+    {
+      "option_id": "q-phy-12-o4",
+      "question_id": "q-phy-12",
+      "option_text": "Carbon monoxide",
+      "is_correct": false
+    }
+  ],
+  "question_papers": [],
+  "question_paper_items": []
+}

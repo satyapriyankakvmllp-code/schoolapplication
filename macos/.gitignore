@@ -1,0 +1,58 @@
+@'
+# Flutter and Dart generated files
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+build/
+
+# Flutter plugins
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+
+# Android generated files
+android/.gradle/
+android/local.properties
+android/key.properties
+android/captures/
+
+# iOS and macOS generated files
+**/Pods/
+**/.symlinks/
+**/DerivedData/
+**/ephemeral/
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+ios/Runner/GeneratedPluginRegistrant.*
+macos/Flutter/GeneratedPluginRegistrant.swift
+
+# Windows and Linux generated files
+windows/flutter/ephemeral/
+linux/flutter/ephemeral/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Logs and operating system files
+*.log
+.DS_Store
+Thumbs.db
+
+# Xcode files
+xcuserdata/
+*.mode1v3
+*.mode2v3
+*.moved-aside
+*.pbxuser
+*.perspectivev3
+
+# Other generated files
+**/.generated/
+'@ | Set-Content -Encoding utf8 .gitignore

@@ -1,0 +1,1667 @@
+{
+  "classes": [
+    {
+      "id": "cls-1",
+      "name": "1st Class",
+      "code": "CLS-1",
+      "grade_level": 1,
+      "academic_year": "2026-2027",
+      "status": "Active",
+      "class_teacher_id": "STF-2026-0117",
+      "classroom_id": "room-101"
+    },
+    {
+      "id": "cls-2",
+      "name": "2nd Class",
+      "code": "CLS-2",
+      "grade_level": 2,
+      "academic_year": "2026-2027",
+      "status": "Active",
+      "class_teacher_id": "STF-2026-0113",
+      "classroom_id": "room-102"
+    },
+    {
+      "id": "cls-3",
+      "name": "3rd Class",
+      "code": "CLS-3",
+      "grade_level": 3,
+      "academic_year": "2026-2027",
+      "status": "Active",
+      "class_teacher_id": "STF-2026-0115",
+      "classroom_id": "room-103"
+    },
+    {
+      "id": "cls-4",
+      "name": "4th Class",
+      "code": "CLS-4",
+      "grade_level": 4,
+      "academic_year": "2026-2027",
+      "status": "Active",
+      "class_teacher_id": "STF-2026-0118",
+      "classroom_id": "room-104"
+    },
+    {
+      "id": "cls-5",
+      "name": "5th Class",
+      "code": "CLS-5",
+      "grade_level": 5,
+      "academic_year": "2026-2027",
+      "status": "Active",
+      "class_teacher_id": "STF-2026-0116",
+      "classroom_id": "room-105"
+    },
+    {
+      "id": "cls-6",
+      "name": "6th Class",
+      "code": "CLS-6",
+      "grade_level": 6,
+      "academic_year": "2026-2027",
+      "status": "Active",
+      "class_teacher_id": "STF-2026-0114",
+      "classroom_id": "room-201"
+    },
+    {
+      "id": "cls-7",
+      "name": "7th Class",
+      "code": "CLS-7",
+      "grade_level": 7,
+      "academic_year": "2026-2027",
+      "status": "Active",
+      "class_teacher_id": "STF-2026-0117",
+      "classroom_id": "room-202"
+    },
+    {
+      "id": "cls-8",
+      "name": "8th Class",
+      "code": "CLS-8",
+      "grade_level": 8,
+      "academic_year": "2026-2027",
+      "status": "Active",
+      "class_teacher_id": "STF-2026-0113",
+      "classroom_id": "room-203"
+    },
+    {
+      "id": "cls-9",
+      "name": "9th Class",
+      "code": "CLS-9",
+      "grade_level": 9,
+      "academic_year": "2026-2027",
+      "status": "Active",
+      "class_teacher_id": "STF-2026-0112",
+      "classroom_id": "room-204"
+    },
+    {
+      "id": "cls-10",
+      "name": "10th Class",
+      "code": "CLS-10",
+      "grade_level": 10,
+      "academic_year": "2026-2027",
+      "status": "Active",
+      "class_teacher_id": "STF-2026-0111",
+      "classroom_id": "room-205"
+    },
+    {
+      "id": "cls-1792137610517629-0",
+      "name": "13cclas",
+      "code": "CLS-1792137610517629-0",
+      "grade_level": 13,
+      "academic_year": "2026-27",
+      "status": "Active",
+      "class_teacher_id": null,
+      "classroom_id": "room-101",
+      "subject_count": 5,
+      "student_count": 30,
+      "teacher_count": 3
+    },
+    {
+      "id": "cls-1792216995941100-1",
+      "name": "111 class",
+      "code": "CLS-111",
+      "grade_level": 111,
+      "academic_year": "2026-27",
+      "status": "Active",
+      "class_teacher_id": null,
+      "classroom_id": "room-202",
+      "subject_count": 5,
+      "student_count": 30,
+      "teacher_count": 3
+    },
+    {
+      "id": "cls-1792589786407000-2",
+      "name": "class15",
+      "code": "CLS-15",
+      "grade_level": 15,
+      "academic_year": "2026-27",
+      "status": "Active",
+      "class_teacher_id": null,
+      "classroom_id": "room-201",
+      "subject_count": 5,
+      "student_count": 30,
+      "teacher_count": 3
+    }
+  ],
+  "sections": [
+    {
+      "id": "sec-1a",
+      "class_id": "cls-1",
+      "name": "A",
+      "capacity": 35,
+      "classroom_id": "room-101",
+      "class_teacher_id": null,
+      "status": "Active"
+    },
+    {
+      "id": "sec-2a",
+      "class_id": "cls-2",
+      "name": "A",
+      "capacity": 35,
+      "classroom_id": "room-102",
+      "class_teacher_id": null,
+      "status": "Active"
+    },
+    {
+      "id": "sec-3a",
+      "class_id": "cls-3",
+      "name": "A",
+      "capacity": 35,
+      "classroom_id": "room-103",
+      "class_teacher_id": null,
+      "status": "Active"
+    },
+    {
+      "id": "sec-4a",
+      "class_id": "cls-4",
+      "name": "A",
+      "capacity": 35,
+      "classroom_id": "room-104",
+      "class_teacher_id": null,
+      "status": "Active"
+    },
+    {
+      "id": "sec-5a",
+      "class_id": "cls-5",
+      "name": "A",
+      "capacity": 35,
+      "classroom_id": "room-105",
+      "class_teacher_id": null,
+      "status": "Active"
+    },
+    {
+      "id": "sec-6a",
+      "class_id": "cls-6",
+      "name": "A",
+      "capacity": 40,
+      "classroom_id": "room-201",
+      "class_teacher_id": null,
+      "status": "Active"
+    },
+    {
+      "id": "sec-7a",
+      "class_id": "cls-7",
+      "name": "A",
+      "capacity": 40,
+      "classroom_id": "room-202",
+      "class_teacher_id": null,
+      "status": "Active"
+    },
+    {
+      "id": "sec-8a",
+      "class_id": "cls-8",
+      "name": "A",
+      "capacity": 40,
+      "classroom_id": "room-203",
+      "class_teacher_id": null,
+      "status": "Active"
+    },
+    {
+      "id": "sec-9a",
+      "class_id": "cls-9",
+      "name": "A",
+      "capacity": 40,
+      "classroom_id": "room-204",
+      "class_teacher_id": null,
+      "status": "Active"
+    },
+    {
+      "id": "sec-9b",
+      "class_id": "cls-9",
+      "name": "B",
+      "capacity": 38,
+      "classroom_id": "room-204",
+      "class_teacher_id": null,
+      "status": "Active"
+    },
+    {
+      "id": "sec-10a",
+      "class_id": "cls-10",
+      "name": "A",
+      "capacity": 40,
+      "classroom_id": "room-205",
+      "class_teacher_id": null,
+      "status": "Active"
+    },
+    {
+      "id": "sec-10b",
+      "class_id": "cls-10",
+      "name": "B",
+      "capacity": 40,
+      "classroom_id": "room-205",
+      "class_teacher_id": null,
+      "status": "Active"
+    },
+    {
+      "id": "sec-1792138255814901-2",
+      "class_id": "cls-1792137610517629-0",
+      "name": "c",
+      "capacity": 40,
+      "classroom_id": "room-201",
+      "class_teacher_id": null,
+      "status": "Active"
+    },
+    {
+      "id": "sec-1792217188635259-3",
+      "class_id": "cls-1792216995941100-1",
+      "name": "A",
+      "capacity": 40,
+      "classroom_id": "room-202",
+      "class_teacher_id": "STF-2026-0116",
+      "status": "Active"
+    },
+    {
+      "id": "sec-1792587887697000-0",
+      "class_id": "cls-2",
+      "name": "B",
+      "capacity": 40,
+      "classroom_id": "room-102",
+      "class_teacher_id": "STF-2026-0117",
+      "status": "Active"
+    }
+  ],
+  "subjects": [
+    {
+      "id": "sub-101",
+      "class_id": "cls-1792216995941100-1",
+      "name": "Mathematics",
+      "code": "MTH-101",
+      "type": "Theory",
+      "teacher_id": "STF-2026-0112",
+      "max_marks": 100,
+      "pass_marks": 35
+    },
+    {
+      "id": "sub-102",
+      "class_id": "cls-10",
+      "name": "English Language & Lit",
+      "code": "ENG-102",
+      "type": "Theory",
+      "teacher_id": "STF-2026-0113",
+      "max_marks": 100,
+      "pass_marks": 35
+    },
+    {
+      "id": "sub-103",
+      "class_id": "cls-10",
+      "name": "Physics",
+      "code": "PHY-103",
+      "type": "Theory",
+      "teacher_id": "STF-2026-0114",
+      "max_marks": 100,
+      "pass_marks": 35
+    },
+    {
+      "id": "sub-104",
+      "class_id": "cls-10",
+      "name": "Chemistry",
+      "code": "CHM-104",
+      "type": "Theory",
+      "teacher_id": "STF-2026-0115",
+      "max_marks": 100,
+      "pass_marks": 35
+    },
+    {
+      "id": "sub-105",
+      "class_id": "cls-10",
+      "name": "Social Science",
+      "code": "SST-105",
+      "type": "Theory",
+      "teacher_id": "STF-2026-0117",
+      "max_marks": 100,
+      "pass_marks": 35
+    },
+    {
+      "id": "sub-106",
+      "class_id": "cls-10",
+      "name": "Hindi Core",
+      "code": "HIN-106",
+      "type": "Theory",
+      "teacher_id": "STF-2026-0111",
+      "max_marks": 100,
+      "pass_marks": 35
+    },
+    {
+      "id": "sub-107",
+      "class_id": "cls-10",
+      "name": "Computer Science & AI",
+      "code": "CSC-107",
+      "type": "Theory",
+      "teacher_id": "STF-2026-0116",
+      "max_marks": 100,
+      "pass_marks": 35
+    },
+    {
+      "id": "sub-108",
+      "class_id": "cls-10",
+      "name": "Physical Education",
+      "code": "PED-108",
+      "type": "Theory",
+      "teacher_id": "STF-2026-0118",
+      "max_marks": 100,
+      "pass_marks": 35
+    },
+    {
+      "id": "sub-901",
+      "class_id": "cls-9",
+      "name": "Mathematics",
+      "code": "MTH-901",
+      "type": "Theory",
+      "teacher_id": "STF-2026-0112",
+      "max_marks": 100,
+      "pass_marks": 35
+    },
+    {
+      "id": "sub-902",
+      "class_id": "cls-9",
+      "name": "General Science",
+      "code": "SCI-902",
+      "type": "Theory",
+      "teacher_id": "STF-2026-0114",
+      "max_marks": 100,
+      "pass_marks": 35
+    },
+    {
+      "id": "sub-903",
+      "class_id": "cls-9",
+      "name": "English",
+      "code": "ENG-903",
+      "type": "Theory",
+      "teacher_id": "STF-2026-0113",
+      "max_marks": 100,
+      "pass_marks": 35
+    },
+    {
+      "id": "sub-904",
+      "class_id": "cls-9",
+      "name": "Social Studies",
+      "code": "SST-904",
+      "type": "Theory",
+      "teacher_id": "STF-2026-0117",
+      "max_marks": 100,
+      "pass_marks": 35
+    },
+    {
+      "id": "sub-801",
+      "class_id": "cls-8",
+      "name": "Mathematics",
+      "code": "MTH-801",
+      "type": "Theory",
+      "teacher_id": "STF-2026-0112",
+      "max_marks": 100,
+      "pass_marks": 35
+    },
+    {
+      "id": "sub-802",
+      "class_id": "cls-8",
+      "name": "Science",
+      "code": "SCI-802",
+      "type": "Theory",
+      "teacher_id": "STF-2026-0115",
+      "max_marks": 100,
+      "pass_marks": 35
+    },
+    {
+      "id": "sub-803",
+      "class_id": "cls-8",
+      "name": "English",
+      "code": "ENG-803",
+      "type": "Theory",
+      "teacher_id": "STF-2026-0113",
+      "max_marks": 100,
+      "pass_marks": 35
+    },
+    {
+      "id": "sub-701",
+      "class_id": "cls-7",
+      "name": "Mathematics",
+      "code": "MTH-701",
+      "type": "Theory",
+      "teacher_id": "STF-2026-0112",
+      "max_marks": 100,
+      "pass_marks": 35
+    },
+    {
+      "id": "sub-702",
+      "class_id": "cls-7",
+      "name": "General Science",
+      "code": "SCI-702",
+      "type": "Theory",
+      "teacher_id": "STF-2026-0115",
+      "max_marks": 100,
+      "pass_marks": 35
+    },
+    {
+      "id": "sub-601",
+      "class_id": "cls-6",
+      "name": "Mathematics",
+      "code": "MTH-601",
+      "type": "Theory",
+      "teacher_id": "STF-2026-0112",
+      "max_marks": 100,
+      "pass_marks": 35
+    },
+    {
+      "id": "sub-501",
+      "class_id": "cls-5",
+      "name": "Primary Mathematics",
+      "code": "MTH-501",
+      "type": "Theory",
+      "teacher_id": "STF-2026-0116",
+      "max_marks": 100,
+      "pass_marks": 35
+    },
+    {
+      "id": "sub-401",
+      "class_id": "cls-4",
+      "name": "Primary Mathematics",
+      "code": "MTH-401",
+      "type": "Theory",
+      "teacher_id": "STF-2026-0118",
+      "max_marks": 100,
+      "pass_marks": 35
+    },
+    {
+      "id": "sub-301",
+      "class_id": "cls-3",
+      "name": "Primary Mathematics",
+      "code": "MTH-301",
+      "type": "Theory",
+      "teacher_id": "STF-2026-0115",
+      "max_marks": 100,
+      "pass_marks": 35
+    },
+    {
+      "id": "sub-201",
+      "class_id": "cls-2",
+      "name": "Foundational Math",
+      "code": "MTH-201",
+      "type": "Theory",
+      "teacher_id": "STF-2026-0113",
+      "max_marks": 100,
+      "pass_marks": 35
+    },
+    {
+      "id": "sub-101p",
+      "class_id": "cls-1",
+      "name": "Foundational Math",
+      "code": "MTH-101P",
+      "type": "Theory",
+      "teacher_id": "STF-2026-0117",
+      "max_marks": 100,
+      "pass_marks": 35
+    },
+    {
+      "id": "sub-1792138220165989-1",
+      "class_id": "cls-1792137610517629-0",
+      "name": "Micro Biology",
+      "code": "MIC-101",
+      "type": "Theory",
+      "teacher_id": "STF-2026-0111",
+      "max_marks": 100,
+      "pass_marks": 35
+    },
+    {
+      "id": "sub-1792216707703123-0",
+      "class_id": "cls-5",
+      "name": "Social Studies",
+      "code": "social 101",
+      "type": "Theory",
+      "syllabus": "algebra",
+      "teacher_id": "STF-2026-0117",
+      "max_marks": 100,
+      "pass_marks": 35
+    },
+    {
+      "id": "sub-1792217108459253-2",
+      "class_id": "cls-1792216995941100-1",
+      "name": "Mathematics",
+      "code": "mat 111",
+      "type": "Theory",
+      "syllabus": "unit 1 algebra",
+      "teacher_id": "STF-2026-0112",
+      "max_marks": 100,
+      "pass_marks": 35
+    }
+  ],
+  "curriculum": [
+    {
+      "id": "cur-101",
+      "class_id": "cls-10",
+      "subject_id": "sub-101",
+      "title": "Chapter 1: Real Numbers",
+      "description": "Fundamental Theorem of Arithmetic, decimal expansions of rational numbers.",
+      "topics": [
+        "Introduction & Euclid's Division Lemma",
+        "Fundamental Theorem of Arithmetic",
+        "Revisiting Irrational Numbers & Decimals",
+        "Decimal Expansions of Rational Numbers"
+      ],
+      "completed_topics": 3
+    },
+    {
+      "id": "cur-102",
+      "class_id": "cls-10",
+      "subject_id": "sub-101",
+      "title": "Chapter 2: Polynomials",
+      "description": "Geometrical meaning of zeroes, relationship between zeroes and coefficients.",
+      "topics": [
+        "Geometrical Meaning of Zeroes of a Polynomial",
+        "Relationship between Zeroes and Coefficients",
+        "Division Algorithm for Polynomials"
+      ],
+      "completed_topics": 3
+    },
+    {
+      "id": "cur-103",
+      "class_id": "cls-10",
+      "subject_id": "sub-101",
+      "title": "Chapter 3: Pair of Linear Equations",
+      "description": "Graphical and algebraic methods of solving linear systems.",
+      "topics": [
+        "Graphical Method of Solution of Linear Equations",
+        "Algebraic Methods: Substitution & Elimination",
+        "Equations Reducible to a Pair of Linear Equations"
+      ],
+      "completed_topics": 2
+    },
+    {
+      "id": "cur-104",
+      "class_id": "cls-10",
+      "subject_id": "sub-101",
+      "title": "Chapter 4: Quadratic Equations",
+      "description": "Standard form, factorization, quadratic formula.",
+      "topics": [
+        "Quadratic Equations & Roots by Factorisation"
+      ],
+      "completed_topics": 0
+    },
+    {
+      "id": "cur-1792589060979000-1",
+      "class_id": "cls-10",
+      "subject_id": "sub-103",
+      "title": "VELOCITY",
+      "description": "",
+      "topics": [
+        "Velocity and speed"
+      ],
+      "completed_topics": 0
+    }
+  ],
+  "syllabus": [
+    {
+      "id": "cur-101",
+      "class_id": "cls-10",
+      "subject_id": "sub-101",
+      "title": "Chapter 1: Real Numbers",
+      "description": "Fundamental Theorem of Arithmetic, decimal expansions of rational numbers.",
+      "topics": [
+        "Introduction & Euclid's Division Lemma",
+        "Fundamental Theorem of Arithmetic",
+        "Revisiting Irrational Numbers & Decimals",
+        "Decimal Expansions of Rational Numbers"
+      ],
+      "completed_topics": 3
+    },
+    {
+      "id": "cur-102",
+      "class_id": "cls-10",
+      "subject_id": "sub-101",
+      "title": "Chapter 2: Polynomials",
+      "description": "Geometrical meaning of zeroes, relationship between zeroes and coefficients.",
+      "topics": [
+        "Geometrical Meaning of Zeroes of a Polynomial",
+        "Relationship between Zeroes and Coefficients",
+        "Division Algorithm for Polynomials"
+      ],
+      "completed_topics": 3
+    },
+    {
+      "id": "cur-103",
+      "class_id": "cls-10",
+      "subject_id": "sub-101",
+      "title": "Chapter 3: Pair of Linear Equations",
+      "description": "Graphical and algebraic methods of solving linear systems.",
+      "topics": [
+        "Graphical Method of Solution of Linear Equations",
+        "Algebraic Methods: Substitution & Elimination",
+        "Equations Reducible to a Pair of Linear Equations"
+      ],
+      "completed_topics": 2
+    },
+    {
+      "id": "cur-104",
+      "class_id": "cls-10",
+      "subject_id": "sub-101",
+      "title": "Chapter 4: Quadratic Equations",
+      "description": "Standard form, factorization, quadratic formula.",
+      "topics": [
+        "Quadratic Equations & Roots by Factorisation"
+      ],
+      "completed_topics": 0
+    },
+    {
+      "id": "cur-1792589060979000-1",
+      "class_id": "cls-10",
+      "subject_id": "sub-103",
+      "title": "VELOCITY",
+      "description": "",
+      "topics": [
+        "Velocity and speed"
+      ],
+      "completed_topics": 0
+    }
+  ],
+  "daily_lessons": [
+    {
+      "id": "les-101",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-101",
+      "teacher_id": "STF-2026-0112",
+      "period_label": "P1 (08:00 - 08:45)",
+      "date": "2026-10-15",
+      "title": "Elimination Method & Linear Systems",
+      "notes": "Solved 4 comprehensive examples of elimination method and introduced substitution",
+      "homework": "Complete NCERT Ex 3.3, Questions 1 through 6 in homework notebook",
+      "status": "Published"
+    },
+    {
+      "id": "les-102",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-102",
+      "teacher_id": "STF-2026-0113",
+      "period_label": "P2 (08:45 - 09:30)",
+      "date": "2026-10-15",
+      "title": "A Letter to God - Irony Analysis",
+      "notes": "Analyzed the ending irony where Lencho distrusts the post office staff",
+      "homework": "Write a 120-word diary entry as Lencho upon receiving seventy pesos",
+      "status": "Published"
+    },
+    {
+      "id": "les-103",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-103",
+      "teacher_id": "STF-2026-0114",
+      "period_label": "P3 (09:30 - 10:15)",
+      "date": "2026-10-15",
+      "title": "Ohm's Law Verification & Wiring",
+      "notes": "Conducted circuit wiring in Lab 1. Measured voltage and current across series resistors",
+      "homework": "Plot V vs I graph on millimeter graph sheet and verify Ohm's law",
+      "status": "Published"
+    },
+    {
+      "id": "les-104",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-104",
+      "teacher_id": "STF-2026-0115",
+      "period_label": "P4 (10:30 - 11:15)",
+      "date": "2026-10-15",
+      "title": "Acid Carbonate Reactions",
+      "notes": "Demonstrated effervescence when HCl reacts with sodium carbonate",
+      "homework": "Write balanced equations for CaCO3 + H2SO4 and write chemical observations",
+      "status": "Published"
+    },
+    {
+      "id": "les-105",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-105",
+      "teacher_id": "STF-2026-0117",
+      "period_label": "P5 (11:15 - 12:00)",
+      "date": "2026-10-15",
+      "title": "Non-Cooperation Movement Dynamics",
+      "notes": "Discussed causes of Non-Cooperation Movement and the role of peasants in Awadh",
+      "homework": "Answer Question 3 & 4 on page 58 of textbook",
+      "status": "Published"
+    },
+    {
+      "id": "les-106",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-107",
+      "teacher_id": "STF-2026-0116",
+      "period_label": "P6 (12:40 - 01:25)",
+      "date": "2026-10-15",
+      "title": "Relational DB Keys & Schemas",
+      "notes": "Introduction to relational database keys: primary, candidate, and foreign keys",
+      "homework": "Create schema table for Student and Library database in practical file",
+      "status": "Pending Review"
+    },
+    {
+      "id": "les-1792138393661269-4",
+      "class_id": "cls-1792137610517629-0",
+      "section_id": "sec-1792138255814901-2",
+      "subject_id": "sub-1792138220165989-1",
+      "teacher_id": "STF-2026-0118",
+      "period_label": "P7 (01:25 - 02:10)",
+      "date": "2026-10-16",
+      "title": "part of bio",
+      "notes": "covered",
+      "homework": "",
+      "status": "Published"
+    }
+  ],
+  "timetable": [
+    {
+      "id": "tt-101",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-101",
+      "teacher_id": "STF-2026-0112",
+      "classroom_id": "room-201",
+      "day_of_week": 1,
+      "start_time": "08:00",
+      "end_time": "08:45"
+    },
+    {
+      "id": "tt-102",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-102",
+      "teacher_id": "STF-2026-0113",
+      "classroom_id": "room-202",
+      "day_of_week": 1,
+      "start_time": "08:45",
+      "end_time": "09:30"
+    },
+    {
+      "id": "tt-103",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-103",
+      "teacher_id": "STF-2026-0114",
+      "classroom_id": "room-lab1",
+      "day_of_week": 1,
+      "start_time": "09:30",
+      "end_time": "10:15"
+    },
+    {
+      "id": "tt-break-1",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "",
+      "teacher_id": "",
+      "is_break": true,
+      "title": "Break",
+      "day_of_week": 1,
+      "start_time": "10:15",
+      "end_time": "10:30"
+    },
+    {
+      "id": "tt-104",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-104",
+      "teacher_id": "STF-2026-0115",
+      "classroom_id": "room-lab2",
+      "day_of_week": 1,
+      "start_time": "10:30",
+      "end_time": "11:15"
+    },
+    {
+      "id": "tt-105",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-105",
+      "teacher_id": "STF-2026-0117",
+      "classroom_id": "room-203",
+      "day_of_week": 1,
+      "start_time": "11:15",
+      "end_time": "12:00"
+    },
+    {
+      "id": "tt-lunch-1",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "",
+      "teacher_id": "",
+      "is_break": true,
+      "title": "Lunch",
+      "day_of_week": 1,
+      "start_time": "12:00",
+      "end_time": "12:40"
+    },
+    {
+      "id": "tt-106",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-107",
+      "teacher_id": "STF-2026-0116",
+      "classroom_id": "room-lab3",
+      "day_of_week": 1,
+      "start_time": "12:40",
+      "end_time": "13:25"
+    },
+    {
+      "id": "tt-107",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-108",
+      "teacher_id": "STF-2026-0118",
+      "classroom_id": "room-act1",
+      "day_of_week": 1,
+      "start_time": "13:25",
+      "end_time": "14:10"
+    },
+    {
+      "id": "tt-201",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-103",
+      "teacher_id": "STF-2026-0114",
+      "classroom_id": "room-204",
+      "day_of_week": 2,
+      "start_time": "08:00",
+      "end_time": "08:45"
+    },
+    {
+      "id": "tt-202",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-106",
+      "teacher_id": "STF-2026-0111",
+      "classroom_id": "room-205",
+      "day_of_week": 2,
+      "start_time": "08:45",
+      "end_time": "09:30"
+    },
+    {
+      "id": "tt-203",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-101",
+      "teacher_id": "STF-2026-0112",
+      "classroom_id": "room-201",
+      "day_of_week": 2,
+      "start_time": "09:30",
+      "end_time": "10:15"
+    },
+    {
+      "id": "tt-break-2",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "",
+      "teacher_id": "",
+      "is_break": true,
+      "title": "Break",
+      "day_of_week": 2,
+      "start_time": "10:15",
+      "end_time": "10:30"
+    },
+    {
+      "id": "tt-204",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-102",
+      "teacher_id": "STF-2026-0113",
+      "classroom_id": "room-202",
+      "day_of_week": 2,
+      "start_time": "10:30",
+      "end_time": "11:15"
+    },
+    {
+      "id": "tt-205",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-105",
+      "teacher_id": "STF-2026-0117",
+      "classroom_id": "room-203",
+      "day_of_week": 2,
+      "start_time": "11:15",
+      "end_time": "12:00"
+    },
+    {
+      "id": "tt-lunch-2",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "",
+      "teacher_id": "",
+      "is_break": true,
+      "title": "Lunch",
+      "day_of_week": 2,
+      "start_time": "12:00",
+      "end_time": "12:40"
+    },
+    {
+      "id": "tt-206",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-108",
+      "teacher_id": "STF-2026-0118",
+      "classroom_id": "room-act1",
+      "day_of_week": 2,
+      "start_time": "12:40",
+      "end_time": "13:25"
+    },
+    {
+      "id": "tt-207",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-105",
+      "teacher_id": "STF-2026-0117",
+      "classroom_id": "room-105",
+      "day_of_week": 2,
+      "start_time": "13:25",
+      "end_time": "14:10"
+    },
+    {
+      "id": "tt-301",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-103",
+      "teacher_id": "STF-2026-0114",
+      "classroom_id": "room-lab1",
+      "day_of_week": 3,
+      "start_time": "08:00",
+      "end_time": "08:45"
+    },
+    {
+      "id": "tt-302",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-101",
+      "teacher_id": "STF-2026-0112",
+      "classroom_id": "room-201",
+      "day_of_week": 3,
+      "start_time": "08:45",
+      "end_time": "09:30"
+    },
+    {
+      "id": "tt-303",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-104",
+      "teacher_id": "STF-2026-0115",
+      "classroom_id": "room-lab2",
+      "day_of_week": 3,
+      "start_time": "09:30",
+      "end_time": "10:15"
+    },
+    {
+      "id": "tt-break-3",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "",
+      "teacher_id": "",
+      "is_break": true,
+      "title": "Break",
+      "day_of_week": 3,
+      "start_time": "10:15",
+      "end_time": "10:30"
+    },
+    {
+      "id": "tt-304",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-101",
+      "teacher_id": "STF-2026-0112",
+      "classroom_id": "room-201",
+      "day_of_week": 3,
+      "start_time": "10:30",
+      "end_time": "11:15"
+    },
+    {
+      "id": "tt-305",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-107",
+      "teacher_id": "STF-2026-0116",
+      "classroom_id": "room-lab3",
+      "day_of_week": 3,
+      "start_time": "11:15",
+      "end_time": "12:00"
+    },
+    {
+      "id": "tt-lunch-3",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "",
+      "teacher_id": "",
+      "is_break": true,
+      "title": "Lunch",
+      "day_of_week": 3,
+      "start_time": "12:00",
+      "end_time": "12:40"
+    },
+    {
+      "id": "tt-306",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-106",
+      "teacher_id": "STF-2026-0111",
+      "classroom_id": "room-205",
+      "day_of_week": 3,
+      "start_time": "12:40",
+      "end_time": "13:25"
+    },
+    {
+      "id": "tt-307",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-108",
+      "teacher_id": "STF-2026-0118",
+      "classroom_id": "room-act1",
+      "day_of_week": 3,
+      "start_time": "13:25",
+      "end_time": "14:10"
+    },
+    {
+      "id": "tt-401",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-104",
+      "teacher_id": "STF-2026-0115",
+      "classroom_id": "room-lab2",
+      "day_of_week": 4,
+      "start_time": "08:00",
+      "end_time": "08:45"
+    },
+    {
+      "id": "tt-402",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-105",
+      "teacher_id": "STF-2026-0117",
+      "classroom_id": "room-203",
+      "day_of_week": 4,
+      "start_time": "08:45",
+      "end_time": "09:30"
+    },
+    {
+      "id": "tt-403",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-101",
+      "teacher_id": "STF-2026-0112",
+      "classroom_id": "room-201",
+      "day_of_week": 4,
+      "start_time": "09:30",
+      "end_time": "10:15"
+    },
+    {
+      "id": "tt-break-4",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "",
+      "teacher_id": "",
+      "is_break": true,
+      "title": "Break",
+      "day_of_week": 4,
+      "start_time": "10:15",
+      "end_time": "10:30"
+    },
+    {
+      "id": "tt-404",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-103",
+      "teacher_id": "STF-2026-0114",
+      "classroom_id": "room-lab1",
+      "day_of_week": 4,
+      "start_time": "10:30",
+      "end_time": "11:15"
+    },
+    {
+      "id": "tt-405",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-108",
+      "teacher_id": "STF-2026-0118",
+      "classroom_id": "room-act1",
+      "day_of_week": 4,
+      "start_time": "11:15",
+      "end_time": "12:00"
+    },
+    {
+      "id": "tt-lunch-4",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "",
+      "teacher_id": "",
+      "is_break": true,
+      "title": "Lunch",
+      "day_of_week": 4,
+      "start_time": "12:00",
+      "end_time": "12:40"
+    },
+    {
+      "id": "tt-406",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-103",
+      "teacher_id": "STF-2026-0114",
+      "classroom_id": "room-204",
+      "day_of_week": 4,
+      "start_time": "12:40",
+      "end_time": "13:25"
+    },
+    {
+      "id": "tt-407",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-105",
+      "teacher_id": "STF-2026-0117",
+      "classroom_id": "room-105",
+      "day_of_week": 4,
+      "start_time": "13:25",
+      "end_time": "14:10"
+    },
+    {
+      "id": "tt-501",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-102",
+      "teacher_id": "STF-2026-0113",
+      "classroom_id": "room-202",
+      "day_of_week": 5,
+      "start_time": "08:00",
+      "end_time": "08:45"
+    },
+    {
+      "id": "tt-502",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-105",
+      "teacher_id": "STF-2026-0117",
+      "classroom_id": "room-203",
+      "day_of_week": 5,
+      "start_time": "08:45",
+      "end_time": "09:30"
+    },
+    {
+      "id": "tt-503",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-107",
+      "teacher_id": "STF-2026-0116",
+      "classroom_id": "room-lab3",
+      "day_of_week": 5,
+      "start_time": "09:30",
+      "end_time": "10:15"
+    },
+    {
+      "id": "tt-break-5",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "",
+      "teacher_id": "",
+      "is_break": true,
+      "title": "Break",
+      "day_of_week": 5,
+      "start_time": "10:15",
+      "end_time": "10:30"
+    },
+    {
+      "id": "tt-504",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-101",
+      "teacher_id": "STF-2026-0112",
+      "classroom_id": "room-201",
+      "day_of_week": 5,
+      "start_time": "10:30",
+      "end_time": "11:15"
+    },
+    {
+      "id": "tt-505",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-106",
+      "teacher_id": "STF-2026-0111",
+      "classroom_id": "room-205",
+      "day_of_week": 5,
+      "start_time": "11:15",
+      "end_time": "12:00"
+    },
+    {
+      "id": "tt-lunch-5",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "",
+      "teacher_id": "",
+      "is_break": true,
+      "title": "Lunch",
+      "day_of_week": 5,
+      "start_time": "12:00",
+      "end_time": "12:40"
+    },
+    {
+      "id": "tt-506",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-104",
+      "teacher_id": "STF-2026-0115",
+      "classroom_id": "room-lab2",
+      "day_of_week": 5,
+      "start_time": "12:40",
+      "end_time": "13:25"
+    },
+    {
+      "id": "tt-507",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-108",
+      "teacher_id": "STF-2026-0118",
+      "classroom_id": "room-act1",
+      "day_of_week": 5,
+      "start_time": "13:25",
+      "end_time": "14:10"
+    },
+    {
+      "id": "tt-601",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-108",
+      "teacher_id": "STF-2026-0118",
+      "classroom_id": "room-act1",
+      "day_of_week": 6,
+      "start_time": "08:00",
+      "end_time": "08:45"
+    },
+    {
+      "id": "tt-602",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-108",
+      "teacher_id": "STF-2026-0118",
+      "classroom_id": "room-act1",
+      "day_of_week": 6,
+      "start_time": "08:45",
+      "end_time": "09:30"
+    },
+    {
+      "id": "tt-603",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-108",
+      "teacher_id": "STF-2026-0118",
+      "classroom_id": "room-act1",
+      "day_of_week": 6,
+      "start_time": "09:30",
+      "end_time": "10:15"
+    },
+    {
+      "id": "tt-break-6",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "",
+      "teacher_id": "",
+      "is_break": true,
+      "title": "Break",
+      "day_of_week": 6,
+      "start_time": "10:15",
+      "end_time": "10:30"
+    },
+    {
+      "id": "tt-604",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-105",
+      "teacher_id": "STF-2026-0117",
+      "classroom_id": "room-105",
+      "day_of_week": 6,
+      "start_time": "10:30",
+      "end_time": "11:15"
+    },
+    {
+      "id": "tt-605",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-102",
+      "teacher_id": "STF-2026-0113",
+      "classroom_id": "room-202",
+      "day_of_week": 6,
+      "start_time": "11:15",
+      "end_time": "12:00"
+    },
+    {
+      "id": "tt-lunch-6",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "",
+      "teacher_id": "",
+      "is_break": true,
+      "title": "Lunch",
+      "day_of_week": 6,
+      "start_time": "12:00",
+      "end_time": "12:40"
+    },
+    {
+      "id": "tt-606",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-106",
+      "teacher_id": "STF-2026-0111",
+      "classroom_id": "room-205",
+      "day_of_week": 6,
+      "start_time": "12:40",
+      "end_time": "13:25"
+    },
+    {
+      "id": "tt-607",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-104",
+      "teacher_id": "STF-2026-0115",
+      "classroom_id": "room-lab3",
+      "day_of_week": 6,
+      "start_time": "13:25",
+      "end_time": "14:10"
+    }
+  ],
+  "classrooms": [
+    {
+      "id": "room-101",
+      "name": "Room 101",
+      "building": "Primary Academic Wing (1st Floor)",
+      "capacity": 40
+    },
+    {
+      "id": "room-102",
+      "name": "Room 102",
+      "building": "Primary Academic Wing (1st Floor)",
+      "capacity": 40
+    },
+    {
+      "id": "room-103",
+      "name": "Room 103",
+      "building": "Primary Academic Wing (1st Floor)",
+      "capacity": 38
+    },
+    {
+      "id": "room-104",
+      "name": "Room 104",
+      "building": "Primary Academic Wing (2nd Floor)",
+      "capacity": 40
+    },
+    {
+      "id": "room-105",
+      "name": "Room 105",
+      "building": "Primary Academic Wing (2nd Floor)",
+      "capacity": 36
+    },
+    {
+      "id": "room-201",
+      "name": "Room 201",
+      "building": "Secondary Academic Wing (1st Floor)",
+      "capacity": 42
+    },
+    {
+      "id": "room-202",
+      "name": "Room 202",
+      "building": "Secondary Academic Wing (1st Floor)",
+      "capacity": 42
+    },
+    {
+      "id": "room-203",
+      "name": "Room 203",
+      "building": "Secondary Academic Wing (2nd Floor)",
+      "capacity": 40
+    },
+    {
+      "id": "room-204",
+      "name": "Room 204",
+      "building": "Secondary Academic Wing (2nd Floor)",
+      "capacity": 40
+    },
+    {
+      "id": "room-205",
+      "name": "Room 205",
+      "building": "Secondary Academic Wing (2nd Floor)",
+      "capacity": 42
+    },
+    {
+      "id": "room-lab1",
+      "name": "Physics Lab 1",
+      "building": "Science & Innovation Complex",
+      "capacity": 35
+    },
+    {
+      "id": "room-lab2",
+      "name": "Chemistry Lab 2",
+      "building": "Science & Innovation Complex",
+      "capacity": 35
+    },
+    {
+      "id": "room-lab3",
+      "name": "Computer Lab 3",
+      "building": "Technology Block (3rd Floor)",
+      "capacity": 40
+    },
+    {
+      "id": "room-act1",
+      "name": "Art & Music Studio 106",
+      "building": "Arts & Culture Wing",
+      "capacity": 30
+    },
+    {
+      "id": "room-1792588884679000-0",
+      "name": "Room no 20555",
+      "building": "5th floor",
+      "capacity": 40
+    }
+  ],
+  "teacher_work": [
+    {
+      "id": "tw-101",
+      "title": "Real Numbers Chapter Review Worksheet",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-101",
+      "teacher_id": "STF-2026-0112",
+      "work_type": "Homework",
+      "due_date": "2026-10-20",
+      "status": "Assigned",
+      "instructions": "Complete all 15 objective questions from Chapter 1 review sheet.",
+      "academic_year": "2026-2027"
+    },
+    {
+      "id": "tw-102",
+      "title": "Ohm's Law Verification & Graphing",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-103",
+      "teacher_id": "STF-2026-0114",
+      "work_type": "Lab Report",
+      "due_date": "2026-10-22",
+      "status": "In Progress",
+      "instructions": "Submit plotted V-I graph on millimeter sheet with error analysis.",
+      "academic_year": "2026-2027"
+    },
+    {
+      "id": "tw-103",
+      "title": "Diary Entry as Lencho upon Receiving 70 Pesos",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-102",
+      "teacher_id": "STF-2026-0113",
+      "work_type": "Homework",
+      "due_date": "2026-10-18",
+      "status": "Reviewed",
+      "instructions": "120-word analytical diary entry demonstrating character perspective.",
+      "academic_year": "2026-2027"
+    },
+    {
+      "id": "tw-104",
+      "title": "Neutralization Reactions in Everyday Life",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-104",
+      "teacher_id": "STF-2026-0115",
+      "work_type": "Project",
+      "due_date": "2026-10-28",
+      "status": "Assigned",
+      "instructions": "Group presentation on antacids, soil treatment, and industrial waste.",
+      "academic_year": "2026-2027"
+    },
+    {
+      "id": "tw-105",
+      "title": "Peasant Movements in Awadh Poster",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-105",
+      "teacher_id": "STF-2026-0117",
+      "work_type": "Worksheet",
+      "due_date": "2026-10-21",
+      "status": "Assigned",
+      "instructions": "Summary timeline of Baba Ramchandra's leadership.",
+      "academic_year": "2026-2027"
+    },
+    {
+      "id": "tw-1792138484241902-5",
+      "title": "review",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-107",
+      "teacher_id": "STF-2026-0116",
+      "work_type": "Homework",
+      "due_date": "2026-10-23",
+      "status": "Assigned",
+      "instructions": "",
+      "academic_year": "2026-2027"
+    }
+  ],
+  "teacher_assignments": [
+    {
+      "id": "tw-101",
+      "title": "Real Numbers Chapter Review Worksheet",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-101",
+      "teacher_id": "STF-2026-0112",
+      "work_type": "Homework",
+      "due_date": "2026-10-20",
+      "status": "Assigned",
+      "instructions": "Complete all 15 objective questions from Chapter 1 review sheet.",
+      "academic_year": "2026-2027"
+    },
+    {
+      "id": "tw-102",
+      "title": "Ohm's Law Verification & Graphing",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-103",
+      "teacher_id": "STF-2026-0114",
+      "work_type": "Lab Report",
+      "due_date": "2026-10-22",
+      "status": "In Progress",
+      "instructions": "Submit plotted V-I graph on millimeter sheet with error analysis.",
+      "academic_year": "2026-2027"
+    },
+    {
+      "id": "tw-103",
+      "title": "Diary Entry as Lencho upon Receiving 70 Pesos",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-102",
+      "teacher_id": "STF-2026-0113",
+      "work_type": "Homework",
+      "due_date": "2026-10-18",
+      "status": "Reviewed",
+      "instructions": "120-word analytical diary entry demonstrating character perspective.",
+      "academic_year": "2026-2027"
+    },
+    {
+      "id": "tw-104",
+      "title": "Neutralization Reactions in Everyday Life",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-104",
+      "teacher_id": "STF-2026-0115",
+      "work_type": "Project",
+      "due_date": "2026-10-28",
+      "status": "Assigned",
+      "instructions": "Group presentation on antacids, soil treatment, and industrial waste.",
+      "academic_year": "2026-2027"
+    },
+    {
+      "id": "tw-105",
+      "title": "Peasant Movements in Awadh Poster",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-105",
+      "teacher_id": "STF-2026-0117",
+      "work_type": "Worksheet",
+      "due_date": "2026-10-21",
+      "status": "Assigned",
+      "instructions": "Summary timeline of Baba Ramchandra's leadership.",
+      "academic_year": "2026-2027"
+    },
+    {
+      "id": "tw-1792138484241902-5",
+      "title": "review",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-107",
+      "teacher_id": "STF-2026-0116",
+      "work_type": "Homework",
+      "due_date": "2026-10-23",
+      "status": "Assigned",
+      "instructions": "",
+      "academic_year": "2026-2027"
+    }
+  ],
+  "class_teachers": [
+    {
+      "id": "cta-001",
+      "class_id": "cls-10",
+      "section_id": "sec-10a",
+      "subject_id": "sub-102",
+      "teacher_id": "STF-2026-0113",
+      "classroom_id": "room-205"
+    },
+    {
+      "id": "cta-002",
+      "class_id": "cls-10",
+      "section_id": "sec-10b",
+      "subject_id": "sub-103",
+      "teacher_id": "STF-2026-0114",
+      "classroom_id": "room-205"
+    },
+    {
+      "id": "cta-003",
+      "class_id": "cls-9",
+      "section_id": "sec-9a",
+      "subject_id": "sub-901",
+      "teacher_id": "STF-2026-0112",
+      "classroom_id": "room-204"
+    },
+    {
+      "id": "cta-004",
+      "class_id": "cls-9",
+      "section_id": "sec-9b",
+      "subject_id": "sub-902",
+      "teacher_id": "STF-2026-0114",
+      "classroom_id": "room-204"
+    },
+    {
+      "id": "cta-005",
+      "class_id": "cls-1",
+      "section_id": "sec-1a",
+      "subject_id": "sub-101p",
+      "teacher_id": "STF-2026-0117",
+      "classroom_id": "room-101"
+    }
+  ]
+}

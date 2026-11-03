@@ -1,0 +1,179 @@
+{
+  "exam_schedules": [
+    {
+      "id": "exam-sch-midterm-2026",
+      "title": "Mid-Term Comprehensive Examination 2026",
+      "academic_year": "2026-2027",
+      "status": "COMPLETED",
+      "description": "Mandatory term 1 evaluation across all subjects and grades.",
+      "start_date": "2026-09-15",
+      "end_date": "2026-09-28",
+      "created_at": "2026-08-01T09:00:00.000Z",
+      "updated_at": "2026-10-01T09:00:00.000Z"
+    },
+    {
+      "id": "exam-sch-finals-2027",
+      "title": "Annual Board Pre-Finals 2027",
+      "academic_year": "2026-2027",
+      "status": "PLANNED",
+      "description": "Final preparatory testing cycle conforming to national board pattern.",
+      "start_date": "2027-01-10",
+      "end_date": "2027-01-25",
+      "created_at": "2026-10-10T09:00:00.000Z",
+      "updated_at": "2026-10-10T09:00:00.000Z"
+    }
+  ],
+  "exam_papers": [
+    {
+      "id": "ex-paper-10a-math",
+      "exam_schedule_id": "exam-sch-midterm-2026",
+      "class_section_id": "cls-sec-10a",
+      "subject_id": "sbj-101",
+      "exam_date": "2026-09-16",
+      "start_time": "09:00:00",
+      "end_time": "12:00:00",
+      "max_marks": 100.0,
+      "passing_marks": 35.0,
+      "invigilator_id": "tch-prof-302",
+      "status": "COMPLETED",
+      "created_at": "2026-08-15T09:00:00.000Z",
+      "updated_at": "2026-09-16T13:00:00.000Z"
+    },
+    {
+      "id": "ex-paper-10a-phy",
+      "exam_schedule_id": "exam-sch-midterm-2026",
+      "class_section_id": "cls-sec-10a",
+      "subject_id": "sbj-102",
+      "exam_date": "2026-09-18",
+      "start_time": "09:00:00",
+      "end_time": "12:00:00",
+      "max_marks": 100.0,
+      "passing_marks": 35.0,
+      "invigilator_id": "tch-prof-301",
+      "status": "COMPLETED",
+      "created_at": "2026-08-15T09:00:00.000Z",
+      "updated_at": "2026-09-18T13:00:00.000Z"
+    },
+    {
+      "id": "ex-paper-10a-chem",
+      "exam_schedule_id": "exam-sch-midterm-2026",
+      "class_section_id": "cls-sec-10a",
+      "subject_id": "sbj-103",
+      "exam_date": "2026-09-21",
+      "start_time": "09:00:00",
+      "end_time": "12:00:00",
+      "max_marks": 100.0,
+      "passing_marks": 35.0,
+      "invigilator_id": "tch-prof-304",
+      "status": "COMPLETED",
+      "created_at": "2026-08-15T09:00:00.000Z",
+      "updated_at": "2026-09-21T13:00:00.000Z"
+    }
+  ],
+  "student_exam_marks": [
+    {
+      "id": "sem-101",
+      "exam_paper_id": "ex-paper-10a-math",
+      "student_id": "std-prof-501",
+      "marks_obtained": 95.0,
+      "is_absent": false,
+      "entered_by_teacher_id": "tch-prof-301",
+      "remarks": "Outstanding algebra & trigonometry performance",
+      "created_at": "2026-09-20T10:00:00.000Z",
+      "updated_at": "2026-09-20T10:00:00.000Z"
+    },
+    {
+      "id": "sem-102",
+      "exam_paper_id": "ex-paper-10a-phy",
+      "student_id": "std-prof-501",
+      "marks_obtained": 91.5,
+      "is_absent": false,
+      "entered_by_teacher_id": "tch-prof-302",
+      "remarks": "Thorough understanding of electrical circuits",
+      "created_at": "2026-09-22T11:00:00.000Z",
+      "updated_at": "2026-09-22T11:00:00.000Z"
+    },
+    {
+      "id": "sem-103",
+      "exam_paper_id": "ex-paper-10a-chem",
+      "student_id": "std-prof-501",
+      "marks_obtained": 89.0,
+      "is_absent": false,
+      "entered_by_teacher_id": "tch-prof-303",
+      "remarks": "Good chemical equation balancing",
+      "created_at": "2026-09-24T14:00:00.000Z",
+      "updated_at": "2026-09-24T14:00:00.000Z"
+    },
+    {
+      "id": "sem-104",
+      "exam_paper_id": "ex-paper-10a-math",
+      "student_id": "std-prof-502",
+      "marks_obtained": 98.0,
+      "is_absent": false,
+      "entered_by_teacher_id": "tch-prof-301",
+      "remarks": "Top score in class; near perfection in geometry",
+      "created_at": "2026-09-20T10:05:00.000Z",
+      "updated_at": "2026-09-20T10:05:00.000Z"
+    },
+    {
+      "id": "sem-105",
+      "exam_paper_id": "ex-paper-10a-phy",
+      "student_id": "std-prof-502",
+      "marks_obtained": 94.0,
+      "is_absent": false,
+      "entered_by_teacher_id": "tch-prof-302",
+      "remarks": "Exemplary numerical solving ability",
+      "created_at": "2026-09-22T11:05:00.000Z",
+      "updated_at": "2026-09-22T11:05:00.000Z"
+    },
+    {
+      "id": "sem-106",
+      "exam_paper_id": "ex-paper-10a-chem",
+      "student_id": "std-prof-502",
+      "marks_obtained": 93.0,
+      "is_absent": false,
+      "entered_by_teacher_id": "tch-prof-303",
+      "remarks": "Clear conceptual grasp on periodic trends",
+      "created_at": "2026-09-24T14:05:00.000Z",
+      "updated_at": "2026-09-24T14:05:00.000Z"
+    }
+  ],
+  "report_cards": [
+    {
+      "id": "rep-card-101",
+      "student_id": "std-prof-501",
+      "exam_schedule_id": "exam-sch-midterm-2026",
+      "total_marks_obtained": 275.5,
+      "total_max_marks": 300.0,
+      "percentage": 91.83,
+      "grade": "A+",
+      "gpa": 3.9,
+      "class_rank": 2,
+      "class_incharge_remarks": "Aarav is an intellectually sharp and diligent student. Maintains top-tier performance consistently.",
+      "is_approved_by_principal": true,
+      "approved_at": "2026-10-02T16:00:00.000Z",
+      "is_published": true,
+      "published_at": "2026-10-03T09:00:00.000Z",
+      "created_at": "2026-10-01T10:00:00.000Z",
+      "updated_at": "2026-10-03T09:00:00.000Z"
+    },
+    {
+      "id": "rep-card-102",
+      "student_id": "std-prof-502",
+      "exam_schedule_id": "exam-sch-midterm-2026",
+      "total_marks_obtained": 285.0,
+      "total_max_marks": 300.0,
+      "percentage": 95.0,
+      "grade": "A+",
+      "gpa": 4.0,
+      "class_rank": 1,
+      "class_incharge_remarks": "Secured 1st rank in class! Demonstrates exemplary academic discipline and peer leadership.",
+      "is_approved_by_principal": true,
+      "approved_at": "2026-10-02T16:05:00.000Z",
+      "is_published": true,
+      "published_at": "2026-10-03T09:00:00.000Z",
+      "created_at": "2026-10-01T10:00:00.000Z",
+      "updated_at": "2026-10-03T09:00:00.000Z"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "bk-0101-01",
+    "staff_id": "STF-2026-0101",
+    "sl": "01",
+    "book_name": "Advanced Engineering Mathematics (E. Kreyszig 10th Ed)",
+    "book_category": "Mathematics",
+    "book_number": "LIB-MATH-8821",
+    "taken_on": "04 Oct 2026",
+    "last_date": "04 Nov 2026",
+    "status": "Issued",
+    "cover_color_hex": "0xFF6366F1"
+  },
+  {
+    "id": "bk-0101-02",
+    "staff_id": "STF-2026-0101",
+    "sl": "02",
+    "book_name": "Calculus: Early Transcendentals (James Stewart)",
+    "book_category": "Mathematics",
+    "book_number": "LIB-MATH-3419",
+    "taken_on": "12 Sep 2026",
+    "last_date": "12 Oct 2026",
+    "status": "Overdue",
+    "cover_color_hex": "0xFF0284C7"
+  },
+  {
+    "id": "bk-0101-03",
+    "staff_id": "STF-2026-0101",
+    "sl": "03",
+    "book_name": "Educational Psychology & Pedagogy Practice",
+    "book_category": "Education / Pedagogy",
+    "book_number": "LIB-EDU-1044",
+    "taken_on": "15 Aug 2026",
+    "last_date": "15 Sep 2026",
+    "status": "Returned",
+    "cover_color_hex": "0xFF109F83"
+  },
+  {
+    "id": "bk-0101-04",
+    "staff_id": "STF-2026-0101",
+    "sl": "04",
+    "book_name": "Linear Algebra Done Right (Sheldon Axler)",
+    "book_category": "Mathematics",
+    "book_number": "LIB-MATH-9902",
+    "taken_on": "20 Jul 2026",
+    "last_date": "20 Aug 2026",
+    "status": "Returned",
+    "cover_color_hex": "0xFF8B5CF6"
+  },
+  {
+    "id": "bk-0102-01",
+    "staff_id": "STF-2026-0102",
+    "sl": "01",
+    "book_name": "Concepts of Physics (H.C. Verma Vol 1 & 2)",
+    "book_category": "Science",
+    "book_number": "LIB-PHY-5120",
+    "taken_on": "01 Oct 2026",
+    "last_date": "01 Nov 2026",
+    "status": "Issued",
+    "cover_color_hex": "0xFF0284C7"
+  }
+]

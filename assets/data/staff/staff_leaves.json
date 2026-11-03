@@ -1,0 +1,107 @@
+[
+  {
+    "id": "sl-0101-01",
+    "staff_id": "STF-2026-0101",
+    "sl": "01",
+    "leave_type": "Medical Leave",
+    "date_range": "19 Oct 2026 - 20 Oct 2026",
+    "duration_days": 2,
+    "apply_date": "15 Oct 2026",
+    "status": "Approved",
+    "reason": "Scheduled medical checkup and dental treatment",
+    "admin_remarks": "Approved by Principal; substitute coverage assigned to Amit Chatterjee"
+  },
+  {
+    "id": "sl-0101-02",
+    "staff_id": "STF-2026-0101",
+    "sl": "02",
+    "leave_type": "Special Duty Leave",
+    "date_range": "04 Nov 2026 - 05 Nov 2026",
+    "duration_days": 2,
+    "apply_date": "16 Oct 2026",
+    "status": "Pending",
+    "reason": "Attending national mathematics Olympiad committee meeting as keynote delegate"
+  },
+  {
+    "id": "sl-0101-03",
+    "staff_id": "STF-2026-0101",
+    "sl": "03",
+    "leave_type": "Casual Leave",
+    "date_range": "12 Sep 2026 - 13 Sep 2026",
+    "duration_days": 2,
+    "apply_date": "08 Sep 2026",
+    "status": "Approved",
+    "reason": "Family religious ceremony in hometown",
+    "admin_remarks": "Approved with advance syllabus coverage verified"
+  },
+  {
+    "id": "sl-0101-04",
+    "staff_id": "STF-2026-0101",
+    "sl": "04",
+    "leave_type": "Casual Leave",
+    "date_range": "18 Aug 2026 - 19 Aug 2026",
+    "duration_days": 2,
+    "apply_date": "14 Aug 2026",
+    "status": "Pending",
+    "reason": "Urgent property documentation registry at sub-registrar office"
+  },
+  {
+    "id": "sl-0101-05",
+    "staff_id": "STF-2026-0101",
+    "sl": "05",
+    "leave_type": "Medical Leave",
+    "date_range": "10 Jul 2026 - 11 Jul 2026",
+    "duration_days": 2,
+    "apply_date": "09 Jul 2026",
+    "status": "Approved",
+    "reason": "Viral fever and physician recommended rest",
+    "admin_remarks": "Medical fitness certificate verified on resumption"
+  },
+  {
+    "id": "sl-0101-06",
+    "staff_id": "STF-2026-0101",
+    "sl": "06",
+    "leave_type": "Special Leave",
+    "date_range": "02 Jun 2026 - 04 Jun 2026",
+    "duration_days": 3,
+    "apply_date": "28 May 2026",
+    "status": "Rejected",
+    "reason": "Personal travel extension during school reopening workshop",
+    "admin_remarks": "Cannot approve during mandatory faculty orientation and syllabus planning sessions"
+  },
+  {
+    "id": "sl-0101-07",
+    "staff_id": "STF-2026-0101",
+    "sl": "07",
+    "leave_type": "Casual Leave",
+    "date_range": "15 May 2026 - 16 May 2026",
+    "duration_days": 2,
+    "apply_date": "11 May 2026",
+    "status": "Approved",
+    "reason": "Attending daughter's convocation ceremony",
+    "admin_remarks": "Approved on personal leave quota"
+  },
+  {
+    "id": "sl-0102-01",
+    "staff_id": "STF-2026-0102",
+    "sl": "01",
+    "leave_type": "Medical Leave",
+    "date_range": "22 Oct 2026 - 23 Oct 2026",
+    "duration_days": 2,
+    "apply_date": "18 Oct 2026",
+    "status": "Pending",
+    "reason": "Ophthalmology retina scan and recovery"
+  },
+  {
+    "id": "sl-0102-02",
+    "staff_id": "STF-2026-0102",
+    "sl": "02",
+    "leave_type": "Casual Leave",
+    "date_range": "14 Sep 2026 - 15 Sep 2026",
+    "duration_days": 2,
+    "apply_date": "10 Sep 2026",
+    "status": "Approved",
+    "reason": "Home renovation and electrical clearance",
+    "admin_remarks": "Approved by Vice Principal"
+  }
+]

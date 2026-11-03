@@ -1,0 +1,81 @@
+{
+  "academic_years": [
+    "2025-2026",
+    "2026-2027"
+  ],
+  "current_academic_year": "2026-2027",
+  "exam_types": [
+    {
+      "code": "UNIT_TEST",
+      "label": "Unit Test"
+    },
+    {
+      "code": "PERIODIC_TEST",
+      "label": "Periodic Test"
+    },
+    {
+      "code": "MID_TERM",
+      "label": "Mid-Term"
+    },
+    {
+      "code": "HALF_YEARLY",
+      "label": "Half-Yearly"
+    },
+    {
+      "code": "PRE_FINAL",
+      "label": "Pre-Final"
+    },
+    {
+      "code": "ANNUAL",
+      "label": "Annual"
+    },
+    {
+      "code": "PRACTICAL",
+      "label": "Practical"
+    },
+    {
+      "code": "INTERNAL_ASSESSMENT",
+      "label": "Internal Assessment"
+    }
+  ],
+  "users": [
+    {
+      "id": "u1",
+      "name": "Admin",
+      "role": "ADMIN"
+    },
+    {
+      "id": "u2",
+      "name": "Principal",
+      "role": "PRINCIPAL"
+    },
+    {
+      "id": "u3",
+      "name": "Teacher",
+      "role": "TEACHER",
+      "teacher_id": "STF-2026-0113"
+    },
+    {
+      "id": "u4",
+      "name": "Class Incharge",
+      "role": "CLASS_INCHARGE",
+      "teacher_id": "STF-2026-0111",
+      "section_id": "sec-10a"
+    },
+    {
+      "id": "u5",
+      "name": "Student",
+      "role": "STUDENT",
+      "student_id": "std-1001",
+      "section_id": "sec-10a"
+    },
+    {
+      "id": "u6",
+      "name": "Parent",
+      "role": "PARENT",
+      "student_id": "std-1001",
+      "section_id": "sec-10a"
+    }
+  ],
+  "current_user_id": "u1"
+}

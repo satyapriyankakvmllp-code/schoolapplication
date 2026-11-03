@@ -1,0 +1,72 @@
+{
+  "assignments": [
+    {
+      "id": "asg-2026-math-01",
+      "class_section_id": "cls-sec-10a",
+      "subject_id": "sbj-101",
+      "teacher_id": "tch-prof-301",
+      "title": "Quadratic Equations & Analytical Applications",
+      "description": "Solve problems 1 to 25 from Section 4.2. Show complete derivation and graph plotting.",
+      "question_file_url": "https://cdn.edupulse.edu.in/assignments/math_ch4_problems.pdf",
+      "due_date": "2026-10-24T23:59:59.000Z",
+      "priority": "HIGH",
+      "max_score": 100.0,
+      "status": "PUBLISHED",
+      "published_at": "2026-10-14T10:00:00.000Z",
+      "academic_year": "2026-2027",
+      "updated_by": "usr-tch-301",
+      "created_at": "2026-10-14T09:30:00.000Z",
+      "updated_at": "2026-10-14T10:00:00.000Z"
+    },
+    {
+      "id": "asg-2026-phy-01",
+      "class_section_id": "cls-sec-10a",
+      "subject_id": "sbj-102",
+      "teacher_id": "tch-prof-302",
+      "title": "Optics Ray Diagrams & Refraction Through Lenses",
+      "description": "Construct ray diagrams for convex and concave lenses with different object distances.",
+      "question_file_url": "https://cdn.edupulse.edu.in/assignments/physics_optics_lab_worksheet.pdf",
+      "due_date": "2026-10-22T23:59:59.000Z",
+      "priority": "MEDIUM",
+      "max_score": 50.0,
+      "status": "PUBLISHED",
+      "published_at": "2026-10-12T11:00:00.000Z",
+      "academic_year": "2026-2027",
+      "updated_by": "usr-tch-302",
+      "created_at": "2026-10-12T10:30:00.000Z",
+      "updated_at": "2026-10-12T11:00:00.000Z"
+    }
+  ],
+  "assignment_submissions": [
+    {
+      "id": "subm-101",
+      "assignment_id": "asg-2026-math-01",
+      "student_id": "std-prof-501",
+      "submission_file_url": "https://cdn.edupulse.edu.in/submissions/aarav_math_assignment_1.pdf",
+      "student_notes": "Completed all questions including quadratic curve sketching.",
+      "submitted_at": "2026-10-18T16:45:00.000Z",
+      "is_late": false,
+      "score_awarded": 96.5,
+      "teacher_feedback": "Excellent mathematical reasoning and clear graphs.",
+      "graded_at": "2026-10-19T11:20:00.000Z",
+      "graded_by_teacher_id": "tch-prof-301",
+      "created_at": "2026-10-18T16:45:00.000Z",
+      "updated_at": "2026-10-19T11:20:00.000Z"
+    },
+    {
+      "id": "subm-102",
+      "assignment_id": "asg-2026-phy-01",
+      "student_id": "std-prof-502",
+      "submission_file_url": "https://cdn.edupulse.edu.in/submissions/diya_optics_diagrams.pdf",
+      "student_notes": "Attached high resolution scans of ray diagrams.",
+      "submitted_at": "2026-10-19T14:10:00.000Z",
+      "is_late": false,
+      "score_awarded": 48.0,
+      "teacher_feedback": "Precise angles and focal measurement indicators.",
+      "graded_at": "2026-10-20T09:15:00.000Z",
+      "graded_by_teacher_id": "tch-prof-302",
+      "created_at": "2026-10-19T14:10:00.000Z",
+      "updated_at": "2026-10-20T09:15:00.000Z"
+    }
+  ]
+}

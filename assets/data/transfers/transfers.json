@@ -1,0 +1,77 @@
+{
+  "discontinuation_requests": [
+    {
+      "id": "disc-req-2026-001",
+      "student_id": "std-prof-506",
+      "parent_id": "par-prof-606",
+      "reason": "Father transferred to corporate headquarters in Mumbai, Maharashtra.",
+      "requested_exit_date": "2026-10-15",
+      "reviewed_by_admin_id": "usr-adm-001",
+      "admin_remarks": "All 4 departmental clearances verified. Formally cleared for TC issuance.",
+      "overall_status": "CLEARED",
+      "created_at": "2026-10-01T10:00:00.000Z",
+      "updated_at": "2026-10-14T11:30:00.000Z"
+    }
+  ],
+  "departmental_clearances": [
+    {
+      "id": "dept-clr-001",
+      "discontinuation_request_id": "disc-req-2026-001",
+      "department": "LIBRARY",
+      "status": "CLEARED",
+      "verified_by_user_id": "usr-sup-401",
+      "remarks": "All 4 borrowed library books returned in intact condition. No library fines.",
+      "verified_at": "2026-10-05T14:15:00.000Z",
+      "created_at": "2026-10-01T10:05:00.000Z",
+      "updated_at": "2026-10-05T14:15:00.000Z"
+    },
+    {
+      "id": "dept-clr-002",
+      "discontinuation_request_id": "disc-req-2026-001",
+      "department": "ACCOUNTS_FINANCE",
+      "status": "CLEARED",
+      "verified_by_user_id": "usr-fin-201",
+      "remarks": "Term 1 dues completely settled. Caution deposit refund processed.",
+      "verified_at": "2026-10-08T11:45:00.000Z",
+      "created_at": "2026-10-01T10:05:00.000Z",
+      "updated_at": "2026-10-08T11:45:00.000Z"
+    },
+    {
+      "id": "dept-clr-003",
+      "discontinuation_request_id": "disc-req-2026-001",
+      "department": "HOSTEL_TRANSPORT",
+      "status": "CLEARED",
+      "verified_by_user_id": "usr-sup-403",
+      "remarks": "Bus pass card surrendered. Bus route #08 clearance signed.",
+      "verified_at": "2026-10-10T16:20:00.000Z",
+      "created_at": "2026-10-01T10:05:00.000Z",
+      "updated_at": "2026-10-10T16:20:00.000Z"
+    },
+    {
+      "id": "dept-clr-004",
+      "discontinuation_request_id": "disc-req-2026-001",
+      "department": "LABS_INVENTORY",
+      "status": "CLEARED",
+      "verified_by_user_id": "usr-sup-402",
+      "remarks": "Physics, Chemistry, and Computer Science lab lockers vacated; equipment checked.",
+      "verified_at": "2026-10-12T15:00:00.000Z",
+      "created_at": "2026-10-01T10:05:00.000Z",
+      "updated_at": "2026-10-12T15:00:00.000Z"
+    }
+  ],
+  "transfer_certificates": [
+    {
+      "id": "tc-cert-901",
+      "discontinuation_request_id": "disc-req-2026-001",
+      "student_id": "std-prof-506",
+      "tc_number": "TC-2026-0042",
+      "issue_date": "2026-10-14",
+      "conduct_remark": "Exemplary",
+      "signed_by_admin_id": "usr-adm-001",
+      "pdf_document_url": "https://cdn.edupulse.edu.in/certificates/tc-2026-0042.pdf",
+      "reason_for_leaving": "Parent relocation to Mumbai, Maharashtra.",
+      "created_at": "2026-10-14T11:30:00.000Z",
+      "updated_at": "2026-10-14T11:30:00.000Z"
+    }
+  ]
+}

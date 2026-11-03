@@ -1,0 +1,38 @@
+[
+  {
+    "id": "anc-2026-001",
+    "author_id": "usr-adm-001",
+    "title": "Annual Inter-School Science & Innovation Expo 2026",
+    "content": "We are delighted to announce that EduPulse will host the CBSE Regional Science Expo on November 14-15, 2026. Student project registrations open next Monday.",
+    "target_audience": "ALL",
+    "status": "PUBLISHED",
+    "published_at": "2026-10-15T09:00:00.000Z",
+    "expires_at": "2026-11-20T23:59:59.000Z",
+    "attachment_url": "https://cdn.edupulse.edu.in/bulletins/science_expo_circular_2026.pdf",
+    "updated_at": "2026-10-15T09:00:00.000Z"
+  },
+  {
+    "id": "anc-2026-002",
+    "author_id": "usr-adm-002",
+    "title": "Faculty Development Workshop on Experiential STEM Pedagogies",
+    "content": "Mandatory pedagogy enrichment session for all PGT and TGT teachers on Saturday, October 25, from 10:00 AM to 1:00 PM in the Multi-Purpose Auditorium.",
+    "target_audience": "TEACHERS_ONLY",
+    "status": "PUBLISHED",
+    "published_at": "2026-10-16T10:30:00.000Z",
+    "expires_at": "2026-10-26T23:59:59.000Z",
+    "attachment_url": null,
+    "updated_at": "2026-10-16T10:30:00.000Z"
+  },
+  {
+    "id": "anc-2026-003",
+    "author_id": "usr-fin-201",
+    "title": "Term 2 Fee Schedule & Online Payment Window Announcement",
+    "content": "Dear Parents, Term 2 academic fees are now generated. Please use the UPI / NetBanking portal before November 15, 2026 to avoid late concession surcharges.",
+    "target_audience": "PARENTS_ONLY",
+    "status": "PUBLISHED",
+    "published_at": "2026-10-17T08:00:00.000Z",
+    "expires_at": "2026-11-16T23:59:59.000Z",
+    "attachment_url": "https://cdn.edupulse.edu.in/bulletins/term2_fee_circular.pdf",
+    "updated_at": "2026-10-17T08:00:00.000Z"
+  }
+]
