@@ -1,0 +1,58 @@
+[
+  {
+    "id": "DOC-001",
+    "applicant_id": "req-201",
+    "applicant_name": "Reyansh Patel",
+    "grade": "Class 6",
+    "document_type": "Birth Certificate",
+    "file_name": "Reyansh_Birth_Certificate.pdf",
+    "file_size": "1.4 MB",
+    "status": "pending",
+    "rejection_reason": null,
+    "reviewed_by": null,
+    "reviewed_at": null,
+    "uploaded_at": "2026-10-24T06:30:00.000Z"
+  },
+  {
+    "id": "DOC-002",
+    "applicant_id": "req-201",
+    "applicant_name": "Reyansh Patel",
+    "grade": "Class 6",
+    "document_type": "Transfer Certificate (TC)",
+    "file_name": "Transfer_Certificate_Greenwood.pdf",
+    "file_size": "2.1 MB",
+    "status": "pending",
+    "rejection_reason": null,
+    "reviewed_by": null,
+    "reviewed_at": null,
+    "uploaded_at": "2026-10-24T06:30:00.000Z"
+  },
+  {
+    "id": "DOC-003",
+    "applicant_id": "req-202",
+    "applicant_name": "Ananya Verma",
+    "grade": "Class 1",
+    "document_type": "Birth Certificate",
+    "file_name": "Ananya_Birth_Certificate.pdf",
+    "file_size": "980 KB",
+    "status": "verified",
+    "rejection_reason": null,
+    "reviewed_by": "Radhika Nair (Front Desk)",
+    "reviewed_at": "2026-10-23T11:00:00.000Z",
+    "uploaded_at": "2026-10-23T09:15:00.000Z"
+  },
+  {
+    "id": "DOC-004",
+    "applicant_id": "req-203",
+    "applicant_name": "Kavya Reddy",
+    "grade": "Class 11",
+    "document_type": "Residential Address Proof",
+    "file_name": "utility_bill_scan_blur.png",
+    "file_size": "620 KB",
+    "status": "rejected",
+    "rejection_reason": "Scan is blurry; address line and seal are illegible. Please upload a clear PDF utility bill or rental agreement.",
+    "reviewed_by": "Radhika Nair (Front Desk)",
+    "reviewed_at": "2026-10-22T14:30:00.000Z",
+    "uploaded_at": "2026-10-22T12:00:00.000Z"
+  }
+]

@@ -1,0 +1,53 @@
+[
+  {
+    "id": "INT-01",
+    "applicant_id": "req-201",
+    "applicant_name": "Rohan Gupta",
+    "grade": "Class 11 - Science",
+    "parent_name": "Anil Gupta",
+    "contact_phone": "+91 98111 55667",
+    "interview_date_time": "2026-10-24T14:30:00.000Z",
+    "room_venue": "Admissions Panel Room 102",
+    "interviewer_name": "Dr. Sarah Jenkins & Anita Desai",
+    "status": "Scheduled",
+    "notes": "Science aptitude evaluation & subject elective selection (Physics, Chem, Math, CS).",
+    "assessment": {
+      "academic_score": 5,
+      "behavioral_score": 4,
+      "communication_score": 5,
+      "guardian_alignment_score": 5,
+      "outcome": "Recommended",
+      "evaluator_feedback": "Exemplary analytical reasoning, high proficiency in mathematics and coding fundamentals. Recommended for PCMC stream.",
+      "evaluated_at": "2026-10-24T15:15:00.000Z",
+      "evaluated_by": "Dr. Sarah Jenkins"
+    }
+  },
+  {
+    "id": "INT-02",
+    "applicant_id": "req-202",
+    "applicant_name": "Meera Kalyan Iyer",
+    "grade": "Class 9",
+    "parent_name": "Kalyan Iyer",
+    "contact_phone": "+91 98222 33445",
+    "interview_date_time": "2026-10-25T11:00:00.000Z",
+    "room_venue": "Conference Hall A",
+    "interviewer_name": "Priya Verma",
+    "status": "Confirmed",
+    "notes": "General admission interaction & second language preference review.",
+    "assessment": null
+  },
+  {
+    "id": "INT-03",
+    "applicant_id": "req-203",
+    "applicant_name": "Kabir Rajesh Sharma",
+    "grade": "Class 6",
+    "parent_name": "Rajesh Sharma",
+    "contact_phone": "+91 98765 43210",
+    "interview_date_time": "2026-10-26T10:30:00.000Z",
+    "room_venue": "Admissions Panel Room 101",
+    "interviewer_name": "Anita Desai",
+    "status": "Requested",
+    "notes": "Sibling admission intake interview and campus tour.",
+    "assessment": null
+  }
+]

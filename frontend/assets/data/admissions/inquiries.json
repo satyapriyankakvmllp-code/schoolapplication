@@ -1,0 +1,108 @@
+[
+  {
+    "id": "INQ-2026-0101",
+    "applicant_name": "Kabir Rajesh Sharma",
+    "grade_applying": "Class 6",
+    "parent_name": "Rajesh Sharma",
+    "parent_phone": "+91 98765 43210",
+    "parent_email": "parent.rajesh@gmail.com",
+    "residential_area": "Whitefield, Bengaluru",
+    "source": "walkIn",
+    "status": "newLead",
+    "notes": "Brother of Aarav Sharma (Class 10-A). Inquiring about CBSE curriculum, science lab facilities, and school transport routes.",
+    "created_at": "2026-10-24T08:30:00.000Z",
+    "follow_ups": [
+      {
+        "id": "FU-001",
+        "timestamp": "2026-10-24T08:45:00.000Z",
+        "action_type": "Walk-In Meeting",
+        "officer_name": "Radhika Nair",
+        "notes": "Handed prospectus and fee schedule brochure. Scheduled follow-up call for next Monday.",
+        "reminder_date": "2026-10-27T10:00:00.000Z"
+      }
+    ]
+  },
+  {
+    "id": "INQ-2026-0102",
+    "applicant_name": "Meera Kalyan Iyer",
+    "grade_applying": "Class 9",
+    "parent_name": "Kalyan Iyer",
+    "parent_phone": "+91 98222 33445",
+    "parent_email": "kalyan.iyer@gmail.com",
+    "residential_area": "Indiranagar, Bengaluru",
+    "source": "phone",
+    "status": "contacted",
+    "notes": "Relocating from Bangalore South. Inquired about second language options (Sanskrit / French) and badminton academy.",
+    "created_at": "2026-10-23T14:15:00.000Z",
+    "follow_ups": [
+      {
+        "id": "FU-002",
+        "timestamp": "2026-10-23T16:00:00.000Z",
+        "action_type": "Phone Call",
+        "officer_name": "Radhika Nair",
+        "notes": "Emailed curriculum comparison and fee concession policies. Parent agreed to visit campus on Friday.",
+        "reminder_date": "2026-10-26T11:30:00.000Z"
+      }
+    ]
+  },
+  {
+    "id": "INQ-2026-0103",
+    "applicant_name": "Rohan Anil Gupta",
+    "grade_applying": "Class 11 - Science",
+    "parent_name": "Anil Gupta",
+    "parent_phone": "+91 98111 55667",
+    "parent_email": "anil.gupta@corp.in",
+    "residential_area": "HSR Layout, Bengaluru",
+    "source": "website",
+    "status": "interviewScheduled",
+    "notes": "Opting for PCMC stream (Physics, Chemistry, Math, Computer Science). Scored 94% aggregate in Class 10 Pre-Boards.",
+    "created_at": "2026-10-22T10:00:00.000Z",
+    "follow_ups": [
+      {
+        "id": "FU-003",
+        "timestamp": "2026-10-22T11:20:00.000Z",
+        "action_type": "Email Sent",
+        "officer_name": "Radhika Nair",
+        "notes": "Confirmed interview slot with Dr. Sarah Jenkins for Saturday 11:00 AM.",
+        "reminder_date": "2026-10-25T09:00:00.000Z"
+      }
+    ]
+  },
+  {
+    "id": "INQ-2026-0104",
+    "applicant_name": "Sanya Malhotra",
+    "grade_applying": "Class 4",
+    "parent_name": "Pooja Malhotra",
+    "parent_phone": "+91 97665 11223",
+    "parent_email": "pooja.m@yahoo.com",
+    "residential_area": "Koramangala, Bengaluru",
+    "source": "referral",
+    "status": "converted",
+    "notes": "Completed Assisted Intake at Front Desk. Assigned Admission Ticket ADM-2026-0104.",
+    "created_at": "2026-10-21T09:45:00.000Z",
+    "follow_ups": [
+      {
+        "id": "FU-004",
+        "timestamp": "2026-10-21T10:30:00.000Z",
+        "action_type": "Application Created",
+        "officer_name": "Radhika Nair",
+        "notes": "Application converted and forwarded to Document Queue.",
+        "reminder_date": null
+      }
+    ]
+  },
+  {
+    "id": "INQ-2026-0105",
+    "applicant_name": "Aarush Dev Sharma",
+    "grade_applying": "Class 2",
+    "parent_name": "Devendra Sharma",
+    "parent_phone": "+91 99887 66554",
+    "parent_email": "dev.sharma@tech.co",
+    "residential_area": "Electronic City, Bengaluru",
+    "source": "walkIn",
+    "status": "closed",
+    "notes": "Family decided to continue at existing school due to work transfer cancellation.",
+    "created_at": "2026-10-18T11:00:00.000Z",
+    "follow_ups": []
+  }
+]
