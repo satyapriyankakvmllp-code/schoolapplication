@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../domain/exam_schedule_model.dart';
-import 'exam_ui.dart';
 
 class DeleteExamDialog extends StatefulWidget {
   final ExamSchedule exam;
@@ -198,10 +197,17 @@ class _DeleteExamDialogState extends State<DeleteExamDialog> {
                   controller: _inputController,
                   enabled: !_isDeleting,
                   style: const TextStyle(fontSize: 13),
-                  decoration: examInputDecoration(
-                    context,
-                    hint: 'Type exam name to confirm...',
-                    enabled: !_isDeleting,
+                  decoration: InputDecoration(
+                    hintText: 'Type exam name to confirm...',
+                    hintStyle: const TextStyle(fontSize: 12.5),
+                    border: const OutlineInputBorder(),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: _isConfirmationValid ? Colors.red : Colors.blue,
+                        width: 1.5,
+                      ),
+                    ),
                   ),
                   onChanged: (_) => setState(() {}),
                 ),

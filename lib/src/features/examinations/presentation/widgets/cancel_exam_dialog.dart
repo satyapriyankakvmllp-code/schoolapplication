@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../domain/exam_schedule_model.dart';
-import 'exam_ui.dart';
 
 class CancelExamDialog extends StatefulWidget {
   final ExamSchedule exam;
@@ -103,9 +102,11 @@ class _CancelExamDialogState extends State<CancelExamDialog> {
                 controller: _reasonController,
                 maxLines: 3,
                 style: const TextStyle(fontSize: 13),
-                decoration: examInputDecoration(
-                  context,
-                  hint: 'Enter specific reason for cancelling this examination...',
+                decoration: const InputDecoration(
+                  hintText: 'Enter specific reason for cancelling this examination...',
+                  hintStyle: TextStyle(fontSize: 12.5),
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.all(12),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {

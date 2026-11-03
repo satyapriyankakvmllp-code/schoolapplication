@@ -89,7 +89,9 @@ class LocalExamRepository implements ExamRepository {
   }
 
   Future<List<ExamPaper>> _loadPapers(Map<String, dynamic> raw) async {
-    final list = raw['exam_papers'] as List<dynamic>? ?? [];
+    final list = raw['exam_papers'] as List<dynamic>? ??
+        raw['exam_timetables'] as List<dynamic>? ??
+        [];
     return list
         .whereType<Map<String, dynamic>>()
         .map((e) => ExamPaper.fromJson(e))
@@ -260,19 +262,7 @@ class LocalExamRepository implements ExamRepository {
       );
     }
 
-    // The admin can pick the status from the dropdown. If it matches what the
-    // dates say it stays automatic, otherwise it is kept as a manual status.
-    final chosen = exam.status.toUpperCase();
-    if (chosen == 'CANCELLED' && (exam.cancelReason ?? '').trim().isEmpty) {
-      throw const ExamValidationException('A cancellation reason is required.');
-    }
-    final dateStatus = ExamSchedule.computeStatus(
-      rawStatus: 'PLANNED',
-      startDate: exam.startDate,
-      endDate: exam.endDate,
-    );
-    final isManual = chosen != dateStatus;
-
+    // Business Rule 1: New exams are always PLANNED
     final id = exam.examScheduleId.isNotEmpty
         ? exam.examScheduleId
         : 'exam-sch-${_uuid.v4().substring(0, 8)}';
@@ -281,10 +271,8 @@ class LocalExamRepository implements ExamRepository {
     final newExam = exam.copyWith(
       examScheduleId: id,
       examName: trimmedName,
-      status: chosen,
-      manualStatus: isManual,
-      cancelReason: chosen == 'CANCELLED' ? exam.cancelReason?.trim() : null,
-      clearCancelReason: chosen != 'CANCELLED',
+      status: 'PLANNED',
+      cancelReason: null,
       createdBy: actor.userId,
       createdAt: nowIso,
       updatedAt: nowIso,
@@ -378,35 +366,17 @@ class LocalExamRepository implements ExamRepository {
     }
 
     final nowIso = DateTime.now().toUtc().toIso8601String();
-    final chosen = exam.status.toUpperCase();
-    final String finalStatus;
-    if (chosen == 'CANCELLED') {
-      finalStatus = 'CANCELLED';
-    } else if (exam.manualStatus) {
-      finalStatus = chosen;
-    } else {
-      finalStatus = ExamSchedule.computeStatus(
-        rawStatus: chosen,
-        startDate: exam.startDate,
-        endDate: exam.endDate,
-      );
-    }
-
-    String? reason;
-    if (finalStatus == 'CANCELLED') {
-      reason = (exam.cancelReason ?? '').trim().isNotEmpty
-          ? exam.cancelReason!.trim()
-          : existingExam.cancelReason;
-      if ((reason ?? '').trim().isEmpty) {
-        throw const ExamValidationException('A cancellation reason is required.');
-      }
-    }
+    final finalStatus = existingExam.isCancelled
+        ? 'CANCELLED'
+        : ExamSchedule.computeStatus(
+            rawStatus: exam.status,
+            startDate: exam.startDate,
+            endDate: exam.endDate,
+          );
 
     final updatedExam = exam.copyWith(
       examName: trimmedName,
       status: finalStatus,
-      cancelReason: reason,
-      clearCancelReason: finalStatus != 'CANCELLED',
       updatedAt: nowIso,
       paperCount: examPapers.length,
     );
@@ -539,39 +509,6 @@ class LocalExamRepository implements ExamRepository {
         raw[key] = list;
       }
     }
-
-    // 2b. Remove syllabus patterns, question papers and remarks of this exam
-    final patternIds = (raw['exam_syllabus_patterns'] is List)
-        ? (raw['exam_syllabus_patterns'] as List)
-            .whereType<Map>()
-            .where((m) => (m['exam_schedule_id'] ?? '').toString() == id)
-            .map((m) => (m['pattern_id'] ?? m['id']).toString())
-            .toSet()
-        : <String>{};
-    final paperQpIds = (raw['question_papers'] is List)
-        ? (raw['question_papers'] as List)
-            .whereType<Map>()
-            .where((m) =>
-                linkedPaperIds.contains((m['exam_paper_id'] ?? '').toString()) ||
-                patternIds.contains((m['pattern_id'] ?? '').toString()))
-            .map((m) => (m['question_paper_id'] ?? m['id']).toString())
-            .toSet()
-        : <String>{};
-    void dropWhere(String key, bool Function(Map m) test) {
-      if (raw[key] is List) {
-        raw[key] = (raw[key] as List).whereType<Map>().where((m) => !test(m)).toList();
-      }
-    }
-
-    dropWhere('exam_syllabus_patterns',
-        (m) => patternIds.contains((m['pattern_id'] ?? m['id']).toString()));
-    dropWhere('pattern_sections', (m) => patternIds.contains((m['pattern_id'] ?? '').toString()));
-    dropWhere('pattern_topics', (m) => patternIds.contains((m['pattern_id'] ?? '').toString()));
-    dropWhere('question_papers',
-        (m) => paperQpIds.contains((m['question_paper_id'] ?? m['id']).toString()));
-    dropWhere('question_paper_items',
-        (m) => paperQpIds.contains((m['question_paper_id'] ?? '').toString()));
-    dropWhere('exam_student_remarks', (m) => (m['exam_schedule_id'] ?? '').toString() == id);
 
     // 3. Remove the exam schedule itself
     rawList.removeAt(index);

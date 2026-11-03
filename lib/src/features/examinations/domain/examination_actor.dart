@@ -93,35 +93,6 @@ class ExaminationPermissions {
   /// Read-only roles
   bool get isReadOnly => !isAdminOrPrincipal;
 
-  // ---- Permissions for the other examination screens ----
-
-  /// Timetable (exam papers): create / edit / delete / cancel.
-  bool get canManagePapers => isAdminOrPrincipal;
-
-  /// Hall tickets: generate, revoke, delete.
-  bool get canManageHallTickets => isAdminOrPrincipal;
-
-  /// Exam-day attendance (invigilators are teachers).
-  bool get canMarkAttendance => isAdminOrPrincipal || isTeacher;
-
-  /// Marks entry. Admin can edit marks at any time.
-  bool get canEnterMarks => isAdminOrPrincipal || isTeacher;
-
-  /// Marks review, correction requests and student remarks.
-  bool get canReviewMarks => isAdminOrPrincipal || isClassIncharge;
-
-  /// Calculate results, approve, publish report cards.
-  bool get canManageResults => isAdminOrPrincipal;
-
-  /// Syllabus & exam pattern setup.
-  bool get canManagePatterns => isAdminOrPrincipal;
-
-  /// Question bank and question paper writing.
-  bool get canWriteQuestions => isAdminOrPrincipal || isTeacher;
-
-  /// Question paper review / approval.
-  bool get canApproveQuestionPapers => isAdminOrPrincipal;
-
   /// STUDENT and PARENT: read-only, shown as simple cards, hide PLANNED exams that have no papers.
   bool get isStudentOrParent => isStudent || isParent;
 
@@ -141,18 +112,10 @@ class ExaminationActor {
   final String name;
   final ExamRole role;
 
-  /// Linked live-data ids (see GlobalUser).
-  final String? teacherId;
-  final String? sectionId;
-  final String? studentId;
-
   const ExaminationActor({
     required this.userId,
     required this.name,
     required this.role,
-    this.teacherId,
-    this.sectionId,
-    this.studentId,
   });
 
   factory ExaminationActor.fromGlobalUser(GlobalUser user) {
@@ -160,9 +123,6 @@ class ExaminationActor {
       userId: user.id,
       name: user.name,
       role: ExamRole.fromString(user.role),
-      teacherId: user.teacherId,
-      sectionId: user.sectionId,
-      studentId: user.studentId,
     );
   }
 

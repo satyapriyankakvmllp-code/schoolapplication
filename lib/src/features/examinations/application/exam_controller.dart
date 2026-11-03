@@ -84,7 +84,6 @@ class ExamListController extends AsyncNotifier<List<ExamSchedule>> {
     final repo = ref.watch(examRepositoryProvider);
     final actor = ref.watch(currentExamActorProvider);
     final filter = ref.watch(examFilterProvider);
-    ref.watch(examDataVersionProvider);
 
     return repo.getExams(
       searchQuery: filter.searchQuery,

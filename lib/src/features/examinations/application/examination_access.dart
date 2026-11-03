@@ -1,22 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/exam_repository.dart';
-import '../data/examination_local_datasource.dart';
 import '../domain/examination_actor.dart';
 import '../domain/global_setup_model.dart';
 
-/// ONE shared data source, so every repository sees the same cached JSON.
-final examinationDataSourceProvider = Provider<ExaminationLocalDataSource>((ref) {
-  return ExaminationLocalDataSource();
-});
-
-/// Bumped after any change to examination data. Screens that watch it
-/// refresh immediately (for example the Papers count on the Exam list).
-final examDataVersionProvider = StateProvider<int>((ref) => 0);
-
 final examRepositoryProvider = Provider<ExamRepository>((ref) {
-  return LocalExamRepository(
-    localDataSource: ref.watch(examinationDataSourceProvider),
-  );
+  return LocalExamRepository();
 });
 
 /// Global setup provider (reads global.json)

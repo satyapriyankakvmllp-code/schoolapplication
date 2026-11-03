@@ -13,10 +13,6 @@ class ExamSchedule {
   final String updatedAt;
   final int paperCount;
 
-  /// True when the admin picked the status from the dropdown instead of
-  /// letting it follow the dates.
-  final bool manualStatus;
-
   const ExamSchedule({
     required this.examScheduleId,
     required this.examName,
@@ -31,7 +27,6 @@ class ExamSchedule {
     required this.createdAt,
     required this.updatedAt,
     this.paperCount = 0,
-    this.manualStatus = false,
   });
 
   bool get isPlanned => status.toUpperCase() == 'PLANNED';
@@ -63,8 +58,6 @@ class ExamSchedule {
     String? createdAt,
     String? updatedAt,
     int? paperCount,
-    bool? manualStatus,
-    bool clearCancelReason = false,
   }) {
     return ExamSchedule(
       examScheduleId: examScheduleId ?? this.examScheduleId,
@@ -75,12 +68,11 @@ class ExamSchedule {
       endDate: endDate ?? this.endDate,
       description: description ?? this.description,
       status: status ?? this.status,
-      cancelReason: clearCancelReason ? null : (cancelReason ?? this.cancelReason),
+      cancelReason: cancelReason ?? this.cancelReason,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       paperCount: paperCount ?? this.paperCount,
-      manualStatus: manualStatus ?? this.manualStatus,
     );
   }
 
@@ -89,14 +81,11 @@ class ExamSchedule {
     final start = (json['start_date'] ?? '').toString();
     final end = (json['end_date'] ?? '').toString();
 
-    final manual = json['status_manual'] == true;
-    final computedStatus = manual && rawStatus.toUpperCase() != 'CANCELLED'
-        ? rawStatus.toUpperCase()
-        : computeStatus(
-            rawStatus: rawStatus,
-            startDate: start,
-            endDate: end,
-          );
+    final computedStatus = computeStatus(
+      rawStatus: rawStatus,
+      startDate: start,
+      endDate: end,
+    );
 
     return ExamSchedule(
       examScheduleId: (json['exam_schedule_id'] ?? json['id'] ?? '').toString(),
@@ -112,7 +101,6 @@ class ExamSchedule {
       createdAt: (json['created_at'] ?? DateTime.now().toIso8601String()).toString(),
       updatedAt: (json['updated_at'] ?? DateTime.now().toIso8601String()).toString(),
       paperCount: paperCount,
-      manualStatus: manual,
     );
   }
 
@@ -126,7 +114,6 @@ class ExamSchedule {
       'end_date': endDate,
       'description': description,
       'status': status,
-      'status_manual': manualStatus,
       'cancel_reason': cancelReason,
       'created_by': createdBy,
       'created_at': createdAt,

@@ -8,12 +8,13 @@ import 'exam_form_screen.dart';
 import 'widgets/cancel_exam_dialog.dart';
 import 'widgets/delete_exam_dialog.dart';
 import 'widgets/exam_status_badge.dart';
-import 'panels/attendance_panel.dart';
-import 'panels/exam_papers_panel.dart';
-import 'panels/hall_tickets_panel.dart';
-import 'panels/marks_entry_panel.dart';
-import 'panels/marks_review_panel.dart';
-import 'panels/results_panel.dart';
+import 'widgets/exam_papers_tab.dart';
+import 'tabs/hall_tickets_tab.dart';
+import 'tabs/attendance_tab.dart';
+import 'tabs/marks_entry_tab.dart';
+import 'tabs/marks_review_tab.dart';
+import 'tabs/results_tab.dart';
+import 'tabs/syllabus_pattern_tab.dart';
 
 class ExamDetailsScreen extends ConsumerStatefulWidget {
   final String examId;
@@ -285,8 +286,26 @@ class _ExamDetailsScreenState extends ConsumerState<ExamDetailsScreen> {
                       totalDays: totalDays,
                       isDark: isDark,
                     )
+                  else if (_activeTab == 'Exam Timetable' || _activeTab == 'Exam Papers')
+                    ExamTimetableTab(exam: exam)
+                  else if (_activeTab == 'Syllabus')
+                    SyllabusTab(exam: exam)
+                  else if (_activeTab == 'Exam Pattern')
+                    ExamPatternTab(exam: exam)
+                  else if (_activeTab == 'Question Paper')
+                    QuestionPaperTab(exam: exam)
+                  else if (_activeTab == 'Hall Tickets')
+                    HallTicketsTab(exam: exam)
+                  else if (_activeTab == 'Attendance')
+                    ExamAttendanceTab(exam: exam)
+                  else if (_activeTab == 'Marks Entry')
+                    MarksEntryTab(exam: exam)
+                  else if (_activeTab == 'Marks Review')
+                    MarksReviewTab(exam: exam)
+                  else if (_activeTab == 'Results')
+                    ResultsTab(exam: exam)
                   else
-                    _buildModuleTab(exam.examScheduleId, _activeTab, isDark: isDark),
+                    _buildComingSoonTab(_activeTab, isDark: isDark),
                 ],
               ),
             ),
@@ -380,6 +399,65 @@ class _ExamDetailsScreenState extends ConsumerState<ExamDetailsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Section Navigator (Exam List vs Exam Timetable)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.navigation_outlined, size: 16, color: Color(0xFF109F83)),
+                const SizedBox(width: 8),
+                const Text(
+                  'Module Section:',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey),
+                ),
+                const SizedBox(width: 8),
+                DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: (_activeTab == 'Exam Timetable' || _activeTab == 'Exam Papers')
+                        ? 'TIMETABLE'
+                        : 'LIST',
+                    isDense: true,
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'LIST',
+                        child: Text('1. Exam List (Back to All Exams)'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'TIMETABLE',
+                        child: Text('2. Exam Timetable'),
+                      ),
+                    ],
+                    onChanged: (v) {
+                      if (v == 'LIST') {
+                        if (widget.isDialog) {
+                          Navigator.of(context).pop();
+                        } else if (widget.onBack != null) {
+                          widget.onBack!();
+                        } else if (Navigator.of(context).canPop()) {
+                          Navigator.of(context).pop();
+                        }
+                      } else if (v == 'TIMETABLE') {
+                        setState(() => _activeTab = 'Exam Timetable');
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -501,16 +579,21 @@ class _ExamDetailsScreenState extends ConsumerState<ExamDetailsScreen> {
   // 2. TABS HEADER
   // ---------------------------------------------------------------------------
   Widget _buildTabsHeader({required bool isDark}) {
-    final perms = ref.read(currentExamActorProvider).permissions;
-    final names = <String>['Overview', 'Exam Papers'];
-    if (perms.isAdminOrPrincipal) {
-      names.addAll(['Hall Tickets', 'Attendance', 'Marks', 'Results']);
-    } else if (perms.isTeacher) {
-      names.addAll(['Attendance', 'Marks']);
-    } else if (perms.isClassIncharge) {
-      names.addAll(['Hall Tickets', 'Marks', 'Results']);
-    }
-    final tabs = names.map((n) => {'name': n, 'enabled': true}).toList();
+    final p = ref.read(examinationPermissionsProvider);
+    final names = <String>[
+      'Overview',
+      'Exam Timetable',
+      if (!p.isStudentOrParent) 'Syllabus',
+      if (!p.isStudentOrParent) 'Exam Pattern',
+      if (p.isAdminOrPrincipal || p.isTeacher) 'Question Paper',
+      if (p.isAdminOrPrincipal || p.isStudentOrParent) 'Hall Tickets',
+      if (!p.isStudentOrParent) 'Attendance',
+      if (!p.isStudentOrParent) 'Marks Entry',
+      if (p.isAdminOrPrincipal || p.isClassIncharge) 'Marks Review',
+      if (p.isAdminOrPrincipal || p.isClassIncharge || p.isStudentOrParent) 'Results',
+    ];
+    final tabs = [for (final n in names) {'name': n, 'enabled': true}];
+
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -643,8 +726,8 @@ class _ExamDetailsScreenState extends ConsumerState<ExamDetailsScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: _buildMetricTile(
-                title: 'Question Papers',
-                value: '${exam.paperCount} Papers',
+                title: 'Timetable Entries',
+                value: '${exam.paperCount} Entries',
                 icon: Icons.menu_book,
                 color: const Color(0xFF6366F1),
                 isDark: isDark,
@@ -821,7 +904,7 @@ class _ExamDetailsScreenState extends ConsumerState<ExamDetailsScreen> {
           _buildInfoRow('Created By', createdByName, isDark),
           _buildInfoRow('Created On', _formatDateTime(exam.createdAt), isDark),
           _buildInfoRow('Last Updated', _formatDateTime(exam.updatedAt), isDark),
-          _buildInfoRow('Total Papers', '${exam.paperCount}', isDark),
+          _buildInfoRow('Timetable Entries', '${exam.paperCount}', isDark),
         ],
       ),
     );
@@ -861,27 +944,6 @@ class _ExamDetailsScreenState extends ConsumerState<ExamDetailsScreen> {
   // ---------------------------------------------------------------------------
   // 4. PLACEHOLDER / COMING SOON TAB
   // ---------------------------------------------------------------------------
-  /// Examination screens shown inside the details frame for ONE exam.
-  Widget _buildModuleTab(String examId, String tab, {required bool isDark}) {
-    final perms = ref.read(currentExamActorProvider).permissions;
-    switch (tab) {
-      case 'Exam Papers':
-        return ExamPapersPanel(examId: examId);
-      case 'Hall Tickets':
-        return HallTicketsPanel(examId: examId);
-      case 'Attendance':
-        return AttendancePanel(examId: examId);
-      case 'Marks':
-        return (perms.canReviewMarks && !perms.canEnterMarks)
-            ? MarksReviewPanel(examId: examId)
-            : MarksEntryPanel(examId: examId);
-      case 'Results':
-        return ResultsPanel(examId: examId);
-      default:
-        return _buildComingSoonTab(tab, isDark: isDark);
-    }
-  }
-
   Widget _buildComingSoonTab(String moduleTitle, {required bool isDark}) {
     return Center(
       child: Container(

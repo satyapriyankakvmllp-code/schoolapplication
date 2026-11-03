@@ -15,16 +15,6 @@ import 'widgets/exam_card_item.dart';
 import 'widgets/exam_filter_bar.dart';
 import 'widgets/exam_status_badge.dart';
 import 'widgets/exam_summary_cards.dart';
-import 'panels/attendance_panel.dart';
-import 'panels/exam_papers_panel.dart';
-import 'panels/hall_tickets_panel.dart';
-import 'panels/marks_entry_panel.dart';
-import 'panels/marks_review_panel.dart';
-import 'panels/my_exams_panel.dart';
-import 'panels/pattern_panel.dart';
-import 'panels/question_bank_panel.dart';
-import 'panels/question_paper_panel.dart';
-import 'panels/results_panel.dart';
 
 class ExamListScreen extends ConsumerStatefulWidget {
   final bool isDark;
@@ -45,90 +35,6 @@ class ExamListScreen extends ConsumerStatefulWidget {
 }
 
 class _ExamListScreenState extends ConsumerState<ExamListScreen> {
-  /// Which examination screen is open ('Exams' is the exam list).
-  String _section = 'Exams';
-
-  /// Screens each role can open (one entry per screen of the module).
-  List<({String key, String label, IconData icon})> _sectionsFor(ExaminationPermissions p) {
-    final all = <({String key, String label, IconData icon})>[
-      (key: 'Exams', label: 'Exams', icon: Icons.event_note_outlined),
-      if (p.isAdminOrPrincipal || p.isTeacher || p.isClassIncharge)
-        (key: 'Exam Papers', label: 'Exam Papers', icon: Icons.calendar_month_outlined),
-      if (p.isAdminOrPrincipal || p.isClassIncharge)
-        (key: 'Hall Tickets', label: 'Hall Tickets', icon: Icons.badge_outlined),
-      if (p.isAdminOrPrincipal || p.isTeacher)
-        (key: 'Attendance', label: 'Attendance', icon: Icons.fact_check_outlined),
-      if (p.isAdminOrPrincipal || p.isTeacher)
-        (key: 'Marks Entry', label: 'Marks Entry', icon: Icons.edit_note),
-      if (p.isAdminOrPrincipal || p.isClassIncharge)
-        (key: 'Marks Review', label: 'Marks Review', icon: Icons.rate_review_outlined),
-      if (p.isAdminOrPrincipal || p.isClassIncharge)
-        (key: 'Results', label: 'Results & Report Cards', icon: Icons.assessment_outlined),
-      if (p.isStudentOrParent)
-        (key: 'My Exams', label: 'My Exams', icon: Icons.school_outlined),
-      (key: 'Syllabus & Pattern', label: 'Syllabus & Pattern', icon: Icons.rule_folder_outlined),
-      if (p.isAdminOrPrincipal || p.isTeacher)
-        (key: 'Question Bank', label: 'Question Bank', icon: Icons.quiz_outlined),
-      if (p.isAdminOrPrincipal || p.isTeacher)
-        (key: 'Question Papers', label: 'Question Papers', icon: Icons.description_outlined),
-    ];
-    return all;
-  }
-
-  Widget _buildSectionNav(List<({String key, String label, IconData icon})> sections, String active, bool isDark) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: sections.map((s) {
-          final selected = s.key == active;
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: ChoiceChip(
-              avatar: Icon(s.icon, size: 16, color: selected ? Colors.white : null),
-              label: Text(s.label),
-              selected: selected,
-              showCheckmark: false,
-              selectedColor: const Color(0xFF109F83),
-              labelStyle: TextStyle(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w600,
-                color: selected ? Colors.white : (isDark ? Colors.white70 : const Color(0xFF334155)),
-              ),
-              onSelected: (_) => setState(() => _section = s.key),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildSectionPanel(String key) {
-    switch (key) {
-      case 'Exam Papers':
-        return const ExamPapersPanel();
-      case 'Hall Tickets':
-        return const HallTicketsPanel();
-      case 'Attendance':
-        return const AttendancePanel();
-      case 'Marks Entry':
-        return const MarksEntryPanel();
-      case 'Marks Review':
-        return const MarksReviewPanel();
-      case 'Results':
-        return const ResultsPanel();
-      case 'My Exams':
-        return const MyExamsPanel();
-      case 'Syllabus & Pattern':
-        return const PatternPanel();
-      case 'Question Bank':
-        return const QuestionBankPanel();
-      case 'Question Papers':
-        return const QuestionPaperPanel();
-      default:
-        return const SizedBox.shrink();
-    }
-  }
-
   String _formatDateRange(String startStr, String endStr) {
     try {
       final startParts = startStr.split('-').map(int.parse).toList();
@@ -158,7 +64,7 @@ class _ExamListScreenState extends ConsumerState<ExamListScreen> {
       onSaved: (savedExam, openPapersTab) {
         Navigator.of(context).pop();
         if (openPapersTab) {
-          _openDetails(savedExam.examScheduleId, initialTab: 'Exam Papers');
+          _openDetails(savedExam.examScheduleId, initialTab: 'Exam Timetable');
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -178,7 +84,7 @@ class _ExamListScreenState extends ConsumerState<ExamListScreen> {
       onSaved: (savedExam, openPapersTab) {
         Navigator.of(context).pop();
         if (openPapersTab) {
-          _openDetails(savedExam.examScheduleId, initialTab: 'Exam Papers');
+          _openDetails(savedExam.examScheduleId, initialTab: 'Exam Timetable');
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -310,8 +216,6 @@ class _ExamListScreenState extends ConsumerState<ExamListScreen> {
 
     final isStudentOrParent = permissions.isStudentOrParent;
     final showTable = !isMobile && !isStudentOrParent;
-    final sections = _sectionsFor(permissions);
-    final activeSection = sections.any((x) => x.key == _section) ? _section : 'Exams';
 
     return EdupluseScaffold(
       activePage: EdupluseNavPage.examinations,
@@ -339,12 +243,6 @@ class _ExamListScreenState extends ConsumerState<ExamListScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Examination screens (role based)
-                        _buildSectionNav(sections, activeSection, isDark),
-                        const SizedBox(height: 16),
-                        if (activeSection != 'Exams') _buildSectionPanel(activeSection),
-
-                        if (activeSection == 'Exams') ...[
                         // Page Title & Primary Actions
                         _buildPageTitleRow(permissions, isDark),
                         const SizedBox(height: 16),
@@ -378,7 +276,6 @@ class _ExamListScreenState extends ConsumerState<ExamListScreen> {
                             }
                           },
                         ),
-                        ],
                       ],
                     ),
                   ),
@@ -594,7 +491,7 @@ class _ExamListScreenState extends ConsumerState<ExamListScreen> {
                   label: Text('Start to End Date', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5)),
                 ),
                 DataColumn(
-                  label: Text('Papers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5)),
+                  label: Text('Timetable Entries', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5)),
                 ),
                 DataColumn(
                   label: Text('Status', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5)),

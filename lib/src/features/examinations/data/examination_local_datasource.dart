@@ -5,18 +5,36 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ExaminationLocalDataSource {
-  static const String _seedExaminationAsset = 'assets/data/examination.json';
-  static const String _seedGlobalAsset = 'assets/data/global.json';
+  static const List<String> _seedExaminationAssets = [
+    'assets/data/examination/examination.json',
+    'assets/data/examinations/examinations.json',
+    'assets/data/examination.json',
+  ];
+
+  static const List<String> _seedGlobalAssets = [
+    'assets/data/global_school_database.json',
+    'assets/data/global.json',
+  ];
 
   static const String _storageKeyExamination = 'examination_local_json_data';
-  static const String _storageKeyGlobal = 'global_local_json_data';
+  static const String _storageKeyGlobal = 'global_school_database_local_json_data';
 
   static const String _examFileName = 'examination.json';
-  static const String _globalFileName = 'global.json';
+  static const String _globalFileName = 'global_school_database.json';
 
   // In-memory caches for fast, synchronous reads
   String? _cachedExamJson;
   String? _cachedGlobalJson;
+
+  Future<String> _loadAssetWithFallback(List<String> paths) async {
+    for (final p in paths) {
+      try {
+        final content = await rootBundle.loadString(p);
+        if (content.trim().isNotEmpty) return content;
+      } catch (_) {}
+    }
+    throw StateError('Unable to load any seed asset from: $paths');
+  }
 
   Future<File?> _getLocalFile(String filename) async {
     if (kIsWeb) return null;
@@ -43,7 +61,7 @@ class ExaminationLocalDataSource {
         return stored;
       }
       // Seed from asset
-      final seed = await rootBundle.loadString(_seedExaminationAsset);
+      final seed = await _loadAssetWithFallback(_seedExaminationAssets);
       await prefs.setString(_storageKeyExamination, seed);
       _cachedExamJson = seed;
       return seed;
@@ -60,7 +78,7 @@ class ExaminationLocalDataSource {
     }
 
     // Seed file if missing or empty
-    final seed = await rootBundle.loadString(_seedExaminationAsset);
+    final seed = await _loadAssetWithFallback(_seedExaminationAssets);
     if (file != null) {
       try {
         await file.writeAsString(seed, flush: true);
@@ -92,6 +110,9 @@ class ExaminationLocalDataSource {
     }
   }
 
+  /// Read Global School Database JSON (shared school information and existing master data)
+  Future<String> readGlobalSchoolDatabaseJson() => readGlobalJson();
+
   /// Read Global JSON
   Future<String> readGlobalJson() async {
     if (_cachedGlobalJson != null) {
@@ -105,7 +126,7 @@ class ExaminationLocalDataSource {
         _cachedGlobalJson = stored;
         return stored;
       }
-      final seed = await rootBundle.loadString(_seedGlobalAsset);
+      final seed = await _loadAssetWithFallback(_seedGlobalAssets);
       await prefs.setString(_storageKeyGlobal, seed);
       _cachedGlobalJson = seed;
       return seed;
@@ -120,7 +141,7 @@ class ExaminationLocalDataSource {
       }
     }
 
-    final seed = await rootBundle.loadString(_seedGlobalAsset);
+    final seed = await _loadAssetWithFallback(_seedGlobalAssets);
     if (file != null) {
       try {
         await file.writeAsString(seed, flush: true);
@@ -153,10 +174,10 @@ class ExaminationLocalDataSource {
 
   /// Reset demo data: re-copies the bundled seed asset to local storage
   Future<void> resetDemoData() async {
-    final seedExam = await rootBundle.loadString(_seedExaminationAsset);
+    final seedExam = await _loadAssetWithFallback(_seedExaminationAssets);
     await writeExaminationJson(seedExam);
 
-    final seedGlobal = await rootBundle.loadString(_seedGlobalAsset);
+    final seedGlobal = await _loadAssetWithFallback(_seedGlobalAssets);
     await writeGlobalJson(seedGlobal);
   }
 }

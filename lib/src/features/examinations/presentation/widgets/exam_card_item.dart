@@ -231,7 +231,7 @@ class ExamCardItem extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          '${exam.paperCount} Papers',
+                          '${exam.paperCount} Timetable entries',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
