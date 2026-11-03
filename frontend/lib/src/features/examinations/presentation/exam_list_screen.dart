@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../commonwidgets/edupluse_scaffold.dart';
 import '../application/exam_controller.dart';
+import '../application/exam_paper_controller.dart';
 import '../application/examination_access.dart';
+import '../domain/exam_reference_model.dart';
 import '../domain/exam_schedule_model.dart';
 import '../domain/examination_actor.dart';
 import '../domain/global_setup_model.dart';
@@ -13,6 +15,7 @@ import 'widgets/cancel_exam_dialog.dart';
 import 'widgets/delete_exam_dialog.dart';
 import 'widgets/exam_card_item.dart';
 import 'widgets/exam_filter_bar.dart';
+import 'widgets/exam_paper_form_dialog.dart';
 import 'widgets/exam_status_badge.dart';
 import 'widgets/exam_summary_cards.dart';
 
@@ -95,6 +98,108 @@ class _ExamListScreenState extends ConsumerState<ExamListScreen> {
         }
       },
     );
+  }
+
+  Future<void> _openAddTimetableEntryDialog(ExamSchedule exam) async {
+    final refData = ref.read(examReferenceProvider).valueOrNull ?? const ExamReferenceData();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => ExamTimetableFormDialog(
+        exam: exam,
+        refData: refData,
+      ),
+    );
+    if (ok == true && mounted) {
+      ref.invalidate(examTimetableProvider(exam.examScheduleId));
+      ref.read(examListControllerProvider.notifier).refreshExams();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Timetable entry added to "${exam.examName}".'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  Future<void> _openCreateTimetableFlow() async {
+    final exams = ref.read(examListControllerProvider).valueOrNull ?? [];
+    if (exams.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please create an exam schedule first before adding timetable entries.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    String selectedExamId = exams.first.examScheduleId;
+    final proceed = await showDialog<String>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('Create New Exam Timetable'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Select the examination schedule to configure or add timetable entries for:',
+                style: TextStyle(fontSize: 13),
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: selectedExamId,
+                isExpanded: true,
+                decoration: const InputDecoration(
+                  labelText: 'Examination Schedule',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+                items: [
+                  for (final e in exams)
+                    DropdownMenuItem(
+                      value: e.examScheduleId,
+                      child: Text('${e.examName} (${e.academicYear})'),
+                    ),
+                ],
+                onChanged: (v) {
+                  if (v != null) setDialogState(() => selectedExamId = v);
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, null),
+              child: const Text('Cancel'),
+            ),
+            OutlinedButton(
+              onPressed: () => Navigator.pop(ctx, 'VIEW:$selectedExamId'),
+              child: const Text('View Timetable'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: const Color(0xFF109F83)),
+              onPressed: () => Navigator.pop(ctx, 'CREATE:$selectedExamId'),
+              child: const Text('Add Timetable Entry'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (proceed != null && mounted) {
+      final parts = proceed.split(':');
+      final mode = parts[0];
+      final eId = parts[1];
+      final targetExam = exams.firstWhere((e) => e.examScheduleId == eId);
+
+      if (mode == 'VIEW') {
+        _openDetails(eId, initialTab: 'Exam Timetable');
+      } else {
+        await _openAddTimetableEntryDialog(targetExam);
+      }
+    }
   }
 
   Future<void> _handleCancel(ExamSchedule exam) async {
@@ -402,8 +507,11 @@ class _ExamListScreenState extends ConsumerState<ExamListScreen> {
   // 2. PAGE TITLE AND ACTION ROW
   // ---------------------------------------------------------------------------
   Widget _buildPageTitleRow(ExaminationPermissions permissions, bool isDark) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Wrap(
+      spacing: 12,
+      runSpacing: 10,
+      alignment: WrapAlignment.spaceBetween,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -427,22 +535,28 @@ class _ExamListScreenState extends ConsumerState<ExamListScreen> {
           ],
         ),
 
-        // "+ Create Exam" button (Admin / Principal only)
-        if (permissions.canCreateExam)
-          FilledButton.icon(
-            style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFF109F83),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-            icon: const Icon(Icons.add, size: 18),
-            label: const Text(
-              '+ Create Exam',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-            ),
-            onPressed: _openCreateDialog,
-          ),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            // "+ Create Exam" button (Admin / Principal only)
+            if (permissions.canCreateExam)
+              FilledButton.icon(
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF109F83),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                icon: const Icon(Icons.add, size: 18),
+                label: const Text(
+                  '+ Create Exam',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                ),
+                onPressed: _openCreateDialog,
+              ),
+          ],
+        ),
       ],
     );
   }
@@ -579,6 +693,10 @@ class _ExamListScreenState extends ConsumerState<ExamListScreen> {
                         onSelected: (action) {
                           if (action == 'view') {
                             _openDetails(exam.examScheduleId);
+                          } else if (action == 'timetable') {
+                            _openDetails(exam.examScheduleId, initialTab: 'Exam Timetable');
+                          } else if (action == 'add_timetable') {
+                            _openAddTimetableEntryDialog(exam);
                           } else if (action == 'edit') {
                             _openEditDialog(exam);
                           } else if (action == 'cancel') {
@@ -598,6 +716,27 @@ class _ExamListScreenState extends ConsumerState<ExamListScreen> {
                               ],
                             ),
                           ),
+                          const PopupMenuItem(
+                            value: 'timetable',
+                            child: Row(
+                              children: [
+                                Icon(Icons.calendar_month_outlined, size: 16),
+                                SizedBox(width: 8),
+                                Text('View Timetable', style: TextStyle(fontSize: 12.5)),
+                              ],
+                            ),
+                          ),
+                          if (permissions.isAdminOrPrincipal || permissions.isTeacher)
+                            const PopupMenuItem(
+                              value: 'add_timetable',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.add_circle_outline, size: 16, color: Color(0xFF109F83)),
+                                  SizedBox(width: 8),
+                                  Text('+ Add Timetable Entry', style: TextStyle(fontSize: 12.5, color: Color(0xFF109F83))),
+                                ],
+                              ),
+                            ),
                           if (canEdit)
                             PopupMenuItem(
                               value: 'edit',
@@ -670,6 +809,10 @@ class _ExamListScreenState extends ConsumerState<ExamListScreen> {
           examTypeLabel: typeLabel,
           permissions: permissions,
           onTap: () => _openDetails(exam.examScheduleId),
+          onViewTimetable: () => _openDetails(exam.examScheduleId, initialTab: 'Exam Timetable'),
+          onAddTimetableEntry: (permissions.isAdminOrPrincipal || permissions.isTeacher)
+              ? () => _openAddTimetableEntryDialog(exam)
+              : null,
           onEdit: () => _openEditDialog(exam),
           onCancel: () => _handleCancel(exam),
           onDelete: () => _handleDelete(exam),

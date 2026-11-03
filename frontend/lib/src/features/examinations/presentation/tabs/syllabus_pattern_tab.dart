@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../application/exam_flow_controller.dart';
@@ -1258,6 +1259,7 @@ class _ConfigureExamPatternDialogState extends ConsumerState<ConfigureExamPatter
 
   String? _classId;
   String? _subjectId;
+  String? _syllabusId;
   late List<PatternSection> _sections;
   bool _saving = false;
 
@@ -1265,25 +1267,26 @@ class _ConfigureExamPatternDialogState extends ConsumerState<ConfigureExamPatter
   void initState() {
     super.initState();
     final p = widget.existingPattern;
-    _titleCtrl = TextEditingController(text: p?.title ?? '100-Mark Comprehensive Examination Pattern');
-    _totalMarksCtrl = TextEditingController(text: p != null ? '${p.totalMarks.toStringAsFixed(0)}' : '100');
-    _internalMarksCtrl = TextEditingController(text: p != null ? '${p.internalAssessmentMarks.toStringAsFixed(0)}' : '20');
-    _durationCtrl = TextEditingController(text: p != null ? '${p.durationMinutes}' : '180');
-    _instructionsCtrl = TextEditingController(
-      text: p?.instructions ??
-          '1. All questions are compulsory.\n2. Use of calculators is not permitted.\n3. Section A comprises MCQs of 1 mark each.',
-    );
-    _classId = p?.classId ?? 'cls-10';
-    _subjectId = p?.subjectId ?? 'sbj-101';
-    _sections = p != null
-        ? List.from(p.sections)
-        : [
-            const PatternSection(name: 'Section A: Objective & MCQs', type: 'MCQ', questionCount: 20, marksPerQuestion: 1),
-            const PatternSection(name: 'Section B: Short Answer Type I', type: 'Short Answer', questionCount: 6, marksPerQuestion: 2),
-            const PatternSection(name: 'Section C: Short Answer Type II', type: 'Short Answer', questionCount: 7, marksPerQuestion: 3),
-            const PatternSection(name: 'Section D: Long Answer Questions', type: 'Long Answer', questionCount: 4, marksPerQuestion: 5),
-            const PatternSection(name: 'Section E: Case-Based Integrated Units', type: 'Case Study', questionCount: 3, marksPerQuestion: 4),
-          ];
+    if (p != null) {
+      _titleCtrl = TextEditingController(text: p.title);
+      _totalMarksCtrl = TextEditingController(text: p.totalMarks.toStringAsFixed(0));
+      _internalMarksCtrl = TextEditingController(text: p.internalAssessmentMarks.toStringAsFixed(0));
+      _durationCtrl = TextEditingController(text: '${p.durationMinutes}');
+      _instructionsCtrl = TextEditingController(text: p.instructions);
+      _classId = p.classId;
+      _subjectId = p.subjectId;
+      _sections = List.from(p.sections);
+    } else {
+      // Clean form for New Exam Pattern with proper labels
+      _titleCtrl = TextEditingController();
+      _totalMarksCtrl = TextEditingController(text: '100');
+      _internalMarksCtrl = TextEditingController(text: '0');
+      _durationCtrl = TextEditingController(text: '180');
+      _instructionsCtrl = TextEditingController(text: '1. All questions are compulsory.\n2. Write answers clearly.');
+      _classId = null;
+      _subjectId = null;
+      _sections = [];
+    }
   }
 
   @override
@@ -1350,6 +1353,8 @@ class _ConfigureExamPatternDialogState extends ConsumerState<ConfigureExamPatter
   @override
   Widget build(BuildContext context) {
     final refData = ref.watch(examReferenceProvider).valueOrNull ?? const ExamReferenceData();
+    final syllabusAsync = ref.watch(syllabusProvider);
+    final allSyllabus = syllabusAsync.valueOrNull ?? [];
     final availableSubjects = refData.subjectsForClass(_classId);
     final isValid = (_currentGrandTotal - _targetTotal).abs() < 0.01;
 
@@ -1369,7 +1374,7 @@ class _ConfigureExamPatternDialogState extends ConsumerState<ConfigureExamPatter
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      widget.existingPattern == null ? 'Configure Exam Pattern' : 'Edit Exam Pattern',
+                      widget.existingPattern == null ? 'Configure New Exam Pattern' : 'Edit Exam Pattern',
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
                     ),
                     IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
@@ -1378,65 +1383,151 @@ class _ConfigureExamPatternDialogState extends ConsumerState<ConfigureExamPatter
                 const Divider(),
                 const SizedBox(height: 12),
 
-                // Pattern Title
+                // 1. Pattern Title
+                const Text('Pattern Title *', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                const SizedBox(height: 4),
                 TextFormField(
                   controller: _titleCtrl,
-                  decoration: flowDecoration(context, 'Pattern Title *'),
-                  validator: (v) => v == null || v.trim().isEmpty ? 'Title required' : null,
+                  decoration: flowDecoration(context, 'e.g. Mid-Term 100-Mark Question Pattern'),
+                  validator: (v) => v == null || v.trim().isEmpty ? 'Pattern Title is required' : null,
                 ),
                 const SizedBox(height: 12),
 
-                // Class & Subject Row
+                // 2. Linked Syllabus (Automatically populated from Syllabus module)
+                const Text('Linked Syllabus Chapter (Optional - auto-links class and subject)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                const SizedBox(height: 4),
+                DropdownButtonFormField<String>(
+                  value: allSyllabus.any((s) => s.id == _syllabusId) ? _syllabusId : null,
+                  isExpanded: true,
+                  decoration: flowDecoration(
+                    context,
+                    'Select Syllabus Chapter',
+                    hint: allSyllabus.isEmpty ? 'No syllabus chapters added yet' : 'Auto-links class and subject',
+                  ),
+                  items: [
+                    const DropdownMenuItem(value: null, child: Text('— None / General Syllabus —')),
+                    for (final s in allSyllabus)
+                      DropdownMenuItem(
+                        value: s.id,
+                        child: Text('Ch.${s.chapterNumber}: ${s.title} (${refData.subjectName(s.subjectId)})'),
+                      ),
+                  ],
+                  onChanged: (v) {
+                    setState(() {
+                      _syllabusId = v;
+                      if (v != null) {
+                        final ch = allSyllabus.where((c) => c.id == v).firstOrNull;
+                        if (ch != null) {
+                          if (ch.classId.isNotEmpty) _classId = ch.classId;
+                          if (ch.subjectId.isNotEmpty) _subjectId = ch.subjectId;
+                          if (_titleCtrl.text.trim().isEmpty) {
+                            _titleCtrl.text = '${ch.title} Exam Pattern';
+                          }
+                        }
+                      }
+                    });
+                  },
+                ),
+                const SizedBox(height: 12),
+
+                // 3. Class & Subject Row with proper labels
                 Row(
                   children: [
                     Expanded(
-                      child: DropdownButtonFormField<String>(
-                        value: refData.classes.any((c) => c.id == _classId) ? _classId : null,
-                        decoration: flowDecoration(context, 'Class'),
-                        items: [
-                          for (final c in refData.classes)
-                            DropdownMenuItem(value: c.id, child: Text(c.label)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Target Class *', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                          const SizedBox(height: 4),
+                          DropdownButtonFormField<String>(
+                            value: refData.classes.any((c) => c.id == _classId) ? _classId : null,
+                            decoration: flowDecoration(context, 'Select Class'),
+                            items: [
+                              for (final c in refData.classes)
+                                DropdownMenuItem(value: c.id, child: Text(c.label)),
+                            ],
+                            validator: (v) => v == null || v.isEmpty ? 'Class required' : null,
+                            onChanged: (v) => setState(() {
+                              _classId = v;
+                              _subjectId = null;
+                            }),
+                          ),
                         ],
-                        onChanged: (v) => setState(() {
-                          _classId = v;
-                          _subjectId = null;
-                        }),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: DropdownButtonFormField<String>(
-                        value: availableSubjects.any((s) => s.id == _subjectId) ? _subjectId : null,
-                        decoration: flowDecoration(context, 'Subject'),
-                        items: [
-                          for (final s in availableSubjects)
-                            DropdownMenuItem(value: s.id, child: Text(s.label)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Subject *', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                          const SizedBox(height: 4),
+                          DropdownButtonFormField<String>(
+                            value: availableSubjects.any((s) => s.id == _subjectId) ? _subjectId : null,
+                            decoration: flowDecoration(context, 'Select Subject'),
+                            items: [
+                              for (final s in availableSubjects)
+                                DropdownMenuItem(value: s.id, child: Text(s.label)),
+                            ],
+                            validator: (v) => v == null || v.isEmpty ? 'Subject required' : null,
+                            onChanged: (v) => setState(() => _subjectId = v),
+                          ),
                         ],
-                        onChanged: (v) => setState(() => _subjectId = v),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
 
-                // Marks Setup: Target Total Marks & Internal Assessment Component
+                // 4. Marks & Duration Setup with proper labels
                 Row(
                   children: [
                     Expanded(
-                      child: TextFormField(
-                        controller: _totalMarksCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: flowDecoration(context, 'Target Total Marks (e.g. 100) *'),
-                        onChanged: (_) => setState(() {}),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Total Target Marks *', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                          const SizedBox(height: 4),
+                          TextFormField(
+                            controller: _totalMarksCtrl,
+                            keyboardType: TextInputType.number,
+                            decoration: flowDecoration(context, 'e.g. 100'),
+                            validator: (v) => v == null || v.trim().isEmpty ? 'Total marks required' : null,
+                            onChanged: (_) => setState(() {}),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: TextFormField(
-                        controller: _internalMarksCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: flowDecoration(context, 'Internal Assessment Marks (e.g. 20 or 0)'),
-                        onChanged: (_) => setState(() {}),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Internal Marks', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                          const SizedBox(height: 4),
+                          TextFormField(
+                            controller: _internalMarksCtrl,
+                            keyboardType: TextInputType.number,
+                            decoration: flowDecoration(context, 'e.g. 20 (or 0)'),
+                            onChanged: (_) => setState(() {}),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Duration (Minutes) *', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                          const SizedBox(height: 4),
+                          TextFormField(
+                            controller: _durationCtrl,
+                            keyboardType: TextInputType.number,
+                            decoration: flowDecoration(context, 'e.g. 180'),
+                            validator: (v) => v == null || v.trim().isEmpty ? 'Duration required' : null,
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -1480,6 +1571,30 @@ class _ConfigureExamPatternDialogState extends ConsumerState<ConfigureExamPatter
                 ),
                 const SizedBox(height: 8),
 
+                if (_sections.isEmpty)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    child: Center(
+                      child: Column(
+                        children: [
+                          const Text('No question paper sections added yet.', style: TextStyle(fontSize: 13, color: Colors.grey)),
+                          const SizedBox(height: 8),
+                          OutlinedButton.icon(
+                            icon: const Icon(Icons.add, size: 16),
+                            label: const Text('Add First Section'),
+                            onPressed: _addSection,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
                 // Sections Dynamic Editor
                 for (int i = 0; i < _sections.length; i++) ...[
                   Card(
@@ -1487,6 +1602,7 @@ class _ConfigureExamPatternDialogState extends ConsumerState<ConfigureExamPatter
                     child: Padding(
                       padding: const EdgeInsets.all(10),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
@@ -1494,7 +1610,7 @@ class _ConfigureExamPatternDialogState extends ConsumerState<ConfigureExamPatter
                                 flex: 3,
                                 child: TextFormField(
                                   initialValue: _sections[i].name,
-                                  decoration: flowDecoration(context, 'Section Name'),
+                                  decoration: flowDecoration(context, 'Section Name (e.g. Section A: Objective)'),
                                   onChanged: (v) => _sections[i] = _sections[i].copyWith(name: v),
                                 ),
                               ),
@@ -1527,7 +1643,7 @@ class _ConfigureExamPatternDialogState extends ConsumerState<ConfigureExamPatter
                                 child: TextFormField(
                                   initialValue: '${_sections[i].questionCount}',
                                   keyboardType: TextInputType.number,
-                                  decoration: flowDecoration(context, 'Questions Count'),
+                                  decoration: flowDecoration(context, 'No. of Questions'),
                                   onChanged: (v) => setState(() {
                                     final count = int.tryParse(v) ?? 1;
                                     _sections[i] = _sections[i].copyWith(questionCount: count);
@@ -1562,10 +1678,12 @@ class _ConfigureExamPatternDialogState extends ConsumerState<ConfigureExamPatter
                 const SizedBox(height: 12),
 
                 // General Instructions
+                const Text('General Exam Instructions', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                const SizedBox(height: 4),
                 TextFormField(
                   controller: _instructionsCtrl,
                   maxLines: 2,
-                  decoration: flowDecoration(context, 'General Instructions'),
+                  decoration: flowDecoration(context, 'e.g. 1. All questions compulsory. 2. Calculators prohibited.'),
                 ),
                 const SizedBox(height: 20),
 
@@ -1611,7 +1729,7 @@ class _QuestionPaperTabState extends ConsumerState<QuestionPaperTab> {
   String? _filterSectionId;
   String? _filterSubjectId;
 
-  void _openUploadDialog(BuildContext context) {
+  void _openUploadDialog(BuildContext context, {String? initialFileName}) {
     showDialog(
       context: context,
       builder: (ctx) => UploadQuestionPaperDialog(
@@ -1619,8 +1737,26 @@ class _QuestionPaperTabState extends ConsumerState<QuestionPaperTab> {
         defaultClassId: _filterClassId ?? 'cls-10',
         defaultSectionId: _filterSectionId,
         defaultSubjectId: _filterSubjectId,
+        initialPickedFileName: initialFileName,
       ),
     );
+  }
+
+  Future<void> _pickAndUploadQuestionPaper(BuildContext context) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg'],
+      );
+      if (result != null && result.files.isNotEmpty && mounted) {
+        final picked = result.files.first;
+        _openUploadDialog(context, initialFileName: picked.name);
+      }
+    } catch (_) {
+      if (mounted) {
+        _openUploadDialog(context);
+      }
+    }
   }
 
   void _openPreviewDialog(BuildContext context, UploadedQuestionPaper paper) {
@@ -1629,6 +1765,17 @@ class _QuestionPaperTabState extends ConsumerState<QuestionPaperTab> {
       builder: (ctx) => QuestionPaperPreviewDialog(
         exam: widget.exam,
         paper: paper,
+      ),
+    );
+  }
+
+  void _openReviewDialog(BuildContext context, UploadedQuestionPaper paper, ExamReferenceData refData) {
+    showDialog(
+      context: context,
+      builder: (ctx) => ReviewQuestionPaperDialog(
+        exam: widget.exam,
+        paper: paper,
+        refData: refData,
       ),
     );
   }
@@ -1691,18 +1838,19 @@ class _QuestionPaperTabState extends ConsumerState<QuestionPaperTab> {
                 ),
               ],
             ),
-            // Upload button available for both Teacher & Admin
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: kExamGreen,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            // Upload button available ONLY for faculty Teachers
+            if (isTeacher)
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: kExamGreen,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                icon: const Icon(Icons.upload_file, size: 18),
+                label: const Text('Upload Question Paper', style: TextStyle(fontWeight: FontWeight.bold)),
+                onPressed: () => _pickAndUploadQuestionPaper(context),
               ),
-              icon: const Icon(Icons.upload_file, size: 18),
-              label: const Text('Upload Question Paper', style: TextStyle(fontWeight: FontWeight.bold)),
-              onPressed: () => _openUploadDialog(context),
-            ),
           ],
         ),
         const SizedBox(height: 16),
@@ -1910,6 +2058,70 @@ class _QuestionPaperTabState extends ConsumerState<QuestionPaperTab> {
                             _buildPaperStatusChip(p.status),
                           ],
                         ),
+                        // Admin Suggestions / Feedback Box
+                        if (p.reviewRemarks != null && p.reviewRemarks!.trim().isNotEmpty) ...[
+                          const SizedBox(height: 10),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: p.status == 'APPROVED'
+                                  ? Colors.green.withValues(alpha: 0.08)
+                                  : (p.status == 'CHANGES_REQUESTED'
+                                      ? Colors.amber.withValues(alpha: 0.12)
+                                      : Colors.blue.withValues(alpha: 0.08)),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: p.status == 'APPROVED'
+                                    ? Colors.green.shade300
+                                    : (p.status == 'CHANGES_REQUESTED'
+                                        ? Colors.amber.shade400
+                                        : Colors.blue.shade200),
+                              ),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(
+                                  p.status == 'APPROVED' ? Icons.check_circle_outline : Icons.rate_review_outlined,
+                                  size: 16,
+                                  color: p.status == 'APPROVED'
+                                      ? Colors.green.shade800
+                                      : (p.status == 'CHANGES_REQUESTED'
+                                          ? Colors.amber.shade900
+                                          : Colors.blue.shade800),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        p.status == 'APPROVED'
+                                            ? 'Admin Approval Note:'
+                                            : 'Admin Suggestions & Review Feedback:',
+                                        style: TextStyle(
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.bold,
+                                          color: p.status == 'APPROVED'
+                                              ? Colors.green.shade900
+                                              : (p.status == 'CHANGES_REQUESTED'
+                                                  ? Colors.amber.shade900
+                                                  : Colors.blue.shade900),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        p.reviewRemarks!,
+                                        style: const TextStyle(fontSize: 12),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                         const Divider(height: 20),
 
                         // Row 2: Teacher details & Actions
@@ -1931,17 +2143,17 @@ class _QuestionPaperTabState extends ConsumerState<QuestionPaperTab> {
                               label: const Text('Preview / Open', style: TextStyle(fontSize: 12)),
                               onPressed: () => _openPreviewDialog(context, p),
                             ),
-                            if (isAdmin && p.status != 'APPROVED') ...[
+                            if (isAdmin) ...[
                               const SizedBox(width: 8),
-                              ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: kExamGreen,
+                              FilledButton.icon(
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: const Color(0xFF109F83),
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                 ),
-                                icon: const Icon(Icons.check, size: 16),
-                                label: const Text('Approve', style: TextStyle(fontSize: 12)),
-                                onPressed: () => _approvePaper(context, p),
+                                icon: const Icon(Icons.rate_review_outlined, size: 16),
+                                label: const Text('Review & Suggestions', style: TextStyle(fontSize: 12)),
+                                onPressed: () => _openReviewDialog(context, p, refData),
                               ),
                             ],
                           ],
@@ -1968,6 +2180,16 @@ class _QuestionPaperTabState extends ConsumerState<QuestionPaperTab> {
         fg = Colors.green.shade700;
         label = 'APPROVED';
         break;
+      case 'CHANGES_REQUESTED':
+        bg = Colors.amber.shade50;
+        fg = Colors.amber.shade900;
+        label = 'CHANGES REQUESTED';
+        break;
+      case 'REJECTED':
+        bg = Colors.red.shade50;
+        fg = Colors.red.shade700;
+        label = 'REJECTED';
+        break;
       case 'UNDER_REVIEW':
         bg = Colors.orange.shade50;
         fg = Colors.orange.shade800;
@@ -1992,6 +2214,7 @@ class UploadQuestionPaperDialog extends ConsumerStatefulWidget {
   final String? defaultClassId;
   final String? defaultSectionId;
   final String? defaultSubjectId;
+  final String? initialPickedFileName;
 
   const UploadQuestionPaperDialog({
     super.key,
@@ -1999,6 +2222,7 @@ class UploadQuestionPaperDialog extends ConsumerStatefulWidget {
     this.defaultClassId,
     this.defaultSectionId,
     this.defaultSubjectId,
+    this.initialPickedFileName,
   });
 
   @override
@@ -2024,7 +2248,13 @@ class _UploadQuestionPaperDialogState extends ConsumerState<UploadQuestionPaperD
     _sectionId = widget.defaultSectionId ?? 'cls-sec-10a';
     _subjectId = widget.defaultSubjectId ?? 'sbj-101';
     _titleCtrl = TextEditingController(text: 'Class 10 – Section A – Mathematics Question Paper');
-    _fileNameCtrl = TextEditingController(text: 'Class10A_Mathematics_MidTerm_Official.pdf');
+    final defaultFile = widget.initialPickedFileName ?? 'Class10A_Mathematics_MidTerm_Official.pdf';
+    _fileNameCtrl = TextEditingController(text: defaultFile);
+    if (defaultFile.toLowerCase().endsWith('.png') ||
+        defaultFile.toLowerCase().endsWith('.jpg') ||
+        defaultFile.toLowerCase().endsWith('.jpeg')) {
+      _fileType = 'Image Document';
+    }
     _instructionsCtrl = TextEditingController(text: '1. Calculators are prohibited.\n2. Graph paper will be provided.\n3. Time allowed: 3 Hours.');
   }
 
@@ -2095,10 +2325,19 @@ class _UploadQuestionPaperDialogState extends ConsumerState<UploadQuestionPaperD
   @override
   Widget build(BuildContext context) {
     final refData = ref.watch(examReferenceProvider).valueOrNull ?? const ExamReferenceData();
+    if (_classId == null && refData.classes.isNotEmpty) {
+      _classId = refData.classes.first.id;
+    }
     final availableSections = refData.sectionsForClass(_classId);
+    if (_sectionId == null && availableSections.isNotEmpty) {
+      _sectionId = availableSections.first.id;
+    }
     final availableSubjects = _sectionId != null
         ? refData.subjectsForSection(_sectionId)
         : refData.subjectsForClass(_classId);
+    if (_subjectId == null && availableSubjects.isNotEmpty) {
+      _subjectId = availableSubjects.first.id;
+    }
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -2125,7 +2364,7 @@ class _UploadQuestionPaperDialogState extends ConsumerState<UploadQuestionPaperD
                 // 1. Class Dropdown
                 DropdownButtonFormField<String>(
                   value: refData.classes.any((c) => c.id == _classId) ? _classId : null,
-                  decoration: flowDecoration(context, '1. Class *'),
+                  decoration: flowDecoration(context, '1. Select Class *', hint: 'Select Class'),
                   items: [
                     for (final c in refData.classes)
                       DropdownMenuItem(value: c.id, child: Text(c.label)),
@@ -2145,7 +2384,7 @@ class _UploadQuestionPaperDialogState extends ConsumerState<UploadQuestionPaperD
                 // 2. Section Dropdown (Cascaded from Class)
                 DropdownButtonFormField<String>(
                   value: availableSections.any((s) => s.id == _sectionId) ? _sectionId : null,
-                  decoration: flowDecoration(context, '2. Section *'),
+                  decoration: flowDecoration(context, '2. Select Section *', hint: 'Select Section'),
                   items: [
                     for (final s in availableSections)
                       DropdownMenuItem(value: s.id, child: Text(s.label)),
@@ -2154,7 +2393,6 @@ class _UploadQuestionPaperDialogState extends ConsumerState<UploadQuestionPaperD
                   onChanged: (v) {
                     setState(() {
                       _sectionId = v;
-                      _subjectId = null;
                     });
                     _updateSuggestedTitle(refData);
                   },
@@ -2164,7 +2402,7 @@ class _UploadQuestionPaperDialogState extends ConsumerState<UploadQuestionPaperD
                 // 3. Subject Dropdown (Cascaded from Class & Section)
                 DropdownButtonFormField<String>(
                   value: availableSubjects.any((s) => s.id == _subjectId) ? _subjectId : null,
-                  decoration: flowDecoration(context, '3. Subject *'),
+                  decoration: flowDecoration(context, '3. Select Subject *', hint: 'Select Subject'),
                   items: [
                     for (final s in availableSubjects)
                       DropdownMenuItem(value: s.id, child: Text(s.label)),
@@ -2255,8 +2493,32 @@ class _UploadQuestionPaperDialogState extends ConsumerState<UploadQuestionPaperD
                         ),
                         icon: const Icon(Icons.attach_file, size: 16),
                         label: const Text('Browse', style: TextStyle(fontSize: 12)),
-                        onPressed: () {
-                          flowSnack(context, 'Document "${_fileNameCtrl.text}" selected.');
+                        onPressed: () async {
+                          try {
+                            final result = await FilePicker.platform.pickFiles(
+                              type: FileType.custom,
+                              allowedExtensions: ['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg'],
+                            );
+                            if (result != null && result.files.isNotEmpty) {
+                              final picked = result.files.first;
+                              setState(() {
+                                _fileNameCtrl.text = picked.name;
+                                final ext = picked.extension?.toLowerCase() ?? '';
+                                if (ext == 'png' || ext == 'jpg' || ext == 'jpeg') {
+                                  _fileType = 'Image Document';
+                                } else {
+                                  _fileType = 'PDF Document';
+                                }
+                              });
+                              if (context.mounted) {
+                                flowSnack(context, 'Selected: ${picked.name}');
+                              }
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              flowSnack(context, 'Error selecting file: $e', error: true);
+                            }
+                          }
                         },
                       ),
                     ],
@@ -2296,6 +2558,279 @@ class _UploadQuestionPaperDialogState extends ConsumerState<UploadQuestionPaperD
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Admin Question Paper Review & Suggestions Modal
+class ReviewQuestionPaperDialog extends ConsumerStatefulWidget {
+  final ExamSchedule exam;
+  final UploadedQuestionPaper paper;
+  final ExamReferenceData refData;
+
+  const ReviewQuestionPaperDialog({
+    super.key,
+    required this.exam,
+    required this.paper,
+    required this.refData,
+  });
+
+  @override
+  ConsumerState<ReviewQuestionPaperDialog> createState() => _ReviewQuestionPaperDialogState();
+}
+
+class _ReviewQuestionPaperDialogState extends ConsumerState<ReviewQuestionPaperDialog> {
+  late String _status;
+  late final TextEditingController _remarksCtrl;
+  bool _submitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final s = widget.paper.status.toUpperCase();
+    if (s == 'APPROVED' || s == 'CHANGES_REQUESTED' || s == 'UNDER_REVIEW' || s == 'REJECTED') {
+      _status = s;
+    } else {
+      _status = 'APPROVED';
+    }
+    _remarksCtrl = TextEditingController(text: widget.paper.reviewRemarks ?? '');
+  }
+
+  @override
+  void dispose() {
+    _remarksCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submitReview() async {
+    setState(() => _submitting = true);
+    try {
+      await ref.read(examFlowActionsProvider).reviewPaper(
+        widget.exam.examScheduleId,
+        widget.paper.id,
+        _status,
+        _remarksCtrl.text.trim(),
+      );
+      if (mounted) {
+        Navigator.pop(context);
+        flowSnack(context, 'Question paper review saved. Status: "$_status".');
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _submitting = false);
+        flowSnack(context, 'Failed to update review: $e', error: true);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final subjName = widget.refData.subjectName(widget.paper.subjectId);
+    final clsName = widget.refData.className(widget.paper.classId);
+    final secName = widget.refData.sectionName(widget.paper.classSectionId);
+
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Container(
+        width: 650,
+        padding: const EdgeInsets.all(22),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.rate_review_outlined, color: kExamGreen, size: 22),
+                      SizedBox(width: 8),
+                      Text(
+                        'Review Examination Paper',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const Divider(),
+              const SizedBox(height: 10),
+
+              // Paper Meta Information Card
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.paper.title,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 6,
+                      children: [
+                        _metaChip(Icons.school, 'Class & Sec: $clsName ($secName)', const Color(0xFF6366F1)),
+                        _metaChip(Icons.menu_book, 'Subject: $subjName', kExamGreen),
+                        _metaChip(Icons.person_outline, 'Faculty: ${widget.paper.uploadedByTeacherName}', isDark ? Colors.grey.shade400 : Colors.grey.shade700),
+                        _metaChip(Icons.attach_file, '${widget.paper.fileName} (${widget.paper.fileType})', Colors.deepOrange),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Review Status Selection
+              const Text(
+                '1. Review Decision / Status *',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              ),
+              const SizedBox(height: 6),
+              DropdownButtonFormField<String>(
+                value: _status,
+                isExpanded: true,
+                decoration: flowDecoration(context, 'Set Status'),
+                items: const [
+                  DropdownMenuItem(
+                    value: 'APPROVED',
+                    child: Row(
+                      children: [
+                        Icon(Icons.check_circle, color: Color(0xFF059669), size: 18),
+                        SizedBox(width: 8),
+                        Text('APPROVED — Validated for Examination', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF059669))),
+                      ],
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: 'CHANGES_REQUESTED',
+                    child: Row(
+                      children: [
+                        Icon(Icons.warning_amber_rounded, color: Color(0xFFD97706), size: 18),
+                        SizedBox(width: 8),
+                        Text('CHANGES REQUESTED — Revision / Feedback Provided', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFD97706))),
+                      ],
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: 'UNDER_REVIEW',
+                    child: Row(
+                      children: [
+                        Icon(Icons.hourglass_top, color: Color(0xFF2563EB), size: 18),
+                        SizedBox(width: 8),
+                        Text('UNDER REVIEW — Verification In Progress', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF2563EB))),
+                      ],
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: 'REJECTED',
+                    child: Row(
+                      children: [
+                        Icon(Icons.cancel_outlined, color: Color(0xFFDC2626), size: 18),
+                        SizedBox(width: 8),
+                        Text('REJECTED — Paper Not Accepted', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFDC2626))),
+                      ],
+                    ),
+                  ),
+                ],
+                onChanged: (v) {
+                  if (v != null) setState(() => _status = v);
+                },
+              ),
+              const SizedBox(height: 14),
+
+              // Suggestions and Feedback
+              const Text(
+                '2. Admin Suggestions & Review Remarks:',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Provide constructive suggestions or corrections for the faculty teacher.',
+                style: TextStyle(fontSize: 11.5, color: Colors.grey),
+              ),
+              const SizedBox(height: 6),
+              TextFormField(
+                controller: _remarksCtrl,
+                maxLines: 3,
+                style: const TextStyle(fontSize: 13),
+                decoration: flowDecoration(
+                  context,
+                  'Suggestions / Feedback',
+                  hint: 'e.g. Please add internal choice for Question 5, verify marks total...',
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Preview button & Actions
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.visibility_outlined, size: 16),
+                    label: const Text('Preview Document', style: TextStyle(fontSize: 12)),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => QuestionPaperPreviewDialog(
+                          exam: widget.exam,
+                          paper: widget.paper,
+                        ),
+                      );
+                    },
+                  ),
+                  Row(
+                    children: [
+                      OutlinedButton(
+                        onPressed: _submitting ? null : () => Navigator.pop(context),
+                        child: const Text('Cancel'),
+                      ),
+                      const SizedBox(width: 10),
+                      FilledButton.icon(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: kExamGreen,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+                        ),
+                        icon: _submitting
+                            ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                            : const Icon(Icons.send, size: 16),
+                        label: const Text('Submit Review & Status'),
+                        onPressed: _submitting ? null : _submitReview,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _metaChip(IconData icon, String label, Color color) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 14, color: color),
+        const SizedBox(width: 4),
+        Text(label, style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: color)),
+      ],
     );
   }
 }

@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../application/exam_controller.dart';
 import '../application/examination_access.dart';
 import '../domain/exam_schedule_model.dart';
+import '../domain/global_setup_model.dart';
 
 class ExamFormScreen extends ConsumerStatefulWidget {
   final ExamSchedule? existingExam;
@@ -51,10 +52,12 @@ class _ExamFormScreenState extends ConsumerState<ExamFormScreen> {
   late final TextEditingController _descController;
   late final TextEditingController _startDateController;
   late final TextEditingController _endDateController;
+  late final TextEditingController _customExamTypeController;
 
   late String _selectedAcademicYear;
   late String _selectedExamType;
-  late String _status;
+  late bool _isCustomExamType;
+  late String _statusSelection; // 'AUTO' | 'PLANNED' | 'ONGOING' | 'COMPLETED' | 'CANCELLED'
   final TextEditingController _cancelReasonController = TextEditingController();
 
   bool _isSaving = false;
@@ -63,19 +66,17 @@ class _ExamFormScreenState extends ConsumerState<ExamFormScreen> {
 
   bool get _isEditMode => widget.existingExam != null;
 
-  /// Create: only PLANNED. Edit (not yet cancelled/completed): current status or CANCELLED.
-  List<String> get _statusOptions {
-    final cur = widget.existingExam?.status ?? 'PLANNED';
-    if (!_isEditMode) return const ['PLANNED'];
-    if (cur == 'CANCELLED') return const ['CANCELLED'];
-    if (cur == 'COMPLETED') return const ['COMPLETED'];
-    return [cur, 'CANCELLED'];
+  String _computedStatusPreview() {
+    final start = _startDateController.text.trim();
+    final end = _endDateController.text.trim();
+    if (start.isEmpty || end.isEmpty) return 'PLANNED';
+    return ExamSchedule.computeStatus(
+      rawStatus: 'PLANNED',
+      startDate: start,
+      endDate: end,
+    );
   }
 
-  bool get _canChangeStatus => !_isReadOnly && _statusOptions.length > 1;
-
-  String _statusLabel(String st) =>
-      st[0] + st.substring(1).toLowerCase();
   // Rule 4 (Revised): Admin/Principal can Edit in ANY status, all fields editable.
   // Other roles stay read-only.
   bool get _isReadOnly => ref.watch(examinationPermissionsProvider).isReadOnly;
@@ -90,9 +91,37 @@ class _ExamFormScreenState extends ConsumerState<ExamFormScreen> {
     _startDateController = TextEditingController(text: exam?.startDate ?? '');
     _endDateController = TextEditingController(text: exam?.endDate ?? '');
 
-    _status = exam?.status ?? 'PLANNED';
+    final standardExamTypeCodes = {
+      'UNIT_TEST',
+      'PERIODIC_TEST',
+      'MID_TERM',
+      'HALF_YEARLY',
+      'PRE_FINAL',
+      'ANNUAL',
+      'PRACTICAL',
+      'INTERNAL_ASSESSMENT',
+    };
+    final rawType = exam?.examType ?? 'UNIT_TEST';
+    if (standardExamTypeCodes.contains(rawType)) {
+      _selectedExamType = rawType;
+      _isCustomExamType = false;
+      _customExamTypeController = TextEditingController();
+    } else {
+      _selectedExamType = 'OTHER';
+      _isCustomExamType = true;
+      _customExamTypeController = TextEditingController(text: rawType);
+    }
+
+    if (exam != null && exam.manualStatus) {
+      _statusSelection = exam.status.toUpperCase();
+    } else {
+      _statusSelection = 'AUTO';
+    }
+    if (exam?.cancelReason != null) {
+      _cancelReasonController.text = exam!.cancelReason!;
+    }
+
     _selectedAcademicYear = exam?.academicYear ?? '2026-2027';
-    _selectedExamType = exam?.examType ?? 'UNIT_TEST';
 
     // Check for overlap on initial load if editing
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -107,6 +136,7 @@ class _ExamFormScreenState extends ConsumerState<ExamFormScreen> {
     _cancelReasonController.dispose();
     _startDateController.dispose();
     _endDateController.dispose();
+    _customExamTypeController.dispose();
     super.dispose();
   }
 
@@ -123,8 +153,11 @@ class _ExamFormScreenState extends ConsumerState<ExamFormScreen> {
 
     try {
       final repo = ref.read(examRepositoryProvider);
+      final resolvedType = _isCustomExamType
+          ? _customExamTypeController.text.trim()
+          : _selectedExamType;
       final overlap = await repo.checkDateOverlap(
-        examType: _selectedExamType,
+        examType: resolvedType.isNotEmpty ? resolvedType : _selectedExamType,
         academicYear: _selectedAcademicYear,
         startDate: start,
         endDate: end,
@@ -230,6 +263,23 @@ class _ExamFormScreenState extends ConsumerState<ExamFormScreen> {
       return;
     }
 
+    final String resolvedExamType = _isCustomExamType
+        ? _customExamTypeController.text.trim()
+        : _selectedExamType;
+    if (resolvedExamType.isEmpty) {
+      setState(() => _formErrorMessage = 'Exam Type cannot be empty.');
+      return;
+    }
+
+    final bool isManual = _statusSelection != 'AUTO';
+    final String resolvedStatus = isManual
+        ? _statusSelection
+        : ExamSchedule.computeStatus(
+            rawStatus: 'PLANNED',
+            startDate: startStr,
+            endDate: endStr,
+          );
+
     setState(() => _isSaving = true);
 
     try {
@@ -240,14 +290,18 @@ class _ExamFormScreenState extends ConsumerState<ExamFormScreen> {
         final current = widget.existingExam!;
         final updated = current.copyWith(
           examName: _nameController.text.trim(),
-          examType: _selectedExamType,
+          examType: resolvedExamType,
           academicYear: _selectedAcademicYear,
           startDate: startStr,
           endDate: endStr,
           description: _descController.text.trim(),
+          status: resolvedStatus,
+          manualStatus: isManual,
+          cancelReason: resolvedStatus == 'CANCELLED' ? _cancelReasonController.text.trim() : null,
+          clearCancelReason: resolvedStatus != 'CANCELLED',
         );
         savedExam = await controller.updateExam(updated);
-        if (_status == 'CANCELLED' && !current.isCancelled) {
+        if (resolvedStatus == 'CANCELLED' && !current.isCancelled) {
           savedExam = await controller.cancelExam(
             savedExam.examScheduleId,
             _cancelReasonController.text.trim(),
@@ -257,12 +311,14 @@ class _ExamFormScreenState extends ConsumerState<ExamFormScreen> {
         final newSchedule = ExamSchedule(
           examScheduleId: '',
           examName: _nameController.text.trim(),
-          examType: _selectedExamType,
+          examType: resolvedExamType,
           academicYear: _selectedAcademicYear,
           startDate: startStr,
           endDate: endStr,
           description: _descController.text.trim(),
-          status: 'PLANNED',
+          status: resolvedStatus,
+          manualStatus: isManual,
+          cancelReason: resolvedStatus == 'CANCELLED' ? _cancelReasonController.text.trim() : null,
           createdBy: 'u1',
           createdAt: '',
           updatedAt: '',
@@ -299,7 +355,9 @@ class _ExamFormScreenState extends ConsumerState<ExamFormScreen> {
     final isDark = theme.brightness == Brightness.dark;
 
     final academicYears = setup?.academicYears ?? ['2025-2026', '2026-2027'];
-    final examTypes = setup?.examTypes ?? [];
+    final examTypes = (setup?.examTypes != null && setup!.examTypes.isNotEmpty)
+        ? setup.examTypes
+        : ExamType.defaultExamTypes;
 
     final formContent = Form(
       key: _formKey,
@@ -387,62 +445,7 @@ class _ExamFormScreenState extends ConsumerState<ExamFormScreen> {
             const SizedBox(height: 14),
           ],
 
-          // 1. Status dropdown
-          const Text(
-            'Exam Status',
-            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 6),
-          DropdownButtonFormField<String>(
-            value: _statusOptions.contains(_status) ? _status : _statusOptions.first,
-            isExpanded: true,
-            style: TextStyle(fontSize: 13, color: isDark ? Colors.white : Colors.black87),
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: isDark ? Colors.white38 : Colors.grey.shade600),
-              ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              filled: true,
-              fillColor: _canChangeStatus
-                  ? (isDark ? const Color(0xFF1E293B) : Colors.white)
-                  : (isDark ? Colors.black26 : Colors.grey.shade200),
-              helperText: _isEditMode
-                  ? 'Status follows the exam dates automatically. Choose Cancelled to cancel (reason required).'
-                  : 'New exams always start as Planned.',
-              helperMaxLines: 2,
-            ),
-            items: [
-              for (final st in _statusOptions)
-                DropdownMenuItem(value: st, child: Text(_statusLabel(st))),
-            ],
-            onChanged: _canChangeStatus
-                ? (v) => setState(() => _status = v ?? _status)
-                : null,
-          ),
-          if (_status == 'CANCELLED' && !(widget.existingExam?.isCancelled ?? false)) ...[
-            const SizedBox(height: 10),
-            TextFormField(
-              controller: _cancelReasonController,
-              maxLines: 2,
-              style: const TextStyle(fontSize: 13),
-              decoration: InputDecoration(
-                labelText: 'Cancel Reason *',
-                border: const OutlineInputBorder(),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: isDark ? Colors.white38 : Colors.grey.shade600),
-                ),
-                filled: true,
-                fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-              ),
-              validator: (v) => (_status == 'CANCELLED' && (v == null || v.trim().isEmpty))
-                  ? 'This field is required.'
-                  : null,
-            ),
-          ],
-          const SizedBox(height: 14),
-
-          // 2. Exam Name
+          // 1. Exam Name
           const Text(
             'Exam Name *',
             style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
@@ -493,7 +496,7 @@ class _ExamFormScreenState extends ConsumerState<ExamFormScreen> {
                     ),
                     const SizedBox(height: 6),
                     DropdownButtonFormField<String>(
-                      initialValue: _selectedExamType,
+                      value: _selectedExamType,
                       isExpanded: true,
                       style: TextStyle(
                         fontSize: 12.5,
@@ -501,33 +504,73 @@ class _ExamFormScreenState extends ConsumerState<ExamFormScreen> {
                       ),
                       decoration: InputDecoration(
                         border: const OutlineInputBorder(),
-              enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: isDark ? Colors.white38 : Colors.grey.shade600),
-              ),
-              focusedBorder: const OutlineInputBorder(
-                borderSide: BorderSide(color: Color(0xFF109F83), width: 2),
-              ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: isDark ? Colors.white38 : Colors.grey.shade600),
+                        ),
+                        focusedBorder: const OutlineInputBorder(
+                          borderSide: BorderSide(color: const Color(0xFF109F83), width: 2),
+                        ),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                         filled: true,
                         fillColor: _isReadOnly
-                  ? (isDark ? Colors.black26 : Colors.grey.shade200)
-                  : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                            ? (isDark ? Colors.black26 : Colors.grey.shade200)
+                            : (isDark ? const Color(0xFF1E293B) : Colors.white),
                       ),
-                      items: examTypes.map((t) {
-                        return DropdownMenuItem<String>(
-                          value: t.code,
-                          child: Text(t.label, overflow: TextOverflow.ellipsis),
-                        );
-                      }).toList(),
+                      items: [
+                        ...examTypes.map((t) {
+                          return DropdownMenuItem<String>(
+                            value: t.code,
+                            child: Text(t.label, overflow: TextOverflow.ellipsis),
+                          );
+                        }),
+                        const DropdownMenuItem<String>(
+                          value: 'OTHER',
+                          child: Text('+ Custom / Enter Type...', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF109F83))),
+                        ),
+                      ],
                       onChanged: _isReadOnly
                           ? null
                           : (val) {
                               if (val != null) {
-                                setState(() => _selectedExamType = val);
+                                setState(() {
+                                  _selectedExamType = val;
+                                  _isCustomExamType = (val == 'OTHER');
+                                });
                                 _checkOverlap();
                               }
                             },
                     ),
+                    if (_isCustomExamType) ...[
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _customExamTypeController,
+                        enabled: !_isReadOnly,
+                        style: const TextStyle(fontSize: 12.5),
+                        decoration: InputDecoration(
+                          labelText: 'Custom Exam Type *',
+                          hintText: 'Type exam type (e.g. Unit Test 1)',
+                          border: const OutlineInputBorder(),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: isDark ? Colors.white38 : Colors.grey.shade600),
+                          ),
+                          focusedBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(color: const Color(0xFF109F83), width: 2),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          filled: true,
+                          fillColor: _isReadOnly
+                              ? (isDark ? Colors.black26 : Colors.grey.shade200)
+                              : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                        ),
+                        validator: (val) {
+                          if (_isCustomExamType && (val == null || val.trim().isEmpty)) {
+                            return 'Please enter the custom exam type';
+                          }
+                          return null;
+                        },
+                        onChanged: (_) => _checkOverlap(),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -680,7 +723,105 @@ class _ExamFormScreenState extends ConsumerState<ExamFormScreen> {
           ),
           const SizedBox(height: 14),
 
-          // 5. Description
+          // 5. Examination Status (Admin Access & Date Automation)
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Text(
+                    'Examination Status *',
+                    style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF109F83).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Text(
+                      'Admin Control',
+                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF109F83)),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              DropdownButtonFormField<String>(
+                value: _statusSelection,
+                isExpanded: true,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                ),
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: isDark ? Colors.white38 : Colors.grey.shade600),
+                  ),
+                  focusedBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(color: const Color(0xFF109F83), width: 2),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  filled: true,
+                  fillColor: _isReadOnly
+                      ? (isDark ? Colors.black26 : Colors.grey.shade200)
+                      : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                ),
+                items: [
+                  DropdownMenuItem(
+                    value: 'AUTO',
+                    child: Text('Auto (Date-based: ${_computedStatusPreview()})'),
+                  ),
+                  const DropdownMenuItem(value: 'PLANNED', child: Text('PLANNED (Upcoming)')),
+                  const DropdownMenuItem(value: 'ONGOING', child: Text('ONGOING (Active Exam)')),
+                  const DropdownMenuItem(value: 'COMPLETED', child: Text('COMPLETED (Finished)')),
+                  const DropdownMenuItem(value: 'CANCELLED', child: Text('CANCELLED (Discontinued)')),
+                ],
+                onChanged: _isReadOnly
+                    ? null
+                    : (val) {
+                        if (val != null) {
+                          setState(() => _statusSelection = val);
+                        }
+                      },
+              ),
+              if (_statusSelection == 'CANCELLED') ...[
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _cancelReasonController,
+                  enabled: !_isReadOnly,
+                  style: const TextStyle(fontSize: 12.5),
+                  decoration: InputDecoration(
+                    labelText: 'Cancellation Reason *',
+                    hintText: 'Enter mandatory reason for cancelling this examination...',
+                    border: const OutlineInputBorder(),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: isDark ? Colors.white38 : Colors.grey.shade600),
+                    ),
+                    focusedBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(color: const Color(0xFFDC2626), width: 2),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                    filled: true,
+                    fillColor: _isReadOnly
+                        ? (isDark ? Colors.black26 : Colors.grey.shade200)
+                        : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                  ),
+                  validator: (v) {
+                    if (_statusSelection == 'CANCELLED' && (v == null || v.trim().isEmpty)) {
+                      return 'A cancellation reason is required.';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // 6. Description
           const Text(
             'Description',
             style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),

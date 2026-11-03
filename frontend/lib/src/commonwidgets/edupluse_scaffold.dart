@@ -60,6 +60,7 @@ class _EdupluseScaffoldState extends ConsumerState<EdupluseScaffold> {
   bool _isStudentsExpanded = true;
   bool _isStaffExpanded = true;
   bool _isClassesExpanded = false;
+  bool _isFeesExpanded = true;
 
   @override
   Widget build(BuildContext context) {
@@ -560,12 +561,10 @@ class _EdupluseScaffoldState extends ConsumerState<EdupluseScaffold> {
                 isActive: widget.activePage == EdupluseNavPage.examinations,
                 onTap: () => _handleNavigation(EdupluseNavPage.examinations, isDrawer),
               ),
-              _buildNavItem(
-                icon: Icons.payments_outlined,
-                title: 'Fees Collection',
+              _buildFeesGroup(
                 showLabels: showLabels,
+                isDrawer: isDrawer,
                 isDark: isDark,
-                onTap: () => _handleGeneralNavItem('Fees Collection', isDrawer),
               ),
               _buildNavItem(
                 icon: Icons.calendar_today_outlined,
@@ -1167,6 +1166,103 @@ class _EdupluseScaffoldState extends ConsumerState<EdupluseScaffold> {
                     EdupluseNavPage.classesTeacherWork,
                     isDrawer,
                   ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildFeesGroup({
+    required bool showLabels,
+    required bool isDrawer,
+    required bool isDark,
+  }) {
+    final activeRole = ref.watch(activeUserRoleProvider);
+    final canAccess = activeRole == UserRole.admin || activeRole == UserRole.finance;
+    if (!canAccess) return const SizedBox.shrink();
+
+    final isGroupActive = widget.activePage == EdupluseNavPage.fees;
+
+    if (!showLabels) {
+      return _buildNavItem(
+        icon: Icons.payments_outlined,
+        title: 'Fees Collection',
+        isActive: isGroupActive,
+        showLabels: false,
+        isDark: isDark,
+        onTap: () {
+          setState(() {
+            _isSidebarCollapsed = false;
+            _isFeesExpanded = true;
+          });
+          _handleNavigation(EdupluseNavPage.fees, isDrawer);
+        },
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InkWell(
+          onTap: () {
+            setState(() {
+              _isFeesExpanded = !_isFeesExpanded;
+            });
+          },
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: isGroupActive ? const Color(0xFF109F83) : Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.payments_outlined,
+                  size: 20,
+                  color: isGroupActive
+                      ? Colors.white
+                      : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Fees Collection',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: isGroupActive ? FontWeight.w600 : FontWeight.w500,
+                      color: isGroupActive
+                          ? Colors.white
+                          : (isDark ? const Color(0xFFF1F5F9) : const Color(0xFF334155)),
+                    ),
+                  ),
+                ),
+                Icon(
+                  _isFeesExpanded
+                      ? Icons.keyboard_arrow_down
+                      : Icons.keyboard_arrow_right,
+                  size: 18,
+                  color: isGroupActive
+                      ? Colors.white
+                      : (isDark ? const Color(0xFF94A3B8) : Colors.grey.shade500),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_isFeesExpanded)
+          Padding(
+            padding: const EdgeInsets.only(left: 14, top: 4, bottom: 4),
+            child: Column(
+              children: [
+                _buildSubItem(
+                  title: 'Fee Structure',
+                  isActive: widget.activePage == EdupluseNavPage.fees,
+                  isDark: isDark,
+                  onTap: () => _handleNavigation(EdupluseNavPage.fees, isDrawer),
                 ),
               ],
             ),

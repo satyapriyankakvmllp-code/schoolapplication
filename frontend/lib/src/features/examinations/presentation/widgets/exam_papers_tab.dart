@@ -86,7 +86,7 @@ class _ExamTimetableTabState extends ConsumerState<ExamTimetableTab> {
     final timetableAsync = ref.watch(examTimetableProvider(widget.exam.examScheduleId));
     final refAsync = ref.watch(examReferenceProvider);
     final locked = widget.exam.isCancelled || widget.exam.isCompleted;
-    final canManage = perms.isAdminOrPrincipal && !locked;
+    final canManage = (perms.isAdminOrPrincipal || perms.isTeacher || perms.isClassIncharge) && !locked;
 
     return timetableAsync.when(
       loading: () => const Padding(
@@ -337,17 +337,23 @@ class _ExamTimetableTabState extends ConsumerState<ExamTimetableTab> {
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                IconButton(
-                                  tooltip: 'Edit entry',
-                                  icon: const Icon(Icons.edit_outlined, size: 18),
+                                OutlinedButton.icon(
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    visualDensity: VisualDensity.compact,
+                                  ),
+                                  icon: const Icon(Icons.edit_outlined, size: 15),
+                                  label: const Text('Edit', style: TextStyle(fontSize: 12)),
                                   onPressed: () => _openForm(r, entry: p),
                                 ),
-                                IconButton(
-                                  tooltip: 'Remove entry',
-                                  icon: const Icon(Icons.delete_outline,
-                                      color: Colors.red, size: 18),
-                                  onPressed: () => _delete(p, r),
-                                ),
+                                const SizedBox(width: 4),
+                                if (perms.isAdminOrPrincipal)
+                                  IconButton(
+                                    tooltip: 'Remove entry',
+                                    icon: const Icon(Icons.delete_outline,
+                                        color: Colors.red, size: 18),
+                                    onPressed: () => _delete(p, r),
+                                  ),
                               ],
                             ),
                         ],

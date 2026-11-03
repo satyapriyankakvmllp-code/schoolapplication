@@ -12,6 +12,8 @@ class ExamCardItem extends StatelessWidget {
   final VoidCallback? onEdit;
   final VoidCallback? onCancel;
   final VoidCallback? onDelete;
+  final VoidCallback? onViewTimetable;
+  final VoidCallback? onAddTimetableEntry;
 
   const ExamCardItem({
     super.key,
@@ -22,6 +24,8 @@ class ExamCardItem extends StatelessWidget {
     this.onEdit,
     this.onCancel,
     this.onDelete,
+    this.onViewTimetable,
+    this.onAddTimetableEntry,
   });
 
   String _formatDateRange(String startStr, String endStr) {
@@ -125,6 +129,8 @@ class ExamCardItem extends StatelessWidget {
                       tooltip: 'Actions',
                       onSelected: (val) {
                         if (val == 'view') onTap();
+                        if (val == 'timetable') onViewTimetable?.call();
+                        if (val == 'add_timetable') onAddTimetableEntry?.call();
                         if (val == 'edit') onEdit?.call();
                         if (val == 'cancel') onCancel?.call();
                         if (val == 'delete') onDelete?.call();
@@ -140,6 +146,28 @@ class ExamCardItem extends StatelessWidget {
                             ],
                           ),
                         ),
+                        if (onViewTimetable != null)
+                          const PopupMenuItem(
+                            value: 'timetable',
+                            child: Row(
+                              children: [
+                                Icon(Icons.calendar_month_outlined, size: 16),
+                                SizedBox(width: 8),
+                                Text('View Timetable', style: TextStyle(fontSize: 13)),
+                              ],
+                            ),
+                          ),
+                        if (onAddTimetableEntry != null)
+                          const PopupMenuItem(
+                            value: 'add_timetable',
+                            child: Row(
+                              children: [
+                                Icon(Icons.add_circle_outline, size: 16, color: Color(0xFF109F83)),
+                                SizedBox(width: 8),
+                                Text('+ Add Timetable Entry', style: TextStyle(fontSize: 13, color: Color(0xFF109F83))),
+                              ],
+                            ),
+                          ),
                         if (canEdit)
                           PopupMenuItem(
                             value: 'edit',

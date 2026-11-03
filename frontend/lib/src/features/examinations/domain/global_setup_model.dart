@@ -20,6 +20,17 @@ class ExamType {
       'label': label,
     };
   }
+
+  static const List<ExamType> defaultExamTypes = [
+    ExamType(code: 'UNIT_TEST', label: 'Unit Test'),
+    ExamType(code: 'PERIODIC_TEST', label: 'Periodic Test'),
+    ExamType(code: 'MID_TERM', label: 'Mid-Term'),
+    ExamType(code: 'HALF_YEARLY', label: 'Half-Yearly'),
+    ExamType(code: 'PRE_FINAL', label: 'Pre-Final'),
+    ExamType(code: 'ANNUAL', label: 'Annual / Final Exam'),
+    ExamType(code: 'PRACTICAL', label: 'Practical Exam'),
+    ExamType(code: 'INTERNAL_ASSESSMENT', label: 'Internal Assessment'),
+  ];
 }
 
 class GlobalUser {
@@ -121,10 +132,12 @@ class GlobalSetup {
               .toList() ??
           ['2025-2026', '2026-2027'],
       currentAcademicYear: (json['current_academic_year'] ?? '2026-2027').toString(),
-      examTypes: (json['exam_types'] as List<dynamic>?)
-              ?.map((e) => ExamType.fromJson(Map<String, dynamic>.from(e as Map)))
-              .toList() ??
-          [],
+      examTypes: () {
+        final list = (json['exam_types'] as List<dynamic>?)
+            ?.map((e) => ExamType.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList();
+        return (list != null && list.isNotEmpty) ? list : ExamType.defaultExamTypes;
+      }(),
       users: (json['users'] as List<dynamic>?)
               ?.map((e) => GlobalUser.fromJson(Map<String, dynamic>.from(e as Map)))
               .toList() ??

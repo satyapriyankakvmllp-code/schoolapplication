@@ -90,14 +90,15 @@ class ExaminationPermissions {
   /// Can delete PLANNED exams with 0 papers
   bool get canDeleteExam => isAdminOrPrincipal;
 
-  bool get canManagePapers => isAdminOrPrincipal;
+  bool get canManagePapers => isAdminOrPrincipal || isTeacher || isClassIncharge;
   bool get canManageHallTickets => isAdminOrPrincipal;
   bool get canMarkAttendance => isAdminOrPrincipal || isTeacher;
-  bool get canEnterMarks => isAdminOrPrincipal || isTeacher;
-  bool get canReviewMarks => isAdminOrPrincipal || isClassIncharge;
-  bool get canManageResults => isAdminOrPrincipal;
-  bool get canManagePatterns => isAdminOrPrincipal;
-  bool get canWriteQuestions => isAdminOrPrincipal || isTeacher;
+  bool get canEnterMarks => isTeacher || isClassIncharge;
+  bool get canReviewMarks => isAdminOrPrincipal;
+  bool get canManageResults => isAdminOrPrincipal || isTeacher;
+  bool get canManagePatterns => isAdminOrPrincipal || isTeacher || isClassIncharge;
+  bool get canWriteQuestions => isTeacher || isClassIncharge;
+  bool get canUploadQuestionPapers => isTeacher || isClassIncharge;
   bool get canApproveQuestionPapers => isAdminOrPrincipal;
 
   /// Read-only roles

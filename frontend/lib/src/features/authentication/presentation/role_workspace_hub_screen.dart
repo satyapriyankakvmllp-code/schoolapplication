@@ -597,6 +597,14 @@ class RoleWorkspaceHubScreen extends ConsumerWidget {
               onTap: () {},
             ),
             _buildActionCard(
+              title: 'Fee Structure Management',
+              subtitle: 'Configure class-wise fee breakdowns, term due dates, and active structures',
+              icon: Icons.account_balance_wallet_outlined,
+              color: const Color(0xFF109F83),
+              isDark: isDark,
+              onTap: () => onNavigate?.call(EdupluseNavPage.fees),
+            ),
+            _buildActionCard(
               title: 'Receipts & Installment Schedules',
               subtitle: 'Issue formal tuition receipts and configure term payment dates',
               icon: Icons.receipt_outlined,

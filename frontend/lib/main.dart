@@ -24,6 +24,7 @@ import 'src/features/staff/presentation/admin/staff_details_screen.dart';
 import 'src/features/staff/presentation/admin/staff_departments_screen.dart';
 import 'src/features/staff/presentation/admin/edit_staff_screen.dart';
 import 'src/features/examinations/presentation/exam_list_screen.dart';
+import 'src/features/fees/presentation/fee_structure_list_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -149,6 +150,23 @@ class _SchoolManagementAppState extends ConsumerState<SchoolManagementApp> {
       );
     }
 
+    // Direct Fees Structure navigation (routable and visible only for Admin and Finance)
+    if (_activeNavPage == EdupluseNavPage.fees) {
+      if (activeRole == UserRole.admin || activeRole == UserRole.finance) {
+        return FeeStructureListScreen(
+          isDark: _isDarkMode,
+          onToggleTheme: _toggleTheme,
+          onNavigate: (page) {
+            setState(() {
+              _activeNavPage = page;
+            });
+          },
+          onExitToGateway: () => ref.read(activeUserRoleProvider.notifier).state = null,
+        );
+      }
+      // Access blocked for non-admin/non-finance roles (Teacher, Parent, Student)
+    }
+
     if (activeRole == UserRole.admissions) {
       return FrontDeskWorkspaceScreen(
         isDark: _isDarkMode,
@@ -224,6 +242,17 @@ class _SchoolManagementAppState extends ConsumerState<SchoolManagementApp> {
         );
       case EdupluseNavPage.examinations:
         return ExamListScreen(
+          isDark: _isDarkMode,
+          onToggleTheme: _toggleTheme,
+          onNavigate: (page) {
+            setState(() {
+              _activeNavPage = page;
+            });
+          },
+          onExitToGateway: () => ref.read(activeUserRoleProvider.notifier).state = null,
+        );
+      case EdupluseNavPage.fees:
+        return FeeStructureListScreen(
           isDark: _isDarkMode,
           onToggleTheme: _toggleTheme,
           onNavigate: (page) {

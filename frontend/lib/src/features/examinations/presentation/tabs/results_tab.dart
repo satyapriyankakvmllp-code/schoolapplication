@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../application/exam_flow_controller.dart';
 import '../../application/exam_paper_controller.dart';
 import '../../application/examination_access.dart';
+import '../../data/exam_flow_repository.dart';
 import '../../domain/exam_flow_models.dart';
 import '../../domain/exam_timetable_model.dart';
 import '../../domain/exam_reference_model.dart';
 import '../../domain/exam_schedule_model.dart';
 import '../../domain/examination_actor.dart';
+import '../utils/csv_export_helper.dart';
 import 'flow_ui.dart';
 
 /// Screen 7 & 8: Results & Report Cards
@@ -45,12 +47,160 @@ class _ResultsTabState extends ConsumerState<ResultsTab> {
     }
   }
 
-  void _exportCsv({
-    required String title,
-    required List<String> headers,
-    required List<List<String>> rows,
-  }) {
-    flowSnack(context, '$title exported successfully.');
+  Future<void> _handleExportResultsCsv({
+    required List<ReportCard> cards,
+    required List<StudentRef> students,
+    required ExamReferenceData refData,
+    required List<ExamTimetableEntry> timetable,
+    required List<StudentMark> marks,
+  }) async {
+    final studentMap = {for (final s in students) s.id: s};
+
+    // Determine unique subjects in the exam
+    final subjectIds = timetable.map((p) => p.subjectId).whereType<String>().toSet().toList();
+    final subjectHeaders = subjectIds.map((id) => '"${refData.subjectName(id)} (Marks)"').toList();
+
+    final headers = [
+      '"Student Name"',
+      '"Roll Number"',
+      '"Admission Number"',
+      '"Class & Section"',
+      ...subjectHeaders,
+      '"Total Marks Obtained"',
+      '"Total Maximum Marks"',
+      '"Percentage (%)"',
+      '"Grade"',
+      '"GPA"',
+      '"Class Rank"',
+      '"Performance"',
+      '"Result (PASS/FAIL)"',
+      '"Status"',
+    ];
+
+    final buffer = StringBuffer();
+    buffer.writeln(headers.join(','));
+
+    for (final c in cards) {
+      final st = studentMap[c.studentId];
+      final name = st?.name ?? c.studentId;
+      final roll = st?.rollNumber ?? '—';
+      final adm = st?.admissionNumber ?? '—';
+      final sec = refData.sectionName(c.classSectionId);
+
+      // Marks per subject
+      final subjectMarks = <String>[];
+      for (final sId in subjectIds) {
+        final p = timetable.where((t) => t.classSectionId == c.classSectionId && t.subjectId == sId).firstOrNull;
+        if (p == null) {
+          subjectMarks.add('"N/A"');
+        } else {
+          final m = marks.where((mark) => mark.examPaperId == p.id && mark.studentId == c.studentId).firstOrNull;
+          if (m?.marksObtained != null) {
+            subjectMarks.add('"${m!.marksObtained!.toStringAsFixed(0)} / ${p.maxMarks.toStringAsFixed(0)}"');
+          } else {
+            subjectMarks.add('"AB / —"');
+          }
+        }
+      }
+
+      final row = [
+        '"$name"',
+        '"$roll"',
+        '"$adm"',
+        '"$sec"',
+        ...subjectMarks,
+        '"${c.totalMarks.toStringAsFixed(0)}"',
+        '"${c.totalMaxMarks.toStringAsFixed(0)}"',
+        '"${c.percentage.toStringAsFixed(1)}%"',
+        '"${c.grade}"',
+        '"${c.gpa.toStringAsFixed(2)}"',
+        '"#${c.rank}"',
+        '"${c.performance}"',
+        '"${c.passed ? "PASS" : "FAIL"}"',
+        '"${c.status}"',
+      ];
+      buffer.writeln(row.join(','));
+    }
+
+    final safeExamName = widget.exam.examName.replaceAll(RegExp(r'[^\w\-]'), '_');
+    await exportAndDownloadFile(
+      context,
+      filename: '${safeExamName}_Student_Results.csv',
+      content: buffer.toString(),
+      mimeType: 'text/csv',
+      successMessage: 'Results CSV exported successfully',
+    );
+  }
+
+  Future<void> _handleDownloadStudentResult({
+    required ReportCard card,
+    required StudentRef student,
+    required ExamReferenceData refData,
+    required List<ExamTimetableEntry> timetable,
+    required List<StudentMark> marks,
+    required List<AttendanceRecord> att,
+  }) async {
+    final studentPapers = timetable.where((p) => p.classSectionId == card.classSectionId).toList();
+
+    final buffer = StringBuffer();
+    buffer.writeln('================================================================');
+    buffer.writeln('          EDUPULSE PUBLIC SCHOOL & SENIOR COLLEGE');
+    buffer.writeln('       Affiliation: CBSE-AFF-2026-9021 | Bengaluru, Karnataka');
+    buffer.writeln('================================================================');
+    buffer.writeln('OFFICIAL STATEMENT OF MARKS & EXAMINATION REPORT');
+    buffer.writeln('Academic Year: ${widget.exam.academicYear}    |    Examination: ${widget.exam.examName}');
+    buffer.writeln('----------------------------------------------------------------');
+    buffer.writeln('Student Name   : ${student.name}');
+    buffer.writeln('Roll Number    : ${student.rollNumber}');
+    buffer.writeln('Admission No   : ${student.admissionNumber}');
+    buffer.writeln('Class & Section: ${refData.sectionName(card.classSectionId)}');
+    buffer.writeln('----------------------------------------------------------------');
+    buffer.writeln('SUBJECT-WISE MARKS BREAKDOWN:');
+    buffer.writeln('----------------------------------------------------------------');
+    buffer.writeln('Subject                          Max   Passing  Obtained  Status');
+    buffer.writeln('----------------------------------------------------------------');
+
+    for (final p in studentPapers) {
+      final m = marks.where((x) => x.examPaperId == p.id && x.studentId == student.id).firstOrNull;
+      final a = att.where((x) => x.examPaperId == p.id && x.studentId == student.id).firstOrNull;
+      final isAbsent = a?.status == 'ABSENT';
+      final got = m?.marksObtained;
+      final passed = got != null && got >= p.passingMarks;
+      final subName = refData.subjectName(p.subjectId).padRight(32);
+      final maxStr = p.maxMarks.toStringAsFixed(0).padRight(6);
+      final passStr = p.passingMarks.toStringAsFixed(0).padRight(9);
+      final gotStr = (got != null ? got.toStringAsFixed(0) : (isAbsent ? 'ABSENT' : '—')).padRight(10);
+      final statusStr = passed ? 'PASS' : (isAbsent ? 'ABS' : 'FAIL');
+      buffer.writeln('$subName $maxStr $passStr $gotStr $statusStr');
+    }
+
+    buffer.writeln('----------------------------------------------------------------');
+    buffer.writeln('SUMMARY & FINAL EVALUATION:');
+    buffer.writeln('Total Marks    : ${card.totalMarks.toStringAsFixed(0)} / ${card.totalMaxMarks.toStringAsFixed(0)}');
+    buffer.writeln('Percentage     : ${card.percentage.toStringAsFixed(1)}%');
+    buffer.writeln('Final Grade    : ${card.grade}');
+    buffer.writeln('Grade Point GPA: ${card.gpa.toStringAsFixed(2)}');
+    buffer.writeln('Class Rank     : #${card.rank}');
+    buffer.writeln('Result Status  : ${card.passed ? "PASSED" : "FAILED"}');
+    buffer.writeln('Performance    : ${card.performance}');
+    if (card.inchargeRemarks != null && card.inchargeRemarks!.isNotEmpty) {
+      buffer.writeln('Class In-Charge: ${card.inchargeRemarks}');
+    }
+    if (card.principalRemarks != null && card.principalRemarks!.isNotEmpty) {
+      buffer.writeln('Principal Note : ${card.principalRemarks}');
+    }
+    buffer.writeln('================================================================');
+    buffer.writeln('Generated on: ${DateTime.now().toLocal().toString().split('.').first}');
+    buffer.writeln('================================================================');
+
+    final safeName = student.name.replaceAll(RegExp(r'[^\w\-]'), '_');
+    await exportAndDownloadFile(
+      context,
+      filename: '${safeName}_Statement_of_Marks.txt',
+      content: buffer.toString(),
+      mimeType: 'text/plain',
+      successMessage: 'Student Statement of Marks downloaded successfully',
+    );
   }
 
   Future<void> _confirmAndPublish(ExamFlowActions actions, int approvedCount) async {
@@ -290,14 +440,22 @@ class _ResultsTabState extends ConsumerState<ResultsTab> {
                       ),
                     ),
 
-                    // Export Button
-                    IconButton.filledTonal(
-                      tooltip: 'Export CSV',
-                      icon: const Icon(Icons.download, size: 18),
-                      onPressed: () => _exportCsv(
-                        title: '$_viewMode Examination Results',
-                        headers: ['Student', 'Roll', 'Class', 'Total', 'Pct', 'Grade', 'GPA', 'Rank', 'Status'],
-                        rows: [],
+                    // Export CSV Button
+                    FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF109F83),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      icon: const Icon(Icons.file_download_outlined, size: 17),
+                      label: const Text('Export CSV', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5)),
+                      onPressed: () => _handleExportResultsCsv(
+                        cards: cards,
+                        students: allStudents,
+                        refData: refData,
+                        timetable: timetable,
+                        marks: marks,
                       ),
                     ),
                   ],
@@ -367,15 +525,14 @@ class _ResultsTabState extends ConsumerState<ResultsTab> {
                 : const Color(0xFFF8FAFC),
           ),
           columns: const [
-            DataColumn(label: Text('Student Name', style: TextStyle(fontWeight: FontWeight.bold))),
+            DataColumn(label: Text('Student', style: TextStyle(fontWeight: FontWeight.bold))),
             DataColumn(label: Text('Roll No.', style: TextStyle(fontWeight: FontWeight.bold))),
             DataColumn(label: Text('Class & Section', style: TextStyle(fontWeight: FontWeight.bold))),
+            DataColumn(label: Text('Subject Marks', style: TextStyle(fontWeight: FontWeight.bold))),
             DataColumn(label: Text('Total Marks', style: TextStyle(fontWeight: FontWeight.bold))),
             DataColumn(label: Text('Percentage', style: TextStyle(fontWeight: FontWeight.bold))),
             DataColumn(label: Text('Grade', style: TextStyle(fontWeight: FontWeight.bold))),
-            DataColumn(label: Text('CGPA / GPA', style: TextStyle(fontWeight: FontWeight.bold))),
             DataColumn(label: Text('Rank', style: TextStyle(fontWeight: FontWeight.bold))),
-            DataColumn(label: Text('Performance', style: TextStyle(fontWeight: FontWeight.bold))),
             DataColumn(label: Text('Result', style: TextStyle(fontWeight: FontWeight.bold))),
             DataColumn(label: Text('Status', style: TextStyle(fontWeight: FontWeight.bold))),
             DataColumn(label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold))),
@@ -384,18 +541,92 @@ class _ResultsTabState extends ConsumerState<ResultsTab> {
             final st = studentMap[c.studentId];
             final name = st?.name ?? c.studentId;
             final roll = st?.rollNumber ?? '—';
+            final adm = st?.admissionNumber ?? '—';
+            final studentPapers = timetable.where((p) => p.classSectionId == c.classSectionId).toList();
 
             return DataRow(
+              onSelectChanged: (_) => _showStudentDetailDialog(
+                c,
+                st ?? StudentRef(id: c.studentId, name: name, admissionNumber: adm, rollNumber: roll, sectionId: c.classSectionId),
+                refData,
+                timetable,
+                marks,
+                att,
+                perms,
+              ),
               cells: [
-                DataCell(Text(name, style: const TextStyle(fontWeight: FontWeight.w600))),
+                DataCell(
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircleAvatar(
+                        radius: 14,
+                        backgroundColor: kExamGreen.withValues(alpha: 0.15),
+                        backgroundImage: (st?.photoUrl != null && st!.photoUrl!.isNotEmpty)
+                            ? NetworkImage(st.photoUrl!)
+                            : null,
+                        child: (st?.photoUrl == null || st!.photoUrl!.isEmpty)
+                            ? Text(
+                                name.isNotEmpty ? name[0].toUpperCase() : 'S',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: kExamGreen),
+                              )
+                            : null,
+                      ),
+                      const SizedBox(width: 8),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                          if (st != null && st.admissionNumber.isNotEmpty)
+                            Text('Adm: ${st.admissionNumber}', style: const TextStyle(fontSize: 10.5, color: Colors.grey)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
                 DataCell(Text(roll)),
                 DataCell(Text(refData.sectionName(c.classSectionId))),
+                DataCell(
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 320),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: studentPapers.map((p) {
+                          final m = marks.where((x) => x.examPaperId == p.id && x.studentId == c.studentId).firstOrNull;
+                          final got = m?.marksObtained;
+                          final passed = got != null && got >= p.passingMarks;
+                          final subLabel = refData.subjectName(p.subjectId);
+                          final shortName = subLabel.length > 9 ? '${subLabel.substring(0, 8)}…' : subLabel;
+                          return Container(
+                            margin: const EdgeInsets.only(right: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: (passed ? Colors.green : Colors.red).withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(
+                                color: (passed ? Colors.green : Colors.red).withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: Text(
+                              '$shortName: ${got != null ? got.toStringAsFixed(0) : "—"}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: passed ? Colors.green.shade800 : Colors.red.shade800,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                ),
                 DataCell(Text('${c.totalMarks.toStringAsFixed(0)} / ${c.totalMaxMarks.toStringAsFixed(0)}')),
                 DataCell(Text('${c.percentage.toStringAsFixed(1)}%')),
                 DataCell(Text(c.grade, style: const TextStyle(fontWeight: FontWeight.bold))),
-                DataCell(Text(c.gpa.toStringAsFixed(2))),
                 DataCell(Text('#${c.rank}')),
-                DataCell(FlowChip(c.performance, _performanceColor(c.performance))),
                 DataCell(FlowChip(c.passed ? 'PASS' : 'FAIL', c.passed ? const Color(0xFF059669) : const Color(0xFFDC2626))),
                 DataCell(statusChip(c.status)),
                 DataCell(
@@ -405,11 +636,31 @@ class _ResultsTabState extends ConsumerState<ResultsTab> {
                       IconButton(
                         tooltip: 'View Full Student Details',
                         icon: const Icon(Icons.remove_red_eye_outlined, size: 18),
-                        onPressed: () => _showStudentDetailDialog(c, st ?? StudentRef(id: c.studentId, name: name, admissionNumber: '', rollNumber: roll, sectionId: c.classSectionId), refData, timetable, marks, att, perms),
+                        onPressed: () => _showStudentDetailDialog(
+                          c,
+                          st ?? StudentRef(id: c.studentId, name: name, admissionNumber: adm, rollNumber: roll, sectionId: c.classSectionId),
+                          refData,
+                          timetable,
+                          marks,
+                          att,
+                          perms,
+                        ),
                       ),
                       IconButton(
-                        tooltip: 'Print / Download Report Card',
-                        icon: const Icon(Icons.picture_as_pdf_outlined, size: 18),
+                        tooltip: 'Download Statement of Marks',
+                        icon: const Icon(Icons.download_outlined, size: 18, color: Color(0xFF109F83)),
+                        onPressed: () => _handleDownloadStudentResult(
+                          card: c,
+                          student: st ?? StudentRef(id: c.studentId, name: name, admissionNumber: adm, rollNumber: roll, sectionId: c.classSectionId),
+                          refData: refData,
+                          timetable: timetable,
+                          marks: marks,
+                          att: att,
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: 'Report Card Remarks',
+                        icon: const Icon(Icons.rate_review_outlined, size: 18),
                         onPressed: () => _showReportCardDialog(c, st?.name ?? name, refData, perms),
                       ),
                     ],
@@ -462,10 +713,51 @@ class _ResultsTabState extends ConsumerState<ResultsTab> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // School Name & Affiliation Header
+                  Center(
+                    child: Column(
+                      children: [
+                        const Text(
+                          'EDUPULSE PUBLIC SCHOOL & SENIOR COLLEGE',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.05,
+                            color: Color(0xFF0F766E),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        const Text(
+                          'Affiliation: CBSE-AFF-2026-9021 | Bengaluru, Karnataka',
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'OFFICIAL STATEMENT OF MARKS — ${widget.exam.examName.toUpperCase()}',
+                          style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 20),
+
+                  // Student Profile Row
                   Row(
                     children: [
-                      const Icon(Icons.account_circle_outlined, color: kExamGreen, size: 28),
-                      const SizedBox(width: 10),
+                      CircleAvatar(
+                        radius: 24,
+                        backgroundColor: kExamGreen.withValues(alpha: 0.15),
+                        backgroundImage: (student.photoUrl != null && student.photoUrl!.isNotEmpty)
+                            ? NetworkImage(student.photoUrl!)
+                            : null,
+                        child: (student.photoUrl == null || student.photoUrl!.isEmpty)
+                            ? Text(
+                                student.name.isNotEmpty ? student.name[0].toUpperCase() : 'S',
+                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kExamGreen),
+                              )
+                            : null,
+                      ),
+                      const SizedBox(width: 14),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -474,8 +766,9 @@ class _ResultsTabState extends ConsumerState<ResultsTab> {
                               student.name,
                               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                             ),
+                            const SizedBox(height: 2),
                             Text(
-                              'Roll No: ${student.rollNumber}  •  ${refData.sectionName(card.classSectionId)}  •  ${widget.exam.examName}',
+                              'Roll No: ${student.rollNumber}  •  Adm No: ${student.admissionNumber}  •  ${refData.sectionName(card.classSectionId)}',
                               style: const TextStyle(fontSize: 12.5, color: Colors.grey),
                             ),
                           ],
@@ -552,13 +845,31 @@ class _ResultsTabState extends ConsumerState<ResultsTab> {
                   ],
 
                   const SizedBox(height: 20),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: FilledButton(
-                      style: FilledButton.styleFrom(backgroundColor: kExamGreen),
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Close'),
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      FilledButton.icon(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: const Color(0xFF109F83),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        icon: const Icon(Icons.download, size: 16),
+                        label: const Text('Download Statement of Marks'),
+                        onPressed: () => _handleDownloadStudentResult(
+                          card: card,
+                          student: student,
+                          refData: refData,
+                          timetable: timetable,
+                          marks: marks,
+                          att: att,
+                        ),
+                      ),
+                      OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Close'),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -668,7 +979,7 @@ class _ResultsTabState extends ConsumerState<ResultsTab> {
           Center(
             child: Column(
               children: [
-                const Text('EDUPULSE GLOBAL ACADEMY', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                const Text('EDUPULSE PUBLIC SCHOOL & SENIOR COLLEGE', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                 Text('Academic Year ${widget.exam.academicYear}  •  ${widget.exam.examName}', style: const TextStyle(fontSize: 11, color: Colors.grey)),
               ],
             ),
@@ -700,57 +1011,203 @@ class _ResultsTabState extends ConsumerState<ResultsTab> {
   }
 
   Widget _buildStudentView() {
-    final reportCardsAsync = ref.watch(studentReportCardsProvider(false));
-    return reportCardsAsync.when(
-      loading: () => const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator())),
-      error: (e, _) => Text('Error: $e'),
-      data: (cards) {
-        final examCard = cards.where((c) => c.examScheduleId == widget.exam.examScheduleId).firstOrNull;
-        if (examCard == null || !examCard.isPublished) {
-          return const FlowEmpty(
-            Icons.school_outlined,
-            'Your report card for this examination has not been published yet.',
-          );
-        }
+    final actor = ref.watch(currentExamActorProvider);
+    final targetStudentId = actor.studentId ?? ExamFlowRepository.demoStudentId;
+    final allCards = ref.watch(reportCardsProvider(widget.exam.examScheduleId)).valueOrNull ?? [];
+    final students = ref.watch(studentsProvider).valueOrNull ?? [];
+    final refData = ref.watch(examReferenceProvider).valueOrNull ?? const ExamReferenceData();
+    final timetable = ref.watch(examTimetableProvider(widget.exam.examScheduleId)).valueOrNull ?? [];
+    final marks = ref.watch(examMarksProvider(widget.exam.examScheduleId)).valueOrNull ?? [];
+    final att = ref.watch(attendanceProvider(widget.exam.examScheduleId)).valueOrNull ?? [];
 
-        return Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 680),
-            child: Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+    final student = students.where((s) => s.id == targetStudentId).firstOrNull ??
+        students.where((s) => s.id == 'stu-001' || s.id == 'stu-101').firstOrNull ??
+        students.firstOrNull;
+
+    if (student == null) {
+      return const FlowEmpty(Icons.person_off_outlined, 'No student profile record found.');
+    }
+
+    final card = allCards.where((c) => c.studentId == student.id).firstOrNull;
+    final studentPapers = timetable.where((p) => p.classSectionId == student.sectionId).toList();
+
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 720),
+        child: Card(
+          elevation: 2,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: Padding(
+            padding: const EdgeInsets.all(22),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // School Header
+                Center(
+                  child: Column(
+                    children: [
+                      const Text(
+                        'EDUPULSE PUBLIC SCHOOL & SENIOR COLLEGE',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.05,
+                          color: Color(0xFF0F766E),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      const Text(
+                        'Affiliation: CBSE-AFF-2026-9021 | Bengaluru, Karnataka',
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'STATEMENT OF MARKS — ${widget.exam.examName.toUpperCase()}',
+                        style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 20),
+
+                // Student Profile Row
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.stars, color: kExamGreen, size: 28),
-                        const SizedBox(width: 10),
-                        const Expanded(
-                          child: Text(
-                            'Published Official Report Card',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        FilledButton.icon(
-                          style: FilledButton.styleFrom(backgroundColor: kExamGreen),
-                          icon: const Icon(Icons.download, size: 16),
-                          label: const Text('Download'),
-                          onPressed: () => flowSnack(context, 'Report card downloaded.'),
-                        ),
-                      ],
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor: kExamGreen.withValues(alpha: 0.15),
+                      backgroundImage: (student.photoUrl != null && student.photoUrl!.isNotEmpty)
+                          ? NetworkImage(student.photoUrl!)
+                          : null,
+                      child: (student.photoUrl == null || student.photoUrl!.isEmpty)
+                          ? Text(
+                              student.name.isNotEmpty ? student.name[0].toUpperCase() : 'S',
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kExamGreen),
+                            )
+                          : null,
                     ),
-                    const Divider(height: 24),
-                    _buildReportCardDetails(examCard, 'Satya (Student)', const ExamReferenceData()),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            student.name,
+                            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Roll No: ${student.rollNumber}  •  Adm: ${student.admissionNumber}  •  ${refData.sectionName(student.sectionId)}',
+                            style: const TextStyle(fontSize: 12.5, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (card != null)
+                      FlowChip(card.passed ? 'PASSED' : 'FAILED', card.passed ? const Color(0xFF059669) : const Color(0xFFDC2626)),
                   ],
                 ),
-              ),
+                const Divider(height: 20),
+
+                if (card != null) ...[
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 8,
+                    children: [
+                      _metricBox('Total Marks', '${card.totalMarks.toStringAsFixed(0)} / ${card.totalMaxMarks.toStringAsFixed(0)}'),
+                      _metricBox('Percentage', '${card.percentage.toStringAsFixed(1)}%'),
+                      _metricBox('Final Grade', card.grade),
+                      _metricBox('GPA', card.gpa.toStringAsFixed(2)),
+                      _metricBox('Class Rank', '#${card.rank}'),
+                      _metricBox('Performance', card.performance),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                const Text(
+                  'Subject-Wise Marks & Performance',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                const SizedBox(height: 8),
+
+                Table(
+                  border: TableBorder.all(color: Colors.grey.shade300),
+                  children: [
+                    TableRow(
+                      decoration: BoxDecoration(color: Colors.grey.withValues(alpha: 0.15)),
+                      children: const [
+                        Padding(padding: EdgeInsets.all(8), child: Text('Subject', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                        Padding(padding: EdgeInsets.all(8), child: Text('Max', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                        Padding(padding: EdgeInsets.all(8), child: Text('Marks Obtained', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                        Padding(padding: EdgeInsets.all(8), child: Text('Passing Marks', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                        Padding(padding: EdgeInsets.all(8), child: Text('Result', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                      ],
+                    ),
+                    ...studentPapers.map((p) {
+                      final m = marks.where((x) => x.examPaperId == p.id && x.studentId == student.id).firstOrNull;
+                      final a = att.where((x) => x.examPaperId == p.id && x.studentId == student.id).firstOrNull;
+                      final isAbsent = a?.status == 'ABSENT';
+                      final got = m?.marksObtained;
+                      final passed = got != null && got >= p.passingMarks;
+
+                      return TableRow(
+                        children: [
+                          Padding(padding: const EdgeInsets.all(8), child: Text(refData.subjectName(p.subjectId), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12))),
+                          Padding(padding: const EdgeInsets.all(8), child: Text(p.maxMarks.toStringAsFixed(0), style: const TextStyle(fontSize: 12))),
+                          Padding(padding: const EdgeInsets.all(8), child: Text(got != null ? got.toStringAsFixed(0) : (isAbsent ? 'ABSENT' : '—'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: passed ? Colors.green : Colors.red))),
+                          Padding(padding: const EdgeInsets.all(8), child: Text(p.passingMarks.toStringAsFixed(0), style: const TextStyle(fontSize: 12))),
+                          Padding(padding: const EdgeInsets.all(8), child: Text(passed ? 'PASS' : (isAbsent ? 'ABS' : 'FAIL'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: passed ? Colors.green : Colors.red))),
+                        ],
+                      );
+                    }),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // Download Button
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: kExamGreen,
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                    ),
+                    icon: const Icon(Icons.download, size: 18),
+                    label: const Text('Download Statement of Marks'),
+                    onPressed: () {
+                      final effectiveCard = card ?? ReportCard(
+                        id: 'rc-temp',
+                        examScheduleId: widget.exam.examScheduleId,
+                        studentId: student.id,
+                        classSectionId: student.sectionId,
+                        totalMarks: 0,
+                        totalMaxMarks: 0,
+                        percentage: 0,
+                        grade: 'N/A',
+                        gpa: 0,
+                        rank: 1,
+                        performance: 'Evaluating',
+                        passed: true,
+                        status: 'PUBLISHED',
+                      );
+                      _handleDownloadStudentResult(
+                        card: effectiveCard,
+                        student: student,
+                        refData: refData,
+                        timetable: timetable,
+                        marks: marks,
+                        att: att,
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

@@ -586,11 +586,11 @@ class _ExamDetailsScreenState extends ConsumerState<ExamDetailsScreen> {
       if (!p.isStudentOrParent) 'Syllabus',
       if (!p.isStudentOrParent) 'Exam Pattern',
       if (p.isAdminOrPrincipal || p.isTeacher) 'Question Paper',
-      if (p.isAdminOrPrincipal || p.isStudentOrParent) 'Hall Tickets',
+      if (p.isAdminOrPrincipal) 'Hall Tickets',
       if (!p.isStudentOrParent) 'Attendance',
       if (!p.isStudentOrParent) 'Marks Entry',
       if (p.isAdminOrPrincipal || p.isClassIncharge) 'Marks Review',
-      if (p.isAdminOrPrincipal || p.isClassIncharge || p.isStudentOrParent) 'Results',
+      if (p.isAdminOrPrincipal || p.isTeacher || p.isClassIncharge || p.isStudentOrParent) 'Results',
     ];
     final tabs = [for (final n in names) {'name': n, 'enabled': true}];
 

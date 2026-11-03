@@ -169,6 +169,10 @@ class ExamReferenceData {
         .where((s) => targetClassIds.contains(s.classId) || allocatedSubjectIds.contains(s.id))
         .toList();
 
+    if (result.isEmpty && subjects.isNotEmpty) {
+      return subjects;
+    }
+
     return result;
   }
 

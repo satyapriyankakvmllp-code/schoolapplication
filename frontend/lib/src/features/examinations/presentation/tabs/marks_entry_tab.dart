@@ -4,6 +4,7 @@ import '../../application/exam_flow_controller.dart';
 import '../../application/exam_paper_controller.dart';
 import '../../application/examination_access.dart';
 import '../../data/exam_flow_repository.dart';
+import '../../domain/examination_actor.dart';
 import '../../domain/exam_flow_models.dart';
 import '../../domain/exam_timetable_model.dart';
 import '../../domain/exam_reference_model.dart';
@@ -379,6 +380,7 @@ class _MarksEntryTabState extends ConsumerState<MarksEntryTab> {
     ExamReferenceData refData,
     AsyncValue<List<StudentRef>> studentsAsync,
   ) {
+    final perms = ref.watch(examinationPermissionsProvider);
     final marksAsync = ref.watch(marksProvider(paper.id));
     final attAsync = ref.watch(attendanceProvider(paper.id));
 
@@ -402,10 +404,12 @@ class _MarksEntryTabState extends ConsumerState<MarksEntryTab> {
             _syncControllersWithMarks(students, marks, absentIds);
 
             // Determine status of overall marks submission
+            final isTeacher = perms.canEnterMarks;
             final hasSubmitted = marks.any((m) => m.status == 'SUBMITTED' || m.status == 'UNDER_REVIEW');
             final hasApproved = marks.any((m) => m.status == 'APPROVED');
             final rejectedMark = marks.where((m) => m.status == 'REJECTED').firstOrNull;
             final isLocked = (hasSubmitted || hasApproved) && rejectedMark == null;
+            final canEditMarks = isTeacher && !isLocked;
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -455,6 +459,36 @@ class _MarksEntryTabState extends ConsumerState<MarksEntryTab> {
                     ],
                   ),
                 ),
+
+                // Admin Informational Banner
+                if (perms.isAdminOrPrincipal) ...[
+                  const SizedBox(height: 10),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.blue.shade200),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.info_outline, color: Color(0xFF2563EB), size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Admin View: Marks are entered by assigned faculty teachers. As an Admin, you view marks here and verify / approve submissions in the Marks Review tab.',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF1E40AF),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
 
                 // Rejection Alert Banner
                 if (rejectedMark != null) ...[
@@ -563,7 +597,7 @@ class _MarksEntryTabState extends ConsumerState<MarksEntryTab> {
                                 child: TextFormField(
                                   controller: ctrl,
                                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                                  enabled: !isLocked && !_saving,
+                                  enabled: canEditMarks && !_saving,
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                                   decoration: InputDecoration(
@@ -590,8 +624,8 @@ class _MarksEntryTabState extends ConsumerState<MarksEntryTab> {
                 ),
                 const SizedBox(height: 16),
 
-                // Bottom Sticky/Actions Bar
-                if (!isLocked)
+                // Bottom Sticky/Actions Bar (Teachers only)
+                if (isTeacher && !isLocked)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -615,7 +649,7 @@ class _MarksEntryTabState extends ConsumerState<MarksEntryTab> {
                                 child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                               )
                             : const Icon(Icons.send, size: 18),
-                        label: const Text('Submit for Review'),
+                        label: const Text('Submit for Verification'),
                         onPressed: _saving
                             ? null
                             : () => _handleSave(paper, students, absentIds, true),

@@ -571,13 +571,18 @@ class _HallTicketsTabState extends ConsumerState<HallTicketsTab> {
             child: Column(
               children: [
                 const Text(
-                  'EDUPULSE GLOBAL ACADEMY',
+                  'EDUPULSE PUBLIC SCHOOL & SENIOR COLLEGE',
                   style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 1.1,
                     color: Color(0xFF0F766E),
                   ),
+                ),
+                const SizedBox(height: 2),
+                const Text(
+                  'Affiliation: CBSE-AFF-2026-9021 | Bengaluru, Karnataka',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -730,6 +735,7 @@ class _IssueManualHallTicketDialogState extends ConsumerState<IssueManualHallTic
   String? _classId;
   String? _sectionId;
   String? _studentId;
+  String? _roomId;
   late final TextEditingController _numberCtrl;
   late final TextEditingController _seatCtrl;
   String _status = 'ISSUED';
@@ -749,6 +755,15 @@ class _IssueManualHallTicketDialogState extends ConsumerState<IssueManualHallTic
     _numberCtrl = TextEditingController(text: defaultNum);
     _seatCtrl = TextEditingController(text: t?.seatNumber ?? '');
     _status = t?.status ?? 'ISSUED';
+
+    if (t?.seatNumber != null) {
+      for (final r in widget.refData.rooms) {
+        if (t!.seatNumber!.contains(r.label) || t.seatNumber!.contains(r.id)) {
+          _roomId = r.id;
+          break;
+        }
+      }
+    }
   }
 
   @override
@@ -767,6 +782,12 @@ class _IssueManualHallTicketDialogState extends ConsumerState<IssueManualHallTic
 
     setState(() => _saving = true);
     try {
+      final roomName = _roomId != null ? widget.refData.roomName(_roomId) : '';
+      String seatVal = _seatCtrl.text.trim();
+      if (seatVal.isEmpty && roomName.isNotEmpty) {
+        seatVal = roomName;
+      }
+
       final ticket = HallTicket(
         id: widget.existingTicket?.id ?? 'ht-${const Uuid().v4().substring(0, 8)}',
         examScheduleId: widget.exam.examScheduleId,
@@ -775,7 +796,7 @@ class _IssueManualHallTicketDialogState extends ConsumerState<IssueManualHallTic
         token: widget.existingTicket?.token ?? const Uuid().v4().substring(0, 12).toUpperCase(),
         issueDate: widget.existingTicket?.issueDate ?? DateTime.now().toIso8601String().split('T').first,
         status: _status,
-        seatNumber: _seatCtrl.text.trim().isEmpty ? null : _seatCtrl.text.trim(),
+        seatNumber: seatVal.isNotEmpty ? seatVal : null,
       );
 
       await ref.read(examFlowActionsProvider).saveTicket(ticket);
@@ -898,7 +919,36 @@ class _IssueManualHallTicketDialogState extends ConsumerState<IssueManualHallTic
                 ),
                 const SizedBox(height: 12),
 
-                // 5. Seat Number / Desk allocation
+                // 5. Examination Room Dropdown
+                DropdownButtonFormField<String>(
+                  value: widget.refData.rooms.any((r) => r.id == _roomId) ? _roomId : null,
+                  isExpanded: true,
+                  decoration: flowDecoration(context, 'Examination Room *', hint: 'Select Room'),
+                  items: [
+                    const DropdownMenuItem(value: null, child: Text('— Select Examination Room —')),
+                    for (final r in widget.refData.rooms)
+                      DropdownMenuItem(
+                        value: r.id,
+                        child: Text('${r.label} (${r.capacity} seats)'),
+                      ),
+                  ],
+                  validator: (v) => v == null || v.isEmpty ? 'Examination room is required' : null,
+                  onChanged: (v) {
+                    setState(() {
+                      _roomId = v;
+                      if (v != null) {
+                        final roomName = widget.refData.roomName(v);
+                        if (_seatCtrl.text.isEmpty) {
+                          final roll = widget.preselectedStudent?.rollNumber ?? '01';
+                          _seatCtrl.text = '$roomName - Desk $roll';
+                        }
+                      }
+                    });
+                  },
+                ),
+                const SizedBox(height: 12),
+
+                // 6. Seat Number / Desk allocation
                 TextFormField(
                   controller: _seatCtrl,
                   decoration: flowDecoration(
@@ -909,7 +959,7 @@ class _IssueManualHallTicketDialogState extends ConsumerState<IssueManualHallTic
                 ),
                 const SizedBox(height: 12),
 
-                // 6. Status
+                // 7. Status
                 DropdownButtonFormField<String>(
                   value: _status,
                   decoration: flowDecoration(context, 'Status *'),
