@@ -116,6 +116,16 @@ class AdmissionRequestsListNotifier extends AsyncNotifier<List<AdmissionRequestM
     await refresh();
   }
 
+  Future<void> requestCorrections(String requestId, {required String correctionNotes}) async {
+    final repository = ref.read(admissionsRepositoryProvider);
+    await repository.updateRequestStatus(
+      requestId,
+      AdmissionRequestStatus.correctionRequested,
+      correctionNotes: correctionNotes,
+    );
+    await refresh();
+  }
+
   Future<AdmissionRequestModel> createRequest(AdmissionRequestModel request) async {
     final repository = ref.read(admissionsRepositoryProvider);
     final created = await repository.createAdmissionRequest(request);
@@ -125,7 +135,7 @@ class AdmissionRequestsListNotifier extends AsyncNotifier<List<AdmissionRequestM
 }
 
 final activeRequestFilterProvider =
-    StateProvider<AdmissionRequestStatus?>((ref) => AdmissionRequestStatus.pending);
+    StateProvider<AdmissionRequestStatus?>((ref) => AdmissionRequestStatus.pendingReview);
 
 final requestSearchQueryProvider = StateProvider<String>((ref) => '');
 
@@ -134,9 +144,12 @@ final admissionRequestCountsProvider =
   final requestsAsync = ref.watch(admissionRequestsListProvider);
   return requestsAsync.maybeWhen(
     data: (list) {
+      final pendingCount = list.where((r) => r.status.isPendingReview).length;
       return {
-        AdmissionRequestStatus.pending:
-            list.where((r) => r.status == AdmissionRequestStatus.pending).length,
+        AdmissionRequestStatus.pendingReview: pendingCount,
+        AdmissionRequestStatus.pending: pendingCount,
+        AdmissionRequestStatus.correctionRequested:
+            list.where((r) => r.status == AdmissionRequestStatus.correctionRequested).length,
         AdmissionRequestStatus.approved:
             list.where((r) => r.status == AdmissionRequestStatus.approved).length,
         AdmissionRequestStatus.rejected:
@@ -144,24 +157,66 @@ final admissionRequestCountsProvider =
       };
     },
     orElse: () => {
+      AdmissionRequestStatus.pendingReview: 0,
       AdmissionRequestStatus.pending: 0,
+      AdmissionRequestStatus.correctionRequested: 0,
       AdmissionRequestStatus.approved: 0,
       AdmissionRequestStatus.rejected: 0,
     },
   );
 });
 
+final is30DayFilterActiveProvider = StateProvider<bool>((ref) => false);
+// Backward compatibility alias
+final is30DayApprovalsFilterActiveProvider = is30DayFilterActiveProvider;
+
+final recent30DayRequestsProvider =
+    Provider<List<AdmissionRequestModel>>((ref) {
+  final requestsAsync = ref.watch(admissionRequestsListProvider);
+  return requestsAsync.maybeWhen(
+    data: (list) {
+      final cutoff = DateTime.now().subtract(const Duration(days: 30));
+      final recent = list.where((r) {
+        final timestamp = r.reviewedAt ?? r.appliedAt;
+        return timestamp.isAfter(cutoff);
+      }).toList();
+      recent.sort((a, b) {
+        final timeA = a.reviewedAt ?? a.appliedAt;
+        final timeB = b.reviewedAt ?? b.appliedAt;
+        return timeB.compareTo(timeA);
+      });
+      return recent;
+    },
+    orElse: () => [],
+  );
+});
+
+// Backward compatibility alias
+final recent30DayApprovalsProvider = recent30DayRequestsProvider;
+
 final filteredAdmissionRequestsProvider =
     Provider<List<AdmissionRequestModel>>((ref) {
   final requestsAsync = ref.watch(admissionRequestsListProvider);
   final activeFilter = ref.watch(activeRequestFilterProvider);
+  final only30Days = ref.watch(is30DayFilterActiveProvider);
   final query = ref.watch(requestSearchQueryProvider).toLowerCase().trim();
 
   return requestsAsync.maybeWhen(
     data: (list) {
+      final cutoff30Days = DateTime.now().subtract(const Duration(days: 30));
       return list.where((r) {
-        if (activeFilter != null && r.status != activeFilter) {
-          return false;
+        if (only30Days) {
+          final dt = r.reviewedAt ?? r.appliedAt;
+          if (!dt.isAfter(cutoff30Days)) return false;
+        }
+        if (activeFilter != null) {
+          if (activeFilter.isPendingReview) {
+            if (!r.status.isPendingReview) {
+              return false;
+            }
+          } else if (r.status != activeFilter) {
+            return false;
+          }
         }
         if (query.isNotEmpty) {
           final matchesName = r.applicantFullName.toLowerCase().contains(query);

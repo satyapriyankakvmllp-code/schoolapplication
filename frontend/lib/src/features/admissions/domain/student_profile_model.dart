@@ -48,7 +48,6 @@ class StudentProfileModel {
   final String admissionNumber;
   final String? rollNumber;
   final String? currentClassId;
-  final String? sectionId;
   final String className;
   final String section;
   final DateTime admissionDate;
@@ -88,7 +87,6 @@ class StudentProfileModel {
     required this.admissionNumber,
     this.rollNumber,
     this.currentClassId,
-    this.sectionId,
     required this.className,
     required this.section,
     required this.admissionDate,
@@ -120,24 +118,12 @@ class StudentProfileModel {
   });
 
   factory StudentProfileModel.fromJson(Map<String, dynamic> json) {
-    String? classId = json['current_class_id'] as String?;
-    String? secId = json['section_id'] as String?;
-    // Safe legacy migration: Map composite cls-10a/cls-10b to class cls-10 and sections sec-10a/sec-10b
-    if (classId == 'cls-10a') {
-      classId = 'cls-10';
-      secId ??= 'sec-10a';
-    } else if (classId == 'cls-10b') {
-      classId = 'cls-10';
-      secId ??= 'sec-10b';
-    }
-
     return StudentProfileModel(
       id: json['id'] as String,
       userId: json['user_id'] as String? ?? '',
       admissionNumber: json['admission_number'] as String? ?? '',
       rollNumber: json['roll_number'] as String?,
-      currentClassId: classId,
-      sectionId: secId,
+      currentClassId: json['current_class_id'] as String?,
       className: json['class_name'] as String? ?? 'Grade 10',
       section: json['section'] as String? ?? 'A',
       admissionDate: json['admission_date'] != null
@@ -179,7 +165,6 @@ class StudentProfileModel {
       'admission_number': admissionNumber,
       'roll_number': rollNumber,
       'current_class_id': currentClassId,
-      'section_id': sectionId,
       'class_name': className,
       'section': section,
       'admission_date': admissionDate.toIso8601String().split('T').first,
@@ -217,7 +202,6 @@ class StudentProfileModel {
     String? admissionNumber,
     String? rollNumber,
     String? currentClassId,
-    String? sectionId,
     String? className,
     String? section,
     DateTime? admissionDate,
@@ -253,7 +237,6 @@ class StudentProfileModel {
       admissionNumber: admissionNumber ?? this.admissionNumber,
       rollNumber: rollNumber ?? this.rollNumber,
       currentClassId: currentClassId ?? this.currentClassId,
-      sectionId: sectionId ?? this.sectionId,
       className: className ?? this.className,
       section: section ?? this.section,
       admissionDate: admissionDate ?? this.admissionDate,

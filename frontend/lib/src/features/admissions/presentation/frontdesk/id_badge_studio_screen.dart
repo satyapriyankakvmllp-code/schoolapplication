@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../application/admissions_controller.dart';
 import '../../application/frontdesk_controller.dart';
+import '../../domain/admission_request_model.dart';
 import '../../domain/student_admission_model.dart';
 
 class IdBadgeStudioScreen extends ConsumerStatefulWidget {
@@ -60,10 +62,36 @@ class _IdBadgeStudioScreenState extends ConsumerState<IdBadgeStudioScreen> {
     },
   };
 
-  Map<String, Map<String, String>> _getCombinedBadgeData(List<StudentAdmissionModel> admissions) {
+  Map<String, Map<String, String>> _getCombinedBadgeData({
+    required List<StudentAdmissionModel> admissions,
+    required List<ApplicantDocumentItem> docQueue,
+    required List<AdmissionRequestModel> requests,
+  }) {
     final map = Map<String, Map<String, String>>.from(_mockBadgeData);
 
-    // Live enrolled admissions (adds new students not already in baseline badge list)
+    // 1. Approved applications from admission requests (dynamic composition on admin approval)
+    for (final req in requests) {
+      if (req.status == AdmissionRequestStatus.approved) {
+        final name = req.applicantFullName;
+        if (!map.containsKey(name)) {
+          final dobStr = DateFormat('dd MMM yyyy').format(req.dateOfBirth);
+          map[name] = {
+            'name': name,
+            'id': 'ADM-2026-${req.id.replaceAll(RegExp(r'[^0-9]'), '').padLeft(4, '0')}',
+            'roll': '#Pending',
+            'class': req.gradeApplied,
+            'dob': dobStr,
+            'blood': '${req.bloodGroup ?? "O+"} (Positive)',
+            'parent': req.parentFullName,
+            'phone': req.parentPhone,
+            'address': req.currentAddress,
+            'emergency': '${req.emergencyContactPhone} (${req.parentRelationship})',
+          };
+        }
+      }
+    }
+
+    // 2. Live enrolled admissions (adds new students not already in baseline badge list)
     for (final adm in admissions) {
       final name = adm.user.fullName;
       final alreadyExists = map.containsKey(name) ||
@@ -74,14 +102,14 @@ class _IdBadgeStudioScreenState extends ConsumerState<IdBadgeStudioScreen> {
             adm.guardian?.fullName ??
             adm.mother?.fullName ??
             'Parent / Guardian';
-        final phone = adm.student.emergencyContactPhone ??
-            adm.father?.phoneNumber ??
-            adm.user.phoneNumber;
+        final phone = adm.student.emergencyContactPhone.isNotEmpty
+            ? adm.student.emergencyContactPhone
+            : (adm.father?.phoneNumber ?? adm.user.phoneNumber);
         final parentRel = adm.father != null
             ? 'Father'
             : (adm.mother != null ? 'Mother' : (adm.guardian?.relationship ?? 'Guardian'));
         final grade =
-            '${adm.student.className}${adm.student.section != null && adm.student.section!.isNotEmpty ? " - Sec ${adm.student.section}" : ""}';
+            '${adm.student.className}${adm.student.section.isNotEmpty ? " - Sec ${adm.student.section}" : ""}';
         final roll = adm.student.rollNumber != null && adm.student.rollNumber!.isNotEmpty
             ? '#${adm.student.rollNumber}'
             : '#Pending';
@@ -107,6 +135,32 @@ class _IdBadgeStudioScreenState extends ConsumerState<IdBadgeStudioScreen> {
       }
     }
 
+    // 3. Automatically link and populate student photo from Document Verification Queue or User Model
+    for (final entry in map.entries) {
+      final studentName = entry.key;
+      final studentId = entry.value['id'] ?? '';
+
+      // Match student's passport photo in document verification queue
+      String? matchedPhotoBase64;
+      for (final doc in docQueue) {
+        final matchesName = doc.applicantName.trim().toLowerCase() == studentName.trim().toLowerCase();
+        final matchesId = doc.applicantId.trim().toLowerCase() == studentId.trim().toLowerCase() ||
+            (doc.applicantId.isNotEmpty && studentId.contains(doc.applicantId));
+        final isPhoto = doc.documentType.toLowerCase().contains('photo') ||
+            doc.documentType.toLowerCase().contains('portrait') ||
+            doc.fileName.toLowerCase().contains('photo');
+
+        if ((matchesName || matchesId) && isPhoto && doc.base64Data != null && doc.base64Data!.isNotEmpty) {
+          matchedPhotoBase64 = doc.base64Data;
+          break;
+        }
+      }
+
+      if (matchedPhotoBase64 != null) {
+        entry.value['photoBase64'] = matchedPhotoBase64;
+      }
+    }
+
     return map;
   }
 
@@ -127,7 +181,14 @@ class _IdBadgeStudioScreenState extends ConsumerState<IdBadgeStudioScreen> {
     final isMobile = screenWidth < 768;
 
     final admissionsAsync = ref.watch(admissionsListProvider);
-    final badgeData = _getCombinedBadgeData(admissionsAsync.valueOrNull ?? []);
+    final docQueue = ref.watch(documentQueueProvider);
+    final requestsAsync = ref.watch(admissionRequestsListProvider);
+
+    final badgeData = _getCombinedBadgeData(
+      admissions: admissionsAsync.valueOrNull ?? [],
+      docQueue: docQueue,
+      requests: requestsAsync.valueOrNull ?? [],
+    );
 
     final externalSelected = ref.watch(frontDeskSelectedStudentBadgeProvider);
     if (externalSelected != null && badgeData.containsKey(externalSelected) && _selectedStudent != externalSelected) {
@@ -319,13 +380,25 @@ class _IdBadgeStudioScreenState extends ConsumerState<IdBadgeStudioScreen> {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                // Avatar
-                CircleAvatar(
-                  radius: 36,
-                  backgroundColor: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
-                  child: Text(
-                    data['name']![0],
-                    style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Color(0xFF8B5CF6)),
+                // Student Photo (Auto-filled from verified application documents)
+                Container(
+                  width: 74,
+                  height: 90,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFF8B5CF6), width: 1.5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: _buildStudentPhotoWidget(data),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -463,6 +536,47 @@ class _IdBadgeStudioScreenState extends ConsumerState<IdBadgeStudioScreen> {
         const SizedBox(height: 2),
         Text(val, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF0F172A))),
       ],
+    );
+  }
+
+  Widget _buildStudentPhotoWidget(Map<String, String> data) {
+    final photoBase64 = data['photoBase64'];
+    if (photoBase64 != null && photoBase64.isNotEmpty) {
+      try {
+        final bytes = base64Decode(photoBase64);
+        return Image.memory(
+          bytes,
+          width: 74,
+          height: 90,
+          fit: BoxFit.cover,
+          errorBuilder: (ctx, err, stack) => _buildFallbackPhoto(data['name'] ?? ''),
+        );
+      } catch (_) {}
+    }
+    return _buildFallbackPhoto(data['name'] ?? '');
+  }
+
+  Widget _buildFallbackPhoto(String name) {
+    return Container(
+      color: const Color(0xFFF8FAFC),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: const Color(0xFF8B5CF6).withValues(alpha: 0.15),
+            child: Text(
+              name.isNotEmpty ? name[0] : 'S',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF8B5CF6)),
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'SCHOLAR',
+            style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Color(0xFF94A3B8), letterSpacing: 0.5),
+          ),
+        ],
+      ),
     );
   }
 }

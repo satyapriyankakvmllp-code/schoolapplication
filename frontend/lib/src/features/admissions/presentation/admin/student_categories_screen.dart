@@ -9,12 +9,16 @@ class StudentCategoriesScreen extends ConsumerStatefulWidget {
   final ValueChanged<EdupluseNavPage>? onNavigate;
   final VoidCallback? onToggleTheme;
   final bool isDark;
+  final VoidCallback? onExitToGateway;
+  final bool isEmbedded;
 
   const StudentCategoriesScreen({
     super.key,
     this.onNavigate,
     this.onToggleTheme,
     this.isDark = false,
+    this.onExitToGateway,
+    this.isEmbedded = false,
   });
 
   @override
@@ -30,6 +34,37 @@ class _StudentCategoriesScreenState
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  String _formatRelativeDate(DateTime dt) {
+    final diff = DateTime.now().difference(dt);
+    if (diff.inDays <= 0) {
+      if (diff.inHours <= 0) {
+        return 'just now';
+      }
+      return '${diff.inHours}h ago';
+    } else if (diff.inDays == 1) {
+      return 'yesterday';
+    } else if (diff.inDays < 30) {
+      return '${diff.inDays}d ago';
+    } else {
+      return '${(diff.inDays / 30).floor()}mo ago';
+    }
+  }
+
+  void _showRecentApprovalsSheet(bool isDark) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _RecentApprovalsTimelineSheet(
+        isDark: isDark,
+        onOpenDetail: (req) {
+          Navigator.of(ctx).pop();
+          _openReviewModal(req, isDark);
+        },
+      ),
+    );
   }
 
   void _openReviewModal(AdmissionRequestModel request, bool isDark) {
@@ -109,12 +144,16 @@ class _StudentCategoriesScreenState
     final activeFilter = ref.watch(activeRequestFilterProvider);
     final filteredRequests = ref.watch(filteredAdmissionRequestsProvider);
     final requestsAsync = ref.watch(admissionRequestsListProvider);
+    final is30DayApprovals = ref.watch(is30DayApprovalsFilterActiveProvider);
+    final recentApprovals = ref.watch(recent30DayApprovalsProvider);
 
     return EdupluseScaffold(
       activePage: EdupluseNavPage.studentPipeline,
       onNavigate: widget.onNavigate,
       onToggleTheme: widget.onToggleTheme,
+      onExitToGateway: widget.onExitToGateway,
       isDark: widget.isDark,
+      isEmbedded: widget.isEmbedded,
       body: LayoutBuilder(
         builder: (context, constraints) {
           final isMobile = constraints.maxWidth < 850;
@@ -131,13 +170,18 @@ class _StudentCategoriesScreenState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // --- HEADER BAR ---
-                  _buildHeaderBar(isMobile: isMobile, isDark: isDark),
+                  _buildHeaderBar(
+                    isMobile: isMobile,
+                    isDark: isDark,
+                    recentApprovalsCount: recentApprovals.length,
+                  ),
                   const SizedBox(height: 20),
 
                   // --- TOP MATRIX CARDS ---
                   _buildMatrixCards(
                     counts: counts,
                     activeFilter: activeFilter,
+                    is30DayApprovals: is30DayApprovals,
                     isDark: isDark,
                     isMobile: isMobile,
                     isTablet: isTablet,
@@ -170,6 +214,7 @@ class _StudentCategoriesScreenState
                       if (filteredRequests.isEmpty) {
                         return _buildEmptyState(
                           activeFilter: activeFilter,
+                          is30DayApprovals: is30DayApprovals,
                           isDark: isDark,
                         );
                       }
@@ -190,8 +235,12 @@ class _StudentCategoriesScreenState
   }
 
   // --- HEADER BAR ---
-  Widget _buildHeaderBar({required bool isMobile, required bool isDark}) {
-    return Column(
+  Widget _buildHeaderBar({
+    required bool isMobile,
+    required bool isDark,
+    required int recentApprovalsCount,
+  }) {
+    final titleColumn = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
@@ -235,19 +284,66 @@ class _StudentCategoriesScreenState
         ),
       ],
     );
+
+    final actionButton = OutlinedButton.icon(
+      onPressed: () => _showRecentApprovalsSheet(isDark),
+      icon: const Icon(Icons.history_edu_rounded, size: 17, color: Color(0xFF109F83)),
+      label: Text(
+        'Last 30 Days Updates ($recentApprovalsCount)',
+        style: const TextStyle(
+          fontSize: 12.5,
+          fontWeight: FontWeight.w700,
+          color: Color(0xFF109F83),
+        ),
+      ),
+      style: OutlinedButton.styleFrom(
+        side: const BorderSide(color: Color(0xFF109F83), width: 1.2),
+        backgroundColor: const Color(0xFF109F83).withValues(alpha: isDark ? 0.15 : 0.08),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+
+    if (isMobile) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          titleColumn,
+          const SizedBox(height: 12),
+          SizedBox(width: double.infinity, child: actionButton),
+        ],
+      );
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Expanded(child: titleColumn),
+        const SizedBox(width: 16),
+        actionButton,
+      ],
+    );
   }
 
   // --- TOP 3 MATRIX CARDS (Pending, Approved, Rejected) ---
   Widget _buildMatrixCards({
     required Map<AdmissionRequestStatus, int> counts,
     required AdmissionRequestStatus? activeFilter,
+    required bool is30DayApprovals,
     required bool isDark,
     required bool isMobile,
     required bool isTablet,
   }) {
-    final pendingCount = counts[AdmissionRequestStatus.pending] ?? 0;
+    final pendingCount = counts[AdmissionRequestStatus.pendingReview] ??
+        counts[AdmissionRequestStatus.pending] ??
+        0;
     final approvedCount = counts[AdmissionRequestStatus.approved] ?? 0;
     final rejectedCount = counts[AdmissionRequestStatus.rejected] ?? 0;
+
+    final isPendingActive = !is30DayApprovals && (activeFilter?.isPendingReview == true);
+    final isApprovedActive = !is30DayApprovals && (activeFilter == AdmissionRequestStatus.approved);
+    final isRejectedActive = !is30DayApprovals && (activeFilter == AdmissionRequestStatus.rejected);
 
     final pendingCard = _buildSingleMatrixCard(
       title: 'Pending Requests',
@@ -256,13 +352,12 @@ class _StudentCategoriesScreenState
       icon: Icons.hourglass_top_rounded,
       color: const Color(0xFFF59E0B),
       gradientColors: [const Color(0xFFF59E0B), const Color(0xFFD97706)],
-      isSelected: activeFilter == AdmissionRequestStatus.pending,
+      isSelected: isPendingActive,
       isDark: isDark,
       onTap: () {
+        ref.read(is30DayApprovalsFilterActiveProvider.notifier).state = false;
         ref.read(activeRequestFilterProvider.notifier).state =
-            activeFilter == AdmissionRequestStatus.pending
-                ? null
-                : AdmissionRequestStatus.pending;
+            isPendingActive ? null : AdmissionRequestStatus.pendingReview;
       },
     );
 
@@ -273,13 +368,12 @@ class _StudentCategoriesScreenState
       icon: Icons.check_circle_rounded,
       color: const Color(0xFF109F83),
       gradientColors: [const Color(0xFF109F83), const Color(0xFF059669)],
-      isSelected: activeFilter == AdmissionRequestStatus.approved,
+      isSelected: isApprovedActive,
       isDark: isDark,
       onTap: () {
+        ref.read(is30DayApprovalsFilterActiveProvider.notifier).state = false;
         ref.read(activeRequestFilterProvider.notifier).state =
-            activeFilter == AdmissionRequestStatus.approved
-                ? null
-                : AdmissionRequestStatus.approved;
+            isApprovedActive ? null : AdmissionRequestStatus.approved;
       },
     );
 
@@ -290,13 +384,12 @@ class _StudentCategoriesScreenState
       icon: Icons.cancel_rounded,
       color: const Color(0xFFEF4444),
       gradientColors: [const Color(0xFFEF4444), const Color(0xFFDC2626)],
-      isSelected: activeFilter == AdmissionRequestStatus.rejected,
+      isSelected: isRejectedActive,
       isDark: isDark,
       onTap: () {
+        ref.read(is30DayApprovalsFilterActiveProvider.notifier).state = false;
         ref.read(activeRequestFilterProvider.notifier).state =
-            activeFilter == AdmissionRequestStatus.rejected
-                ? null
-                : AdmissionRequestStatus.rejected;
+            isRejectedActive ? null : AdmissionRequestStatus.rejected;
       },
     );
 
@@ -560,6 +653,10 @@ class _StudentCategoriesScreenState
   }
 
   Widget _buildFilterChips(AdmissionRequestStatus? activeFilter, bool isDark) {
+    final isPendingActive = activeFilter?.isPendingReview == true;
+    final isApprovedActive = activeFilter == AdmissionRequestStatus.approved;
+    final isRejectedActive = activeFilter == AdmissionRequestStatus.rejected;
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       physics: const BouncingScrollPhysics(),
@@ -571,40 +668,44 @@ class _StudentCategoriesScreenState
             color: const Color(0xFF64748B),
             isDark: isDark,
             onTap: () {
+              ref.read(is30DayApprovalsFilterActiveProvider.notifier).state = false;
               ref.read(activeRequestFilterProvider.notifier).state = null;
             },
           ),
           const SizedBox(width: 6),
           _buildChip(
             label: 'Pending',
-            isSelected: activeFilter == AdmissionRequestStatus.pending,
+            isSelected: isPendingActive,
             color: const Color(0xFFF59E0B),
             isDark: isDark,
             onTap: () {
+              ref.read(is30DayApprovalsFilterActiveProvider.notifier).state = false;
               ref.read(activeRequestFilterProvider.notifier).state =
-                  AdmissionRequestStatus.pending;
+                  isPendingActive ? null : AdmissionRequestStatus.pendingReview;
             },
           ),
           const SizedBox(width: 6),
           _buildChip(
             label: 'Approved',
-            isSelected: activeFilter == AdmissionRequestStatus.approved,
+            isSelected: isApprovedActive,
             color: const Color(0xFF109F83),
             isDark: isDark,
             onTap: () {
+              ref.read(is30DayApprovalsFilterActiveProvider.notifier).state = false;
               ref.read(activeRequestFilterProvider.notifier).state =
-                  AdmissionRequestStatus.approved;
+                  isApprovedActive ? null : AdmissionRequestStatus.approved;
             },
           ),
           const SizedBox(width: 6),
           _buildChip(
             label: 'Rejected',
-            isSelected: activeFilter == AdmissionRequestStatus.rejected,
+            isSelected: isRejectedActive,
             color: const Color(0xFFEF4444),
             isDark: isDark,
             onTap: () {
+              ref.read(is30DayApprovalsFilterActiveProvider.notifier).state = false;
               ref.read(activeRequestFilterProvider.notifier).state =
-                  AdmissionRequestStatus.rejected;
+                  isRejectedActive ? null : AdmissionRequestStatus.rejected;
             },
           ),
         ],
@@ -742,16 +843,21 @@ class _StudentCategoriesScreenState
                 CircleAvatar(
                   radius: 18,
                   backgroundColor: const Color(0xFF109F83).withValues(alpha: 0.15),
-                  child: Text(
-                    req.applicantFirstName.isNotEmpty
-                        ? req.applicantFirstName[0]
-                        : 'S',
-                    style: const TextStyle(
-                      color: Color(0xFF109F83),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
+                  backgroundImage: req.studentPhotoUrl != null && req.studentPhotoUrl!.startsWith('http')
+                      ? NetworkImage(req.studentPhotoUrl!)
+                      : null,
+                  child: req.studentPhotoUrl != null && req.studentPhotoUrl!.startsWith('http')
+                      ? null
+                      : Text(
+                          req.applicantFirstName.isNotEmpty
+                              ? req.applicantFirstName[0]
+                              : 'S',
+                          style: const TextStyle(
+                            color: Color(0xFF109F83),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -865,9 +971,24 @@ class _StudentCategoriesScreenState
           // Status
           Expanded(
             flex: 2,
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: _buildStatusBadge(req.status, isDark),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildStatusBadge(req.status, isDark),
+                if (req.status == AdmissionRequestStatus.approved && req.reviewedAt != null) ...[
+                  const SizedBox(height: 3),
+                  Text(
+                    'Approved ${_formatRelativeDate(req.reviewedAt!)}',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF059669),
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
             ),
           ),
 
@@ -907,16 +1028,21 @@ class _StudentCategoriesScreenState
                 CircleAvatar(
                   radius: 18,
                   backgroundColor: const Color(0xFF109F83).withValues(alpha: 0.15),
-                  child: Text(
-                    req.applicantFirstName.isNotEmpty
-                        ? req.applicantFirstName[0]
-                        : 'S',
-                    style: const TextStyle(
-                      color: Color(0xFF109F83),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
+                  backgroundImage: req.studentPhotoUrl != null && req.studentPhotoUrl!.startsWith('http')
+                      ? NetworkImage(req.studentPhotoUrl!)
+                      : null,
+                  child: req.studentPhotoUrl != null && req.studentPhotoUrl!.startsWith('http')
+                      ? null
+                      : Text(
+                          req.applicantFirstName.isNotEmpty
+                              ? req.applicantFirstName[0]
+                              : 'S',
+                          style: const TextStyle(
+                            color: Color(0xFF109F83),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -947,7 +1073,24 @@ class _StudentCategoriesScreenState
                   ),
                 ),
                 const SizedBox(width: 8),
-                _buildStatusBadge(req.status, isDark),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildStatusBadge(req.status, isDark),
+                    if (req.status == AdmissionRequestStatus.approved && req.reviewedAt != null) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        _formatRelativeDate(req.reviewedAt!),
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF059669),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ],
             ),
             const SizedBox(height: 10),
@@ -1043,9 +1186,15 @@ class _StudentCategoriesScreenState
 
     switch (status) {
       case AdmissionRequestStatus.pending:
+      case AdmissionRequestStatus.pendingReview:
         bg = const Color(0xFFFEF3C7);
         fg = const Color(0xFFD97706);
         icon = Icons.hourglass_top_rounded;
+        break;
+      case AdmissionRequestStatus.correctionRequested:
+        bg = const Color(0xFFFFFBEB);
+        fg = const Color(0xFFB45309);
+        icon = Icons.edit_note_rounded;
         break;
       case AdmissionRequestStatus.approved:
         bg = const Color(0xFFD1FAE5);
@@ -1089,10 +1238,13 @@ class _StudentCategoriesScreenState
 
   Widget _buildEmptyState({
     required AdmissionRequestStatus? activeFilter,
+    required bool is30DayApprovals,
     required bool isDark,
   }) {
     String label = 'No admission requests found';
-    if (activeFilter != null) {
+    if (is30DayApprovals) {
+      label = 'No student approvals recorded in the last 30 days.';
+    } else if (activeFilter != null) {
       label = 'No ${activeFilter.displayName.toLowerCase()} requests currently.';
     }
 
@@ -1431,6 +1583,47 @@ class _ReviewRequestSheetState extends State<_ReviewRequestSheet> {
                     icon: Icons.person_outline,
                     isDark: isDark,
                     children: [
+                      if (req.studentPhotoUrl != null && req.studentPhotoUrl!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 24,
+                                backgroundColor: const Color(0xFF109F83).withValues(alpha: 0.15),
+                                backgroundImage: req.studentPhotoUrl!.startsWith('http')
+                                    ? NetworkImage(req.studentPhotoUrl!)
+                                    : null,
+                                child: req.studentPhotoUrl!.startsWith('http')
+                                    ? null
+                                    : const Icon(Icons.person, color: Color(0xFF109F83), size: 24),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Passport Photo Attached',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF109F83),
+                                      ),
+                                    ),
+                                    Text(
+                                      req.studentPhotoUrl!,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: isDark ? Colors.white70 : Colors.black87,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       _buildDetailRow('Full Name', req.applicantFullName, isDark),
                       _buildDetailRow('Gender', req.gender, isDark),
                       _buildDetailRow('Date of Birth', dobFormatted, isDark),
@@ -1549,7 +1742,7 @@ class _ReviewRequestSheetState extends State<_ReviewRequestSheet> {
                 ),
               ],
             ),
-            child: req.status == AdmissionRequestStatus.pending
+            child: req.status.isPendingReview
                 ? LayoutBuilder(
                     builder: (context, actionConstraints) {
                       final isNarrow = actionConstraints.maxWidth < 420;
@@ -1724,4 +1917,745 @@ class _ReviewRequestSheetState extends State<_ReviewRequestSheet> {
     );
   }
 }
+
+// =========================================================================
+// LAST 30 DAYS STUDENT APPROVALS TIMELINE & INSIGHTS SHEET
+// =========================================================================
+
+class _RecentApprovalsTimelineSheet extends ConsumerStatefulWidget {
+  final bool isDark;
+  final void Function(AdmissionRequestModel request) onOpenDetail;
+
+  const _RecentApprovalsTimelineSheet({
+    required this.isDark,
+    required this.onOpenDetail,
+  });
+
+  @override
+  ConsumerState<_RecentApprovalsTimelineSheet> createState() =>
+      _RecentApprovalsTimelineSheetState();
+}
+
+class _RecentApprovalsTimelineSheetState
+    extends ConsumerState<_RecentApprovalsTimelineSheet> {
+  final TextEditingController _searchCtrl = TextEditingController();
+  String _search = '';
+  String _statusTab = 'ALL'; // 'ALL', 'PENDING', 'APPROVED', 'REJECTED'
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  String _formatTimestamp(DateTime dt) {
+    return DateFormat('dd MMM yyyy, hh:mm a').format(dt);
+  }
+
+  String _relativeTime(DateTime dt) {
+    final diff = DateTime.now().difference(dt);
+    if (diff.inDays <= 0) {
+      if (diff.inHours <= 0) {
+        return 'just now';
+      }
+      return '${diff.inHours}h ago';
+    } else if (diff.inDays == 1) {
+      return 'yesterday';
+    } else if (diff.inDays < 30) {
+      return '${diff.inDays} days ago';
+    } else {
+      return '${(diff.inDays / 30).floor()} months ago';
+    }
+  }
+
+  Widget _buildStatusBadge(AdmissionRequestStatus status, bool isDark) {
+    Color bg;
+    Color fg;
+    IconData icon;
+
+    switch (status) {
+      case AdmissionRequestStatus.pending:
+      case AdmissionRequestStatus.pendingReview:
+        bg = const Color(0xFFFEF3C7);
+        fg = const Color(0xFFD97706);
+        icon = Icons.hourglass_top_rounded;
+        break;
+      case AdmissionRequestStatus.correctionRequested:
+        bg = const Color(0xFFFFFBEB);
+        fg = const Color(0xFFB45309);
+        icon = Icons.edit_note_rounded;
+        break;
+      case AdmissionRequestStatus.approved:
+        bg = const Color(0xFFD1FAE5);
+        fg = const Color(0xFF059669);
+        icon = Icons.check_circle_outline;
+        break;
+      case AdmissionRequestStatus.rejected:
+        bg = const Color(0xFFFEE2E2);
+        fg = const Color(0xFFDC2626);
+        icon = Icons.cancel_outlined;
+        break;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: fg),
+          const SizedBox(width: 4),
+          Text(
+            status.displayName,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: fg,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final all30Days = ref.watch(recent30DayRequestsProvider);
+    final isDark = widget.isDark;
+
+    final pendingCount = all30Days.where((r) => r.status.isPendingReview).length;
+    final approvedCount = all30Days.where((r) => r.status == AdmissionRequestStatus.approved).length;
+    final rejectedCount = all30Days.where((r) => r.status == AdmissionRequestStatus.rejected).length;
+
+    final tabFiltered = all30Days.where((r) {
+      if (_statusTab == 'PENDING') return r.status.isPendingReview;
+      if (_statusTab == 'APPROVED') return r.status == AdmissionRequestStatus.approved;
+      if (_statusTab == 'REJECTED') return r.status == AdmissionRequestStatus.rejected;
+      return true;
+    }).toList();
+
+    final filtered = tabFiltered.where((r) {
+      if (_search.isEmpty) return true;
+      final q = _search.toLowerCase();
+      return r.applicantFullName.toLowerCase().contains(q) ||
+          r.gradeApplied.toLowerCase().contains(q) ||
+          r.parentFullName.toLowerCase().contains(q) ||
+          r.id.toLowerCase().contains(q);
+    }).toList();
+
+    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final borderColor = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+    final textPrimary = isDark ? Colors.white : const Color(0xFF0F172A),
+          textSecondary = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.88,
+      minChildSize: 0.5,
+      maxChildSize: 0.96,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.25),
+                blurRadius: 20,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              // Drag handle
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.only(top: 10, bottom: 8),
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+
+              // Header Bar
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF109F83).withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.history_edu_rounded,
+                        color: Color(0xFF109F83),
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  'Student Updates (Last 30 Days)',
+                                  style: TextStyle(
+                                    fontSize: 16.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: textPrimary,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF109F83),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  '${all30Days.length} Total',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'All candidate pipeline activity: Pending, Approved, and Rejected',
+                            style: TextStyle(fontSize: 12, color: textSecondary),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+              ),
+              Divider(color: borderColor, height: 1),
+
+              // Scrollable Body
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(20),
+                  children: [
+                    // 4 KPI Cards (Responsive Layout)
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isNarrow = constraints.maxWidth < 650;
+                        final isTablet = constraints.maxWidth >= 650 && constraints.maxWidth < 900;
+
+                        final kpiTotal = _buildKpiCard(
+                          title: 'Total 30d Updates',
+                          value: '${all30Days.length} Requests',
+                          subtitle: 'Past 30 calendar days',
+                          icon: Icons.all_inbox_rounded,
+                          color: const Color(0xFF0D9488),
+                          isDark: isDark,
+                        );
+                        final kpiPending = _buildKpiCard(
+                          title: 'Pending Review',
+                          value: '$pendingCount Students',
+                          subtitle: 'Awaiting decision',
+                          icon: Icons.hourglass_top_rounded,
+                          color: const Color(0xFFF59E0B),
+                          isDark: isDark,
+                        );
+                        final kpiApproved = _buildKpiCard(
+                          title: 'Approved',
+                          value: '$approvedCount Enrolled',
+                          subtitle: 'Seats confirmed',
+                          icon: Icons.check_circle_outline,
+                          color: const Color(0xFF109F83),
+                          isDark: isDark,
+                        );
+                        final kpiRejected = _buildKpiCard(
+                          title: 'Rejected',
+                          value: '$rejectedCount Declined',
+                          subtitle: 'Reasons logged',
+                          icon: Icons.cancel_outlined,
+                          color: const Color(0xFFEF4444),
+                          isDark: isDark,
+                        );
+
+                        if (isNarrow) {
+                          return Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(child: kpiTotal),
+                                  const SizedBox(width: 8),
+                                  Expanded(child: kpiPending),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Expanded(child: kpiApproved),
+                                  const SizedBox(width: 8),
+                                  Expanded(child: kpiRejected),
+                                ],
+                              ),
+                            ],
+                          );
+                        } else if (isTablet) {
+                          return Row(
+                            children: [
+                              Expanded(child: kpiTotal),
+                              const SizedBox(width: 8),
+                              Expanded(child: kpiPending),
+                              const SizedBox(width: 8),
+                              Expanded(child: kpiApproved),
+                              const SizedBox(width: 8),
+                              Expanded(child: kpiRejected),
+                            ],
+                          );
+                        }
+
+                        return Row(
+                          children: [
+                            Expanded(child: kpiTotal),
+                            const SizedBox(width: 12),
+                            Expanded(child: kpiPending),
+                            const SizedBox(width: 12),
+                            Expanded(child: kpiApproved),
+                            const SizedBox(width: 12),
+                            Expanded(child: kpiRejected),
+                          ],
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Filter tabs inside sheet
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      child: Row(
+                        children: [
+                          _buildSheetTab(
+                            label: 'All (${all30Days.length})',
+                            isSelected: _statusTab == 'ALL',
+                            color: const Color(0xFF0D9488),
+                            isDark: isDark,
+                            onTap: () => setState(() => _statusTab = 'ALL'),
+                          ),
+                          const SizedBox(width: 6),
+                          _buildSheetTab(
+                            label: 'Pending ($pendingCount)',
+                            isSelected: _statusTab == 'PENDING',
+                            color: const Color(0xFFF59E0B),
+                            isDark: isDark,
+                            onTap: () => setState(() => _statusTab = 'PENDING'),
+                          ),
+                          const SizedBox(width: 6),
+                          _buildSheetTab(
+                            label: 'Approved ($approvedCount)',
+                            isSelected: _statusTab == 'APPROVED',
+                            color: const Color(0xFF109F83),
+                            isDark: isDark,
+                            onTap: () => setState(() => _statusTab = 'APPROVED'),
+                          ),
+                          const SizedBox(width: 6),
+                          _buildSheetTab(
+                            label: 'Rejected ($rejectedCount)',
+                            isSelected: _statusTab == 'REJECTED',
+                            color: const Color(0xFFEF4444),
+                            isDark: isDark,
+                            onTap: () => setState(() => _statusTab = 'REJECTED'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Search within 30-day updates
+                    TextField(
+                      controller: _searchCtrl,
+                      onChanged: (val) => setState(() => _search = val.trim()),
+                      decoration: InputDecoration(
+                        hintText: 'Search updates by candidate, parent, grade, or ticket ID...',
+                        hintStyle: TextStyle(fontSize: 12.5, color: textSecondary),
+                        prefixIcon: Icon(Icons.search, size: 18, color: textSecondary),
+                        suffixIcon: _search.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear, size: 16),
+                                onPressed: () {
+                                  _searchCtrl.clear();
+                                  setState(() => _search = '');
+                                },
+                              )
+                            : null,
+                        filled: true,
+                        fillColor: cardBg,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: borderColor),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: borderColor),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Color(0xFF109F83), width: 1.5),
+                        ),
+                      ),
+                      style: TextStyle(fontSize: 13, color: textPrimary),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Updates List
+                    if (filtered.isEmpty)
+                      Container(
+                        padding: const EdgeInsets.all(32),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: cardBg,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: borderColor),
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(Icons.inbox_outlined, size: 40, color: textSecondary),
+                            const SizedBox(height: 8),
+                            Text(
+                              'No updates found',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _search.isEmpty
+                                  ? 'No student updates in this category for the last 30 days.'
+                                  : 'No updates matched "$_search".',
+                              style: TextStyle(fontSize: 12, color: textSecondary),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: filtered.length,
+                        separatorBuilder: (context, index) => const SizedBox(height: 10),
+                        itemBuilder: (ctx, i) {
+                          final item = filtered[i];
+                          final activityDate = item.reviewedAt ?? item.appliedAt;
+
+                          Color bannerBg;
+                          Color bannerBorder;
+                          Color bannerIconColor;
+                          IconData bannerIcon;
+                          String bannerText;
+
+                          if (item.status == AdmissionRequestStatus.approved) {
+                            bannerBg = const Color(0xFF109F83).withValues(alpha: isDark ? 0.14 : 0.07);
+                            bannerBorder = const Color(0xFF109F83).withValues(alpha: 0.25);
+                            bannerIconColor = const Color(0xFF059669);
+                            bannerIcon = Icons.check_circle_outline;
+                            bannerText = 'Approved ${_relativeTime(activityDate)} • ${_formatTimestamp(activityDate)}${item.notes != null && item.notes!.isNotEmpty ? " • ${item.notes}" : ""}';
+                          } else if (item.status == AdmissionRequestStatus.rejected) {
+                            bannerBg = const Color(0xFFEF4444).withValues(alpha: isDark ? 0.14 : 0.07);
+                            bannerBorder = const Color(0xFFEF4444).withValues(alpha: 0.25);
+                            bannerIconColor = const Color(0xFFDC2626);
+                            bannerIcon = Icons.cancel_outlined;
+                            bannerText = 'Declined ${_relativeTime(activityDate)} • Reason: ${item.rejectionReason ?? "Declined by Admin"}';
+                          } else if (item.status == AdmissionRequestStatus.correctionRequested) {
+                            bannerBg = const Color(0xFFF59E0B).withValues(alpha: isDark ? 0.14 : 0.07);
+                            bannerBorder = const Color(0xFFF59E0B).withValues(alpha: 0.25);
+                            bannerIconColor = const Color(0xFFD97706);
+                            bannerIcon = Icons.edit_note_rounded;
+                            bannerText = 'Correction Requested ${_relativeTime(activityDate)} • ${item.correctionNotes ?? "Awaiting parent edit"}';
+                          } else {
+                            bannerBg = const Color(0xFFF59E0B).withValues(alpha: isDark ? 0.14 : 0.07);
+                            bannerBorder = const Color(0xFFF59E0B).withValues(alpha: 0.25);
+                            bannerIconColor = const Color(0xFFD97706);
+                            bannerIcon = Icons.hourglass_top_rounded;
+                            bannerText = 'Submitted ${_relativeTime(item.appliedAt)} • In Review${item.notes != null && item.notes!.isNotEmpty ? " • ${item.notes}" : ""}';
+                          }
+
+                          return Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: cardBg,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: borderColor),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Top row: Avatar + Name + Class + Status Badge
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 17,
+                                      backgroundColor: const Color(0xFF109F83).withValues(alpha: 0.15),
+                                      child: Text(
+                                        item.applicantFirstName.isNotEmpty
+                                            ? item.applicantFirstName[0]
+                                            : 'S',
+                                        style: const TextStyle(
+                                          color: Color(0xFF109F83),
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Wrap(
+                                            crossAxisAlignment: WrapCrossAlignment.center,
+                                            spacing: 6,
+                                            runSpacing: 4,
+                                            children: [
+                                              Text(
+                                                item.applicantFullName,
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: textPrimary,
+                                                ),
+                                              ),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFF109F83).withValues(alpha: 0.12),
+                                                  borderRadius: BorderRadius.circular(4),
+                                                ),
+                                                child: Text(
+                                                  item.gradeApplied,
+                                                  style: const TextStyle(
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: Color(0xFF109F83),
+                                                  ),
+                                                ),
+                                              ),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                decoration: BoxDecoration(
+                                                  color: (isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9)),
+                                                  borderRadius: BorderRadius.circular(4),
+                                                ),
+                                                child: Text(
+                                                  item.id,
+                                                  style: TextStyle(
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: textSecondary,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            'Parent: ${item.parentFullName} • ${item.parentPhone}',
+                                            style: TextStyle(fontSize: 12, color: textSecondary),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _buildStatusBadge(item.status, isDark),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+
+                                // Activity Banner
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: bannerBg,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: bannerBorder),
+                                  ),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Icon(bannerIcon, size: 15, color: bannerIconColor),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          bannerText,
+                                          style: TextStyle(
+                                            fontSize: 11.5,
+                                            fontWeight: FontWeight.w600,
+                                            color: bannerIconColor,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+
+                                // Action footer
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton.icon(
+                                    onPressed: () => widget.onOpenDetail(item),
+                                    icon: const Icon(Icons.remove_red_eye_outlined, size: 14),
+                                    label: const Text('View Application Details'),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: const Color(0xFF109F83),
+                                      visualDensity: VisualDensity.compact,
+                                      textStyle: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSheetTab({
+    required String label,
+    required bool isSelected,
+    required Color color,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? color.withValues(alpha: 0.18)
+              : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? color : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+            width: isSelected ? 1.3 : 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            color: isSelected ? color : (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569)),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildKpiCard({
+    required String title,
+    required String value,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required bool isDark,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(7),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: color, size: 18),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w800,
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 9.5,
+                    color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 

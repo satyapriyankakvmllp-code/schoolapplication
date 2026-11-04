@@ -37,8 +37,7 @@ class RoleDirectory {
       title: 'Parent & Guardian Portal',
       shortLabel: 'Parent Portal',
       designation: 'Family & Guardian Hub',
-      description:
-          'Manage child profiles, submit digital intakes, review reports & toggle emergency contacts.',
+      description: 'Manage child profiles, submit digital intakes, review reports & toggle emergency contacts.',
       icon: Icons.family_restroom,
       primaryColor: Color(0xFF10B981), // Emerald
       lightBackgroundColor: Color(0xFFECFDF5),
@@ -56,8 +55,7 @@ class RoleDirectory {
       title: 'Admissions & Front-Desk Officer',
       shortLabel: 'Front-Desk Desk',
       designation: 'Intake & Verification Officer',
-      description:
-          'Log walk-in inquiries, screen applicant documents, schedule interviews & print ID badges.',
+      description: 'Log walk-in inquiries, screen applicant documents, schedule interviews & print ID badges.',
       icon: Icons.badge_outlined,
       primaryColor: Color(0xFFF59E0B), // Amber
       lightBackgroundColor: Color(0xFFFFFBEB),
@@ -75,8 +73,7 @@ class RoleDirectory {
       title: 'School Administrator',
       shortLabel: 'Admin Console',
       designation: 'Superintendent & Executive',
-      description:
-          'Executive board intake approvals, class grade & section assignments, roll sequencing & audits.',
+      description: 'Executive board intake approvals, class grade & section assignments, roll sequencing & audits.',
       icon: Icons.admin_panel_settings_outlined,
       primaryColor: Color(0xFF6366F1), // Indigo
       lightBackgroundColor: Color(0xFFEEF2FF),
@@ -94,8 +91,7 @@ class RoleDirectory {
       title: 'Teacher & Class In-Charge',
       shortLabel: 'Teacher Roster',
       designation: 'Class 10-A In-Charge',
-      description:
-          'Active classroom rosters, emergency contact dials, student blood group safety cards & behavioral tags.',
+      description: 'Active classroom rosters, emergency contact dials, student blood group safety cards & behavioral tags.',
       icon: Icons.assignment_ind_outlined,
       primaryColor: Color(0xFF3B82F6), // Blue
       lightBackgroundColor: Color(0xFFEFF6FF),
@@ -113,8 +109,7 @@ class RoleDirectory {
       title: 'Student Self-Service Hub',
       shortLabel: 'Student Hub',
       designation: 'Grade 10-A Enrolled Scholar',
-      description:
-          'Digital ID badge, enrollment confirmation, enrolled subject timetable & personal info update requests.',
+      description: 'Digital ID badge, enrollment confirmation, enrolled subject timetable & personal info update requests.',
       icon: Icons.school_outlined,
       primaryColor: Color(0xFF06B6D4), // Cyan
       lightBackgroundColor: Color(0xFFECFEFF),
@@ -132,8 +127,7 @@ class RoleDirectory {
       title: 'Finance & Accounts Officer',
       shortLabel: 'Finance Ledger',
       designation: 'Bursar & Accounts Comptroller',
-      description:
-          'Issue admission fee receipts, manage installment payment schedules & grant admission clearance tokens.',
+      description: 'Issue admission fee receipts, manage installment payment schedules & grant admission clearance tokens.',
       icon: Icons.account_balance_wallet_outlined,
       primaryColor: Color(0xFFEC4899), // Pink
       lightBackgroundColor: Color(0xFFFDF2F8),
@@ -150,8 +144,8 @@ class RoleDirectory {
 
   static final Map<UserRole, UserModel> mockUsers = {
     UserRole.parent: UserModel(
-      id: 'usr-2001',
-      email: 'rajesh.sharma@example.com',
+      id: 'USR-PARENT-01',
+      email: 'parent.rajesh@gmail.com',
       phoneNumber: '+91 98765 43210',
       userRole: UserRole.parent,
       firstName: 'Rajesh',
@@ -198,8 +192,8 @@ class RoleDirectory {
       updatedAt: DateTime(2026, 2, 20),
     ),
     UserRole.student: UserModel(
-      id: 'usr-1001',
-      email: 'aarav.sharma@example.com',
+      id: 'USR-STU-01',
+      email: 'aarav.sharma@student.edupulse.edu',
       phoneNumber: '+91 98765 43210',
       userRole: UserRole.student,
       firstName: 'Aarav',
@@ -235,4 +229,4 @@ final currentUserProfileProvider = Provider<UserModel?>((ref) {
 });
 
 /// Contextual provider for parent portal active child ID
-final parentActiveChildIdProvider = StateProvider<String>((ref) => 'std-1001');
+final parentActiveChildIdProvider = StateProvider<String>((ref) => 'STU-2026-001');

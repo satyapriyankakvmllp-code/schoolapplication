@@ -20,6 +20,8 @@ class StudentDetailsScreen extends ConsumerStatefulWidget {
   final ValueChanged<String>? onSelectStudent;
   final VoidCallback? onToggleTheme;
   final bool isDark;
+  final VoidCallback? onExitToGateway;
+  final bool isEmbedded;
 
   const StudentDetailsScreen({
     super.key,
@@ -30,6 +32,8 @@ class StudentDetailsScreen extends ConsumerStatefulWidget {
     this.onSelectStudent,
     this.onToggleTheme,
     this.isDark = false,
+    this.onExitToGateway,
+    this.isEmbedded = false,
   });
 
   @override
@@ -85,7 +89,9 @@ class _StudentDetailsScreenState extends ConsumerState<StudentDetailsScreen> {
       activePage: EdupluseNavPage.studentDetails,
       onNavigate: widget.onNavigate,
       onToggleTheme: widget.onToggleTheme,
+      onExitToGateway: widget.onExitToGateway,
       isDark: widget.isDark,
+      isEmbedded: widget.isEmbedded,
       body: admission == null
           ? _buildEmptyStudentDetailsState(allStudents, isDark)
           : SingleChildScrollView(
@@ -1699,7 +1705,7 @@ class _AdmissionsDirectorySheetState extends State<_AdmissionsDirectorySheet> {
                 : ListView.separated(
                     padding: const EdgeInsets.fromLTRB(14, 4, 14, 16),
                     itemCount: filteredStudents.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    separatorBuilder: (context, index) => const SizedBox(height: 8),
                     itemBuilder: (context, index) {
                       final item = filteredStudents[index];
                       final isCurrent = item.student.id == widget.currentId;
@@ -1712,7 +1718,7 @@ class _AdmissionsDirectorySheetState extends State<_AdmissionsDirectorySheet> {
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: isCurrent
-                                ? (isDark ? const Color(0xFF064E3B).withOpacity(0.35) : const Color(0xFFF0FDF4))
+                                ? (isDark ? const Color(0xFF064E3B).withValues(alpha: 0.35) : const Color(0xFFF0FDF4))
                                 : (isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC)),
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
@@ -1744,7 +1750,7 @@ class _AdmissionsDirectorySheetState extends State<_AdmissionsDirectorySheet> {
                                           width: 44,
                                           height: 44,
                                           fit: BoxFit.cover,
-                                          errorBuilder: (_, __, ___) => const Icon(
+                                          errorBuilder: (context, error, stackTrace) => const Icon(
                                             Icons.person,
                                             size: 24,
                                             color: Color(0xFF109F83),
