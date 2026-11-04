@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
@@ -6,6 +7,7 @@ class FileUploadBox extends StatefulWidget {
   final String? initialFileName;
   final String helperText;
   final ValueChanged<String>? onFileSelected;
+  final void Function(String fileName, Uint8List? bytes)? onFileWithBytesSelected;
   final VoidCallback? onFileRemoved;
   final bool isCompact;
   final bool isRequired;
@@ -17,6 +19,7 @@ class FileUploadBox extends StatefulWidget {
     this.initialFileName,
     this.helperText = 'Click to browse or drag & drop\nSupport PDF, JPEG, PNG (max 5MB)',
     this.onFileSelected,
+    this.onFileWithBytesSelected,
     this.onFileRemoved,
     this.isCompact = false,
     this.isRequired = false,
@@ -70,6 +73,7 @@ class _FileUploadBoxState extends State<FileUploadBox> {
           _selectedFileName = picked.name;
           _fileSize = sizeStr;
         });
+        widget.onFileWithBytesSelected?.call(picked.name, picked.bytes);
         widget.onFileSelected?.call(picked.name);
       }
     } catch (_) {
@@ -85,6 +89,7 @@ class _FileUploadBoxState extends State<FileUploadBox> {
       _selectedFileName = null;
       _fileSize = null;
     });
+    widget.onFileWithBytesSelected?.call('', null);
     widget.onFileRemoved?.call();
     widget.onFileSelected?.call('');
   }

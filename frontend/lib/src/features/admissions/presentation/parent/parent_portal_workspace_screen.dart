@@ -1,11 +1,63 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../../../commonwidgets/logout_button.dart';
+import '../../../../commonwidgets/common_app_header.dart';
+import '../../../../utils/dynamic_data_client.dart';
 import '../../application/admissions_controller.dart';
 import '../../domain/admission_request_model.dart';
 import '../../domain/student_admission_model.dart';
 import '../widgets/admission_application_wizard.dart';
+
+final parentApplicationDraftProvider =
+    StateNotifierProvider<ParentApplicationDraftNotifier, AdmissionRequestModel?>((ref) {
+  return ParentApplicationDraftNotifier();
+});
+
+class ParentApplicationDraftNotifier extends StateNotifier<AdmissionRequestModel?> {
+  static const String _draftStorageKey = 'edupulse_saved_parent_application_draft';
+  final DynamicDataClient _client;
+
+  ParentApplicationDraftNotifier({DynamicDataClient? client})
+      : _client = client ?? DynamicDataClient.instance,
+        super(null) {
+    _loadDraft();
+  }
+
+  Future<void> _loadDraft() async {
+    try {
+      final raw = await _client.getAll(
+        assetPath: '',
+        storageKey: _draftStorageKey,
+      );
+      if (raw.isNotEmpty) {
+        state = AdmissionRequestModel.fromJson(raw.first);
+      }
+    } catch (_) {}
+  }
+
+  Future<void> saveDraft(AdmissionRequestModel draft) async {
+    state = draft;
+    try {
+      await _client.syncAll(
+        assetPath: '',
+        storageKey: _draftStorageKey,
+        items: [draft.toJson()],
+      );
+    } catch (_) {}
+  }
+
+  Future<void> clearDraft() async {
+    state = null;
+    try {
+      await _client.syncAll(
+        assetPath: '',
+        storageKey: _draftStorageKey,
+        items: [],
+      );
+    } catch (_) {}
+  }
+}
 
 enum ParentPortalTab {
   childrenOverview,
@@ -43,26 +95,58 @@ class _ParentPortalWorkspaceScreenState
       'name': 'Aarav Sharma',
       'fullName': 'Aarav Rajesh Sharma',
       'grade': 'Class 10 - Section A',
+      'className': 'Class 10',
+      'section': 'Section A',
       'rollNo': '#12',
       'admNo': 'ADM-2026-0042',
       'initials': 'AS',
+      'gender': 'Male',
+      'dob': '14 May 2010 (16 years)',
+      'bloodGroup': 'B+',
+      'houseGroup': 'Shivaji House (Green)',
+      'secondLanguage': 'Sanskrit',
+      'medium': 'English Medium',
+      'admissionDate': '12 June 2020',
       'teacher': 'Mrs. Anita Desai',
       'academicYear': '2026-2027',
       'attendance': '95.4% (Present)',
       'phone': '+91 98765 43210 (Father)',
+      'email': 'aarav.sharma@student.edu',
+      'fatherName': 'Mr. Rajesh Sharma',
+      'fatherOccupation': 'Software Architect',
+      'motherName': 'Mrs. Sunita Sharma',
+      'motherOccupation': 'Senior Lecturer',
+      'address': 'Flat 402, Green Valley Heights, Sector 14, Navi Mumbai',
+      'emergencyPhone': '+91 98765 43210',
       'color': const Color(0xFF10B981),
     },
     {
       'name': 'Kabir Sharma',
       'fullName': 'Kabir Rajesh Sharma',
       'grade': 'Class 6 - Section B',
+      'className': 'Class 6',
+      'section': 'Section B',
       'rollNo': '#08',
       'admNo': 'ADM-2026-0095',
       'initials': 'KS',
+      'gender': 'Male',
+      'dob': '22 August 2014 (12 years)',
+      'bloodGroup': 'O+',
+      'houseGroup': 'Tagore House (Blue)',
+      'secondLanguage': 'Hindi',
+      'medium': 'English Medium',
+      'admissionDate': '10 April 2022',
       'teacher': 'Mr. Ramesh Bhat',
       'academicYear': '2026-2027',
       'attendance': '98.1% (Present)',
       'phone': '+91 98765 43210 (Father)',
+      'email': 'kabir.sharma@student.edu',
+      'fatherName': 'Mr. Rajesh Sharma',
+      'fatherOccupation': 'Software Architect',
+      'motherName': 'Mrs. Sunita Sharma',
+      'motherOccupation': 'Senior Lecturer',
+      'address': 'Flat 402, Green Valley Heights, Sector 14, Navi Mumbai',
+      'emergencyPhone': '+91 98765 43210',
       'color': const Color(0xFF0D9488),
     },
   ];
@@ -99,13 +183,32 @@ class _ParentPortalWorkspaceScreenState
           'name': adm.user.fullName,
           'fullName': adm.user.fullName,
           'grade': '${adm.student.className} - Section ${adm.student.section.isNotEmpty ? adm.student.section : "A"}',
+          'className': adm.student.className,
+          'section': adm.student.section.isNotEmpty ? 'Section ${adm.student.section}' : 'Section A',
           'rollNo': adm.student.rollNumber != null ? '#${adm.student.rollNumber}' : '#Pending',
           'admNo': adm.student.admissionNumber,
           'initials': initials.isNotEmpty ? initials : 'ST',
+          'gender': adm.user.gender?.displayName ?? 'Male',
+          'dob': adm.user.dateOfBirth != null
+              ? DateFormat('dd MMM yyyy').format(adm.user.dateOfBirth!)
+              : 'Not Specified',
+          'bloodGroup': adm.student.bloodGroup ?? 'O+',
+          'houseGroup': adm.student.houseGroup ?? 'General',
+          'secondLanguage': adm.student.secondLanguage ?? 'Hindi',
+          'medium': adm.student.mediumOfInstruction ?? 'English Medium',
+          'admissionDate': DateFormat('dd MMM yyyy').format(adm.student.admissionDate),
           'teacher': 'Assigned by Administration',
           'academicYear': adm.student.academicYear.isNotEmpty ? adm.student.academicYear : '2026-2027',
           'attendance': '100% (Newly Enrolled)',
           'phone': adm.student.emergencyContactPhone.isNotEmpty ? adm.student.emergencyContactPhone : '+91 98765 43210 (Father)',
+          'email': adm.user.email,
+          'fatherName': adm.father?.fullName ?? 'Mr. Rajesh Sharma',
+          'fatherOccupation': adm.father?.occupation ?? 'Parent',
+          'motherName': adm.mother?.fullName ?? 'Mrs. Sunita Sharma',
+          'motherOccupation': adm.mother?.occupation ?? 'Parent',
+          'address': adm.student.currentAddress.isNotEmpty ? adm.student.currentAddress : 'Navi Mumbai',
+          'emergencyPhone': adm.student.emergencyContactPhone.isNotEmpty ? adm.student.emergencyContactPhone : '+91 98765 43210',
+          'photoUrl': adm.user.profilePhotoUrl,
           'color': const Color(0xFF3B82F6),
         });
       }
@@ -144,7 +247,28 @@ class _ParentPortalWorkspaceScreenState
         body: SafeArea(
           child: Column(
             children: [
-              _buildTopHeader(isDark: isDark, isMobile: isMobile),
+              CommonAppHeader(
+                isDark: isDark,
+                leading: _activeTab != ParentPortalTab.childrenOverview
+                    ? Tooltip(
+                        message: 'Back to Overview',
+                        child: IconButton(
+                          icon: Icon(
+                            Icons.arrow_back_rounded,
+                            color: isDark ? Colors.white : const Color(0xFF0F172A),
+                            size: 20,
+                          ),
+                          onPressed: () {
+                            setState(() => _activeTab = ParentPortalTab.childrenOverview);
+                          },
+                        ),
+                      )
+                    : null,
+                onToggleTheme: widget.onToggleTheme,
+                onLogout: widget.onExitToGateway,
+                roleOverride: 'Parent',
+                roleColorOverride: const Color(0xFF10B981),
+              ),
               if (!isMobile)
                 _buildNavigationTabBar(
                   isDark: isDark,
@@ -171,276 +295,6 @@ class _ParentPortalWorkspaceScreenState
               )
             : null,
       ),
-    );
-  }
-
-  // --------------------------------------------------------------------------
-  // Top Header: Compact & Clean on Mobile, Full on Desktop
-  // --------------------------------------------------------------------------
-  Widget _buildTopHeader({required bool isDark, required bool isMobile}) {
-    final canGoBackToOverview = _activeTab != ParentPortalTab.childrenOverview;
-    final showBackButton = canGoBackToOverview || widget.onExitToGateway != null;
-
-    return Container(
-      height: isMobile ? 62 : 70,
-      padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 24),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        border: Border(
-          bottom: BorderSide(
-            color: isDark ? const Color(0xFF334155) : Colors.grey.shade200,
-            width: 1,
-          ),
-        ),
-      ),
-      child: Row(
-        children: [
-          // Back Button (Returns to Overview if in sub-tab, or to Gateway if on Overview)
-          if (showBackButton) ...[
-            Tooltip(
-              message: canGoBackToOverview ? 'Back to Overview' : 'Back to Gateway',
-              child: IconButton(
-                padding: EdgeInsets.zero,
-                constraints: BoxConstraints(
-                  minWidth: isMobile ? 32 : 36,
-                  minHeight: isMobile ? 32 : 36,
-                ),
-                icon: Icon(
-                  Icons.arrow_back_rounded,
-                  color: isDark ? Colors.white : const Color(0xFF0F172A),
-                  size: isMobile ? 20 : 22,
-                ),
-                onPressed: () {
-                  if (canGoBackToOverview) {
-                    setState(() => _activeTab = ParentPortalTab.childrenOverview);
-                  } else {
-                    widget.onExitToGateway?.call();
-                  }
-                },
-              ),
-            ),
-            SizedBox(width: isMobile ? 2 : 6),
-          ],
-
-          // Brand Lockup
-          Container(
-            width: isMobile ? 30 : 36,
-            height: isMobile ? 30 : 36,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF10B981), Color(0xFF06B6D4)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.family_restroom_rounded,
-              color: Colors.white,
-              size: isMobile ? 18 : 20,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'EduPulse',
-                  style: TextStyle(
-                    fontSize: isMobile ? 15 : 16,
-                    fontWeight: FontWeight.w900,
-                    color: isDark ? Colors.white : const Color(0xFF0F172A),
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  'PARENT & GUARDIAN PORTAL',
-                  style: TextStyle(
-                    fontSize: isMobile ? 8 : 8.5,
-                    fontWeight: FontWeight.w800,
-                    color: const Color(0xFF10B981),
-                    letterSpacing: 0.5,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-
-          // Parent Profile Indicator
-          if (isMobile)
-            IconButton(
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
-              icon: const CircleAvatar(
-                radius: 13,
-                backgroundColor: Color(0xFF10B981),
-                child: Text(
-                  'R',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              onPressed: () => _showParentProfileBottomSheet(context, isDark),
-              tooltip: 'Parent Profile',
-            )
-          else
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: isDark ? const Color(0xFF334155) : Colors.grey.shade300,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const CircleAvatar(
-                    radius: 11,
-                    backgroundColor: Color(0xFF10B981),
-                    child: Text(
-                      'R',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Rajesh Sharma (Father)',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: isDark ? Colors.white : const Color(0xFF0F172A),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-          const SizedBox(width: 4),
-          LogoutButton(onLogout: widget.onExitToGateway),
-          IconButton(
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
-            icon: Icon(
-              isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
-              size: 20,
-              color: isDark ? const Color(0xFFFBBF24) : Colors.grey.shade700,
-            ),
-            onPressed: widget.onToggleTheme,
-            tooltip: 'Toggle Theme',
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showParentProfileBottomSheet(BuildContext context, bool isDark) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.white24 : Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  const CircleAvatar(
-                    radius: 24,
-                    backgroundColor: Color(0xFF10B981),
-                    child: Text(
-                      'RS',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Rajesh Sharma',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white : const Color(0xFF0F172A),
-                          ),
-                        ),
-                        Text(
-                          'Father • Senior Technical Lead',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const Divider(height: 24),
-              _buildProfileDetailRow(Icons.email_outlined, 'rajesh.sharma@gmail.com', isDark),
-              const SizedBox(height: 10),
-              _buildProfileDetailRow(Icons.phone_outlined, '+91 98765 43210', isDark),
-              const SizedBox(height: 10),
-              _buildProfileDetailRow(
-                Icons.location_on_outlined,
-                '42 Lotus Enclave, MG Road, Bengaluru',
-                isDark,
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildProfileDetailRow(IconData icon, String text, bool isDark) {
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: const Color(0xFF10B981)),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            text,
-            style: TextStyle(
-              fontSize: 12,
-              color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155),
-            ),
-          ),
-        ),
-      ],
     );
   }
 
@@ -672,6 +526,15 @@ class _ParentPortalWorkspaceScreenState
               ),
               const SizedBox(height: 20),
 
+              if (ref.watch(parentApplicationDraftProvider) != null) ...[
+                _buildDraftNotificationCard(
+                  ref.watch(parentApplicationDraftProvider)!,
+                  isDark,
+                  isMobile,
+                ),
+                const SizedBox(height: 20),
+              ],
+
               // Action Launchers (Stacked on mobile, side-by-side on desktop)
               _buildActionLaunchers(isDark: isDark, isMobile: isMobile),
             ],
@@ -862,7 +725,10 @@ class _ParentPortalWorkspaceScreenState
     bool isMobile,
   ) {
     return InkWell(
-      onTap: () => setState(() => _selectedEnrolledChild = child['name'] as String),
+      onTap: () {
+        setState(() => _selectedEnrolledChild = child['name'] as String);
+        _showEnrolledStudentDetailsModal(child);
+      },
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: EdgeInsets.symmetric(
@@ -922,8 +788,20 @@ class _ParentPortalWorkspaceScreenState
                 ],
               ),
             ),
-            if (isSelected)
-              const Icon(Icons.check_circle, color: Color(0xFF10B981), size: 16),
+            IconButton(
+              icon: Icon(
+                isSelected ? Icons.check_circle : Icons.info_outline,
+                color: isSelected ? const Color(0xFF10B981) : (isDark ? Colors.white38 : Colors.grey.shade400),
+                size: 16,
+              ),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              tooltip: 'Inspect Student Record',
+              onPressed: () {
+                setState(() => _selectedEnrolledChild = child['name'] as String);
+                _showEnrolledStudentDetailsModal(child);
+              },
+            ),
           ],
         ),
       ),
@@ -935,108 +813,200 @@ class _ParentPortalWorkspaceScreenState
     required bool isDark,
     required bool isMobile,
   }) {
-    return Container(
-      padding: EdgeInsets.all(isMobile ? 16 : 22),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF131D31) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDark ? const Color(0xFF24334C) : Colors.grey.shade200,
+    return InkWell(
+      onTap: () => _showEnrolledStudentDetailsModal(childData),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: EdgeInsets.all(isMobile ? 16 : 22),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF131D31) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark ? const Color(0xFF24334C) : Colors.grey.shade200,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                radius: isMobile ? 22 : 26,
-                backgroundColor: childData['color'] as Color,
-                child: Text(
-                  childData['initials'] as String,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: isMobile ? 14 : 16,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: isMobile ? 22 : 26,
+                  backgroundColor: childData['color'] as Color,
+                  child: Text(
+                    childData['initials'] as String,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: isMobile ? 14 : 16,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      childData['fullName'] as String,
-                      style: TextStyle(
-                        fontSize: isMobile ? 16 : 18,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              childData['fullName'] as String,
+                              style: TextStyle(
+                                fontSize: isMobile ? 16 : 18,
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.check_circle, size: 12, color: Color(0xFF10B981)),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Enrolled',
+                                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF10B981)),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${childData['grade']} • Roll No: ${childData['rollNo']} • ${childData['admNo']}',
-                      style: TextStyle(
-                        fontSize: isMobile ? 11 : 12,
-                        color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${childData['grade']} • Roll No: ${childData['rollNo']} • ${childData['admNo']}',
+                        style: TextStyle(
+                          fontSize: isMobile ? 11 : 12,
+                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const Divider(height: 28),
-
-          // Responsive Stats
-          if (isMobile)
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              childAspectRatio: 2.3,
-              children: [
-                _buildStatTile(
-                  'Class Teacher',
-                  childData['teacher'] as String,
-                  Icons.school_outlined,
-                  isDark,
-                ),
-                _buildStatTile(
-                  'Academic Year',
-                  childData['academicYear'] as String,
-                  Icons.calendar_today_outlined,
-                  isDark,
-                ),
-                _buildStatTile(
-                  'Attendance Rate',
-                  childData['attendance'] as String,
-                  Icons.check_circle_outline,
-                  isDark,
-                ),
-                _buildStatTile(
-                  'Alert Contact',
-                  childData['phone'] as String,
-                  Icons.phone_outlined,
-                  isDark,
-                ),
-              ],
-            )
-          else
-            Wrap(
-              spacing: 24,
-              runSpacing: 14,
-              children: [
-                _buildStatPill('Class Teacher', childData['teacher'] as String, Icons.school_outlined, isDark),
-                _buildStatPill('Academic Year', childData['academicYear'] as String, Icons.calendar_today_outlined, isDark),
-                _buildStatPill('Attendance Rate', childData['attendance'] as String, Icons.check_circle_outline, isDark),
-                _buildStatPill('Primary Alert Phone', childData['phone'] as String, Icons.phone_outlined, isDark),
               ],
             ),
-        ],
+            const Divider(height: 28),
+
+            // Responsive Stats
+            if (isMobile)
+              GridView.count(
+                crossAxisCount: 2,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+                childAspectRatio: 2.3,
+                children: [
+                  _buildStatTile(
+                    'Class Teacher',
+                    childData['teacher'] as String,
+                    Icons.school_outlined,
+                    isDark,
+                  ),
+                  _buildStatTile(
+                    'Academic Year',
+                    childData['academicYear'] as String,
+                    Icons.calendar_today_outlined,
+                    isDark,
+                  ),
+                  _buildStatTile(
+                    'Attendance Rate',
+                    childData['attendance'] as String,
+                    Icons.check_circle_outline,
+                    isDark,
+                  ),
+                  _buildStatTile(
+                    'Alert Contact',
+                    childData['phone'] as String,
+                    Icons.phone_outlined,
+                    isDark,
+                  ),
+                ],
+              )
+            else
+              Wrap(
+                spacing: 24,
+                runSpacing: 14,
+                children: [
+                  _buildStatPill('Class Teacher', childData['teacher'] as String, Icons.school_outlined, isDark),
+                  _buildStatPill('Academic Year', childData['academicYear'] as String, Icons.calendar_today_outlined, isDark),
+                  _buildStatPill('Attendance Rate', childData['attendance'] as String, Icons.check_circle_outline, isDark),
+                  _buildStatPill('Primary Alert Phone', childData['phone'] as String, Icons.phone_outlined, isDark),
+                ],
+              ),
+
+            const SizedBox(height: 16),
+            const Divider(height: 1),
+            const SizedBox(height: 12),
+
+            // Action Footer
+            if (isMobile)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => _showEnrolledStudentDetailsModal(childData),
+                  icon: const Icon(Icons.visibility_outlined, size: 14),
+                  label: const Text('View Full 360° Profile', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF109F83),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                ),
+              )
+            else
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.touch_app_outlined, size: 14, color: Color(0xFF10B981)),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Click card for full 360° record',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? const Color(0xFF10B981) : const Color(0xFF047857),
+                        ),
+                      ),
+                    ],
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: () => _showEnrolledStudentDetailsModal(childData),
+                    icon: const Icon(Icons.visibility_outlined, size: 13),
+                    label: const Text('View Full Details', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF109F83),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                  ),
+                ],
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -1123,13 +1093,96 @@ class _ParentPortalWorkspaceScreenState
     );
   }
 
+  Widget _buildDraftNotificationCard(
+    AdmissionRequestModel draft,
+    bool isDark,
+    bool isMobile,
+  ) {
+    return Container(
+      padding: EdgeInsets.all(isMobile ? 14 : 18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF59E0B).withValues(alpha: isDark ? 0.16 : 0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.bookmark_border_rounded, color: Color(0xFFD97706), size: 24),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Text(
+                      'Unfinished Application Draft',
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFD97706),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD97706),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        draft.gradeApplied,
+                        style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  draft.applicantFirstName.isNotEmpty
+                      ? 'Draft for ${draft.applicantFullName} was saved. Resume where you left off.'
+                      : 'You have a saved admission application in progress. Tap to continue.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD97706),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            icon: const Icon(Icons.play_arrow_rounded, size: 16),
+            label: const Text('Resume', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+            onPressed: () => setState(() => _activeTab = ParentPortalTab.applyNewAdmission),
+          ),
+        ],
+      ),
+    );
+  }
+
   // --------------------------------------------------------------------------
   // TAB 2: New Child Admission Application (3-Step Wizard)
   // --------------------------------------------------------------------------
   Widget _buildApplyNewAdmissionTab(bool isDark, bool isMobile) {
-    // Pre-populate with logged in parent profile
-    final prefilledParentData = AdmissionRequestModel(
-      id: 'REQ-${DateTime.now().millisecondsSinceEpoch % 100000}',
+    final savedDraft = ref.watch(parentApplicationDraftProvider);
+
+    // Pre-populate with saved draft or logged in parent profile
+    final prefilledParentData = savedDraft ?? AdmissionRequestModel(
+      id: 'DRAFT-${DateTime.now().millisecondsSinceEpoch % 100000}',
       applicantFirstName: '',
       applicantLastName: '',
       gender: 'MALE',
@@ -1143,41 +1196,205 @@ class _ParentPortalWorkspaceScreenState
       currentAddress: '42 Lotus Enclave, MG Road, Bengaluru, Karnataka - 560001',
       emergencyContactPhone: '+91 98765 43210',
       source: AdmissionRequestSource.parentPortal,
-      status: AdmissionRequestStatus.pending,
+      status: AdmissionRequestStatus.pendingReview,
       appliedAt: DateTime.now(),
     );
 
-    return AdmissionApplicationWizard(
-      source: AdmissionRequestSource.parentPortal,
-      initialData: prefilledParentData,
-      isDark: isDark,
-      onCancel: () => setState(() => _activeTab = ParentPortalTab.childrenOverview),
-      onSubmitted: (req) async {
-        await ref.read(admissionRequestsListProvider.notifier).createRequest(req);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  const Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Application ${req.id} for ${req.applicantFullName} successfully submitted to School Administration!',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+    return Column(
+      children: [
+        if (savedDraft != null) ...[
+          Container(
+            margin: EdgeInsets.symmetric(
+              horizontal: isMobile ? 12 : 24,
+              vertical: 8,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.4)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.bookmark, color: Color(0xFFD97706), size: 18),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Resuming saved draft${savedDraft.applicantFirstName.isNotEmpty ? ' for ${savedDraft.applicantFullName}' : ''} (${savedDraft.gradeApplied}).',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E),
                     ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    await ref.read(parentApplicationDraftProvider.notifier).clearDraft();
+                    if (mounted) setState(() {});
+                  },
+                  child: const Text('Discard Draft', style: TextStyle(color: Color(0xFFDC2626), fontSize: 11)),
+                ),
+              ],
+            ),
+          ),
+        ],
+        Expanded(
+          child: AdmissionApplicationWizard(
+            source: AdmissionRequestSource.parentPortal,
+            initialData: prefilledParentData,
+            isDark: isDark,
+            onCancel: () => setState(() => _activeTab = ParentPortalTab.childrenOverview),
+            onSaveDraft: (draft) async {
+              await ref.read(parentApplicationDraftProvider.notifier).saveDraft(draft);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        const Icon(Icons.bookmark_added, color: Colors.white, size: 18),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Application draft for ${draft.applicantFirstName.isNotEmpty ? draft.applicantFullName : "child"} saved successfully!',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: const Color(0xFFF59E0B),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
+            },
+            onSubmitted: (req) async {
+              final created = await ref.read(admissionRequestsListProvider.notifier).createRequest(req);
+              await ref.read(parentApplicationDraftProvider.notifier).clearDraft();
+              if (mounted) {
+                _showSubmissionConfirmationDialog(created);
+              }
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showSubmissionConfirmationDialog(AdmissionRequestModel req) {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: widget.isDark ? const Color(0xFF131D31) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 48),
+            ),
+            const SizedBox(height: 18),
+            const Text(
+              'Admission Application Submitted!',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Official Ticket Reference Number',
+              style: TextStyle(fontSize: 12, color: widget.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+            ),
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0D9488).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFF0D9488)),
+              ),
+              child: Text(
+                req.id,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF0D9488), letterSpacing: 1),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: widget.isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Candidate Name:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      Text(req.applicantFullName, style: const TextStyle(fontSize: 12)),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Grade Applied:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      Text(req.gradeApplied, style: const TextStyle(fontSize: 12)),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Initial Status:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF3C7),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text('PENDING_REVIEW', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFFD97706))),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Workflow Routing:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      const Text('Principal & Admin Queue', style: TextStyle(fontSize: 11, color: Color(0xFF10B981), fontWeight: FontWeight.bold)),
+                    ],
                   ),
                 ],
               ),
-              backgroundColor: const Color(0xFF10B981),
-              behavior: SnackBarBehavior.floating,
-              duration: const Duration(seconds: 4),
             ),
-          );
-          // Switch to tracker tab
-          setState(() => _activeTab = ParentPortalTab.myApplications);
-        }
-      },
+          ],
+        ),
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF10B981),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                setState(() => _activeTab = ParentPortalTab.myApplications);
+              },
+              child: const Text('View Ticket in Live Tracker ➔', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1363,9 +1580,15 @@ class _ParentPortalWorkspaceScreenState
         statusIcon = Icons.cancel_rounded;
         break;
       case AdmissionRequestStatus.pending:
+      case AdmissionRequestStatus.pendingReview:
         statusColor = const Color(0xFFF59E0B);
-        statusLabel = 'Pending Admin Review';
+        statusLabel = 'Pending Review';
         statusIcon = Icons.hourglass_top_rounded;
+        break;
+      case AdmissionRequestStatus.correctionRequested:
+        statusColor = const Color(0xFFD97706);
+        statusLabel = 'Correction Requested (Action Required)';
+        statusIcon = Icons.edit_note_rounded;
         break;
     }
 
@@ -1388,156 +1611,237 @@ class _ParentPortalWorkspaceScreenState
           ),
         ],
       ),
-      padding: EdgeInsets.all(isMobile ? 16 : 22),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header Badges - Responsive Wrap for mobile
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0D9488).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  req.id,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF0D9488),
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  req.gradeApplied,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF3B82F6),
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: statusColor.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _showApplicationDetailsModal(req),
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: EdgeInsets.all(isMobile ? 16 : 22),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header Badges - Responsive Wrap for mobile
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    Icon(statusIcon, size: 14, color: statusColor),
-                    const SizedBox(width: 6),
-                    Text(
-                      statusLabel,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        color: statusColor,
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0D9488).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        req.id,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF0D9488),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        req.gradeApplied,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF3B82F6),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: statusColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: statusColor.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(statusIcon, size: 14, color: statusColor),
+                          const SizedBox(width: 6),
+                          Text(
+                            statusLabel,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              color: statusColor,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
+                const SizedBox(height: 14),
 
-          // Applicant Name & Details
-          Text(
-            req.applicantFullName,
-            style: TextStyle(
-              fontSize: isMobile ? 16 : 17,
-              fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : const Color(0xFF0F172A),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Applied on ${DateFormat('dd MMMM yyyy').format(req.appliedAt)} • DOB: ${DateFormat('dd MMM yyyy').format(req.dateOfBirth)} • Blood: ${req.bloodGroup ?? "O+"}',
-            style: TextStyle(
-              fontSize: isMobile ? 11 : 12,
-              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-            ),
-          ),
-          const SizedBox(height: 16),
+                // Applicant Avatar & Info
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: isMobile ? 20 : 24,
+                      backgroundColor: statusColor.withValues(alpha: 0.15),
+                      backgroundImage: (req.studentPhotoUrl != null && req.studentPhotoUrl!.isNotEmpty)
+                          ? (req.studentPhotoUrl!.startsWith('http')
+                              ? NetworkImage(req.studentPhotoUrl!)
+                              : (req.studentPhotoUrl!.startsWith('data:')
+                                  ? MemoryImage(base64Decode(req.studentPhotoUrl!.split(',').last))
+                                  : AssetImage(req.studentPhotoUrl!) as ImageProvider))
+                          : null,
+                      child: (req.studentPhotoUrl == null || req.studentPhotoUrl!.isEmpty)
+                          ? Text(
+                              req.applicantFirstName.isNotEmpty ? req.applicantFirstName[0] : 'S',
+                              style: TextStyle(
+                                fontSize: isMobile ? 14 : 16,
+                                fontWeight: FontWeight.bold,
+                                color: statusColor,
+                              ),
+                            )
+                          : null,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            req.applicantFullName,
+                            style: TextStyle(
+                              fontSize: isMobile ? 16 : 17,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : const Color(0xFF0F172A),
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            'Applied on ${DateFormat('dd MMMM yyyy').format(req.appliedAt)} • DOB: ${DateFormat('dd MMM yyyy').format(req.dateOfBirth)} • Blood: ${req.bloodGroup ?? "O+"}',
+                            style: TextStyle(
+                              fontSize: isMobile ? 11 : 12,
+                              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
 
-          // 3-Stage Lifecycle Tracker Visual (Responsive)
-          Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: isMobile ? 12 : 16,
-              vertical: 12,
-            ),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: isMobile
-                ? _buildMobileTrackingProgress(
-                    isApproved: isApproved,
-                    isRejected: isRejected,
-                    isDark: isDark,
-                  )
-                : Row(
-                    children: [
-                      _buildTrackingNode('1. Submitted', true, isDark),
-                      _buildTrackingConnector(true, isDark),
-                      _buildTrackingNode(
-                        '2. Admin Screening',
-                        isApproved || !isRejected,
-                        isDark,
-                      ),
-                      _buildTrackingConnector(isApproved, isDark),
-                      _buildTrackingNode(
-                        isRejected ? '3. Rejected' : '3. Final Enrollment',
-                        isApproved,
-                        isDark,
-                        isError: isRejected,
-                      ),
-                    ],
+                // 3-Stage Lifecycle Tracker Visual (Responsive)
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isMobile ? 12 : 16,
+                    vertical: 12,
                   ),
-          ),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: isMobile
+                      ? _buildMobileTrackingProgress(
+                          isApproved: isApproved,
+                          isRejected: isRejected,
+                          isDark: isDark,
+                        )
+                      : Row(
+                          children: [
+                            _buildTrackingNode('1. Submitted', true, isDark),
+                            _buildTrackingConnector(true, isDark),
+                            _buildTrackingNode(
+                              '2. Admin Screening',
+                              isApproved || !isRejected,
+                              isDark,
+                            ),
+                            _buildTrackingConnector(isApproved, isDark),
+                            _buildTrackingNode(
+                              isRejected ? '3. Rejected' : '3. Final Enrollment',
+                              isApproved,
+                              isDark,
+                              isError: isRejected,
+                            ),
+                          ],
+                        ),
+                ),
 
-          if (isRejected && req.rejectionReason != null) ...[
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEF4444).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.info_outline, color: Color(0xFFEF4444), size: 18),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Admin Rejection Feedback: ${req.rejectionReason}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFFEF4444),
-                        fontWeight: FontWeight.w600,
-                      ),
+                if (isRejected && req.rejectionReason != null) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.info_outline, color: Color(0xFFEF4444), size: 18),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Admin Rejection Feedback: ${req.rejectionReason}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFFEF4444),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
-              ),
+
+                const SizedBox(height: 14),
+                const Divider(height: 1),
+                const SizedBox(height: 10),
+
+                // Interactive Action Footer
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.touch_app_outlined, size: 14, color: Color(0xFF10B981)),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Click card for complete application dossier',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? const Color(0xFF10B981) : const Color(0xFF047857),
+                          ),
+                        ),
+                      ],
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () => _showApplicationDetailsModal(req),
+                      icon: const Icon(Icons.description_outlined, size: 13),
+                      label: const Text('View Details', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
-        ],
+          ),
+        ),
       ),
     );
   }
@@ -1838,6 +2142,1090 @@ class _ParentPortalWorkspaceScreenState
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // --------------------------------------------------------------------------
+  // Detail Modals & 360° Profile Inspectors
+  // --------------------------------------------------------------------------
+
+  ImageProvider? _resolveImageProvider(String? photoUrl) {
+    if (photoUrl == null || photoUrl.isEmpty) return null;
+    if (photoUrl.startsWith('http')) {
+      return NetworkImage(photoUrl);
+    }
+    if (photoUrl.startsWith('data:')) {
+      try {
+        final base64Str = photoUrl.split(',').last;
+        return MemoryImage(base64Decode(base64Str));
+      } catch (_) {
+        return null;
+      }
+    }
+    return AssetImage(photoUrl);
+  }
+
+  void _showEnrolledStudentDetailsModal(Map<String, dynamic> child) {
+    final isDark = widget.isDark;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isMobile = screenWidth < 768;
+    final color = child['color'] as Color? ?? const Color(0xFF10B981);
+    final photoUrl = child['photoUrl'] as String?;
+    final imageProvider = _resolveImageProvider(photoUrl);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.sizeOf(context).height * 0.90,
+              maxWidth: 780,
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF0F172A) : Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.35),
+                    blurRadius: 20,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // Handle Bar
+                  Container(
+                    margin: const EdgeInsets.only(top: 12, bottom: 8),
+                    width: 44,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF334155) : Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+
+                  // Header Bar
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: color.withValues(alpha: 0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(Icons.school_rounded, color: color, size: 20),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Enrolled Student Record',
+                                style: TextStyle(
+                                  fontSize: isMobile ? 16 : 18,
+                                  fontWeight: FontWeight.w800,
+                                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                ),
+                              ),
+                              Text(
+                                'Official 360° Academic & Personal Dossier',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          icon: const Icon(Icons.close_rounded, size: 22),
+                          tooltip: 'Close Record',
+                          style: IconButton.styleFrom(
+                            backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.grey.shade100,
+                            padding: const EdgeInsets.all(6),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1),
+
+                  // Scrollable Body
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isMobile ? 16 : 24,
+                        vertical: 18,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Student Hero Profile Box
+                          Container(
+                            padding: EdgeInsets.all(isMobile ? 16 : 20),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: isDark
+                                    ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
+                                    : [const Color(0xFFF0FDF4), Colors.white],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(
+                                color: isDark ? const Color(0xFF334155) : const Color(0xFFBBF7D0),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: isMobile ? 28 : 34,
+                                  backgroundColor: color,
+                                  backgroundImage: imageProvider,
+                                  child: imageProvider == null
+                                      ? Text(
+                                          child['initials'] as String? ?? 'ST',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: isMobile ? 18 : 22,
+                                          ),
+                                        )
+                                      : null,
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              child['fullName'] as String? ?? child['name'] as String? ?? '',
+                                              style: TextStyle(
+                                                fontSize: isMobile ? 17 : 20,
+                                                fontWeight: FontWeight.w800,
+                                                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                                              borderRadius: BorderRadius.circular(20),
+                                              border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+                                            ),
+                                            child: const Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(Icons.verified, size: 12, color: Color(0xFF10B981)),
+                                                SizedBox(width: 4),
+                                                Text(
+                                                  'Enrolled Active',
+                                                  style: TextStyle(
+                                                    fontSize: 10.5,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Color(0xFF10B981),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Wrap(
+                                        spacing: 6,
+                                        runSpacing: 4,
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF3B82F6).withValues(alpha: 0.12),
+                                              borderRadius: BorderRadius.circular(6),
+                                            ),
+                                            child: Text(
+                                              child['grade'] as String? ?? '',
+                                              style: const TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w700,
+                                                color: Color(0xFF3B82F6),
+                                              ),
+                                            ),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: isDark ? const Color(0xFF334155) : Colors.grey.shade200,
+                                              borderRadius: BorderRadius.circular(6),
+                                            ),
+                                            child: Text(
+                                              'Roll ${child['rollNo'] ?? ''}',
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w600,
+                                                color: isDark ? Colors.white70 : const Color(0xFF475569),
+                                              ),
+                                            ),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: isDark ? const Color(0xFF334155) : Colors.grey.shade200,
+                                              borderRadius: BorderRadius.circular(6),
+                                            ),
+                                            child: Text(
+                                              child['admNo'] as String? ?? '',
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w600,
+                                                color: isDark ? Colors.white70 : const Color(0xFF475569),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+
+                          // 4 Quick Metrics
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final crossAxisCount = constraints.maxWidth < 500 ? 2 : 4;
+                              return GridView.count(
+                                crossAxisCount: crossAxisCount,
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                crossAxisSpacing: 10,
+                                mainAxisSpacing: 10,
+                                childAspectRatio: constraints.maxWidth < 500 ? 2.2 : 2.0,
+                                children: [
+                                  _buildModalKpiTile(
+                                    'Attendance',
+                                    child['attendance'] as String? ?? 'N/A',
+                                    Icons.insights_rounded,
+                                    const Color(0xFF10B981),
+                                    isDark,
+                                  ),
+                                  _buildModalKpiTile(
+                                    'Class Teacher',
+                                    child['teacher'] as String? ?? 'Assigned',
+                                    Icons.school_rounded,
+                                    const Color(0xFF3B82F6),
+                                    isDark,
+                                  ),
+                                  _buildModalKpiTile(
+                                    'Session',
+                                    child['academicYear'] as String? ?? '2026-2027',
+                                    Icons.calendar_today_rounded,
+                                    const Color(0xFF8B5CF6),
+                                    isDark,
+                                  ),
+                                  _buildModalKpiTile(
+                                    'Medium / Lang',
+                                    '${child['medium'] ?? "English"}',
+                                    Icons.translate_rounded,
+                                    const Color(0xFFF59E0B),
+                                    isDark,
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 18),
+
+                          // Section 1: Academic & Institutional Placement
+                          _buildModalSectionCard(
+                            'Academic Placement & Institutional Details',
+                            Icons.account_balance_rounded,
+                            [
+                              _buildModalDetailRow('Class & Grade', child['className'] as String? ?? child['grade'] as String? ?? 'Class 10', isDark),
+                              _buildModalDetailRow('Section', child['section'] as String? ?? 'Section A', isDark),
+                              _buildModalDetailRow('Roll Number', child['rollNo'] as String? ?? '#12', isDark),
+                              _buildModalDetailRow('Permanent Admission Number', child['admNo'] as String? ?? 'ADM-2026-0042', isDark, isHighlighted: true),
+                              _buildModalDetailRow('Admission Enrolled Date', child['admissionDate'] as String? ?? '12 June 2020', isDark),
+                              _buildModalDetailRow('House Division', child['houseGroup'] as String? ?? 'Shivaji House (Green)', isDark),
+                              _buildModalDetailRow('Medium of Instruction', child['medium'] as String? ?? 'English Medium', isDark),
+                              _buildModalDetailRow('Second Language', child['secondLanguage'] as String? ?? 'Sanskrit', isDark),
+                            ],
+                            isDark,
+                          ),
+                          const SizedBox(height: 14),
+
+                          // Section 2: Personal Demographics & Identity
+                          _buildModalSectionCard(
+                            'Personal Demographics & Identity',
+                            Icons.person_rounded,
+                            [
+                              _buildModalDetailRow('Full Legal Name', child['fullName'] as String? ?? child['name'] as String? ?? '', isDark),
+                              _buildModalDetailRow('Gender', child['gender'] as String? ?? 'Male', isDark),
+                              _buildModalDetailRow('Date of Birth & Age', child['dob'] as String? ?? '14 May 2010', isDark),
+                              _buildModalDetailRow('Blood Group', child['bloodGroup'] as String? ?? 'B+', isDark, isHighlighted: true),
+                              _buildModalDetailRow('Student Institutional Email', child['email'] as String? ?? 'student@kvm.edu', isDark),
+                            ],
+                            isDark,
+                          ),
+                          const SizedBox(height: 14),
+
+                          // Section 3: Parent & Emergency Contacts
+                          _buildModalSectionCard(
+                            'Parent & Emergency Contacts',
+                            Icons.family_restroom_rounded,
+                            [
+                              _buildModalDetailRow('Father’s Name', child['fatherName'] as String? ?? 'Mr. Rajesh Sharma', isDark),
+                              _buildModalDetailRow('Father’s Occupation', child['fatherOccupation'] as String? ?? 'Software Architect', isDark),
+                              _buildModalDetailRow('Mother’s Name', child['motherName'] as String? ?? 'Mrs. Sunita Sharma', isDark),
+                              _buildModalDetailRow('Mother’s Occupation', child['motherOccupation'] as String? ?? 'Senior Lecturer', isDark),
+                              _buildModalDetailRow('Primary Emergency Phone', child['emergencyPhone'] as String? ?? '+91 98765 43210', isDark, isHighlighted: true),
+                              _buildModalDetailRow('SMS & Alert Contact', child['phone'] as String? ?? '+91 98765 43210', isDark),
+                              _buildModalDetailRow('Residential Address', child['address'] as String? ?? 'Navi Mumbai', isDark),
+                            ],
+                            isDark,
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Institutional Guarantee Footer
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isDark ? const Color(0xFF334155) : Colors.grey.shade300,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.verified_user_rounded, color: Color(0xFF10B981), size: 20),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    'Institutional Student Record • Verified by KVM Public School Registry Office for Session 2026-2027.',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Bottom Action Button
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF131D31) : Colors.white,
+                      border: Border(
+                        top: BorderSide(
+                          color: isDark ? const Color(0xFF24334C) : Colors.grey.shade200,
+                        ),
+                      ),
+                    ),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF10B981),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        child: const Text('Close Student Record', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showApplicationDetailsModal(AdmissionRequestModel req) {
+    final isDark = widget.isDark;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isMobile = screenWidth < 768;
+
+    Color statusColor;
+    String statusLabel;
+    IconData statusIcon;
+    String statusDescription;
+
+    switch (req.status) {
+      case AdmissionRequestStatus.approved:
+        statusColor = const Color(0xFF10B981);
+        statusLabel = 'Approved & Enrolled';
+        statusIcon = Icons.check_circle_rounded;
+        statusDescription = 'This application was thoroughly reviewed and officially approved. The student profile is now enrolled in the school academic system.';
+        break;
+      case AdmissionRequestStatus.rejected:
+        statusColor = const Color(0xFFEF4444);
+        statusLabel = 'Application Rejected';
+        statusIcon = Icons.cancel_rounded;
+        statusDescription = 'This application was not approved during administrative screening. Review the remarks below for further guidance.';
+        break;
+      case AdmissionRequestStatus.pending:
+      case AdmissionRequestStatus.pendingReview:
+        statusColor = const Color(0xFFF59E0B);
+        statusLabel = 'Pending Review';
+        statusIcon = Icons.hourglass_top_rounded;
+        statusDescription = 'This application has been successfully submitted and is currently in the Admissions Screening Queue awaiting Principal/Admin decision.';
+        break;
+      case AdmissionRequestStatus.correctionRequested:
+        statusColor = const Color(0xFFD97706);
+        statusLabel = 'Correction Requested';
+        statusIcon = Icons.edit_note_rounded;
+        statusDescription = 'Additional documents or corrections are requested by the Admissions Desk before final approval.';
+        break;
+    }
+
+    final isRejected = req.status == AdmissionRequestStatus.rejected;
+    final imageProvider = _resolveImageProvider(req.studentPhotoUrl);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.sizeOf(context).height * 0.90,
+              maxWidth: 780,
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF0F172A) : Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.35),
+                    blurRadius: 20,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // Handle Bar
+                  Container(
+                    margin: const EdgeInsets.only(top: 12, bottom: 8),
+                    width: 44,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF334155) : Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+
+                  // Header Bar
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: statusColor.withValues(alpha: 0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(statusIcon, color: statusColor, size: 20),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Admission Application Dossier',
+                                style: TextStyle(
+                                  fontSize: isMobile ? 16 : 18,
+                                  fontWeight: FontWeight.w800,
+                                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                ),
+                              ),
+                              Text(
+                                'Application ID: ${req.id} • Session ${req.academicYear}',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          icon: const Icon(Icons.close_rounded, size: 22),
+                          tooltip: 'Close Dossier',
+                          style: IconButton.styleFrom(
+                            backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.grey.shade100,
+                            padding: const EdgeInsets.all(6),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1),
+
+                  // Scrollable Body
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isMobile ? 16 : 24,
+                        vertical: 18,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Status Banner
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: statusColor.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: statusColor.withValues(alpha: 0.3)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(statusIcon, color: statusColor, size: 20),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      statusLabel,
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w800,
+                                        color: statusColor,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: statusColor.withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        req.source.displayName,
+                                        style: TextStyle(
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.bold,
+                                          color: statusColor,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  statusDescription,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isDark ? Colors.white70 : const Color(0xFF334155),
+                                    height: 1.4,
+                                  ),
+                                ),
+                                if (req.reviewedAt != null) ...[
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Reviewed on ${DateFormat('dd MMMM yyyy, hh:mm a').format(req.reviewedAt!)}',
+                                    style: TextStyle(
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: statusColor,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+
+                          if (isRejected && req.rejectionReason != null) ...[
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Icon(Icons.cancel_outlined, color: Color(0xFFEF4444), size: 18),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'Official Administrative Rejection Reason',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFFEF4444),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          req.rejectionReason!,
+                                          style: const TextStyle(fontSize: 12, color: Color(0xFFEF4444)),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+
+                          if (req.status == AdmissionRequestStatus.correctionRequested &&
+                              req.correctionNotes != null) ...[
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFD97706).withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: const Color(0xFFD97706).withValues(alpha: 0.3)),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Icon(Icons.edit_note, color: Color(0xFFD97706), size: 20),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'Required Corrections / Resubmission Notes',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFFD97706),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          req.correctionNotes!,
+                                          style: const TextStyle(fontSize: 12, color: Color(0xFFD97706)),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 18),
+
+                          // Applicant Identity Box
+                          Container(
+                            padding: EdgeInsets.all(isMobile ? 14 : 18),
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isDark ? const Color(0xFF334155) : Colors.grey.shade200,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: isMobile ? 26 : 32,
+                                  backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.2),
+                                  backgroundImage: imageProvider,
+                                  child: imageProvider == null
+                                      ? Text(
+                                          req.applicantFirstName.isNotEmpty ? req.applicantFirstName[0] : 'S',
+                                          style: TextStyle(
+                                            color: const Color(0xFF10B981),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: isMobile ? 18 : 22,
+                                          ),
+                                        )
+                                      : null,
+                                ),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        req.applicantFullName,
+                                        style: TextStyle(
+                                          fontSize: isMobile ? 16 : 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 3),
+                                      Text(
+                                        'Grade Applied: ${req.gradeApplied} • Academic Year: ${req.academicYear}',
+                                        style: const TextStyle(
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFF3B82F6),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        'Submitted on ${DateFormat('dd MMMM yyyy, hh:mm a').format(req.appliedAt)}',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+
+                          // Section 1: Child Demographics
+                          _buildModalSectionCard(
+                            'Child Demographics & Application Details',
+                            Icons.child_care_rounded,
+                            [
+                              _buildModalDetailRow('First Name', req.applicantFirstName, isDark),
+                              _buildModalDetailRow('Last Name', req.applicantLastName, isDark),
+                              _buildModalDetailRow('Grade / Class Applied', req.gradeApplied, isDark, isHighlighted: true),
+                              _buildModalDetailRow('Date of Birth', DateFormat('dd MMMM yyyy').format(req.dateOfBirth), isDark),
+                              _buildModalDetailRow('Gender', req.gender, isDark),
+                              _buildModalDetailRow('Blood Group', req.bloodGroup ?? 'Not Specified', isDark),
+                              _buildModalDetailRow('Academic Session', req.academicYear, isDark),
+                              _buildModalDetailRow('Application Source', req.source.displayName, isDark),
+                            ],
+                            isDark,
+                          ),
+                          const SizedBox(height: 14),
+
+                          // Section 2: Guardian & Contacts
+                          _buildModalSectionCard(
+                            'Parent & Guardian Information',
+                            Icons.family_restroom_rounded,
+                            [
+                              _buildModalDetailRow('Parent / Guardian Name', req.parentFullName, isDark),
+                              _buildModalDetailRow('Relationship to Student', req.parentRelationship, isDark),
+                              _buildModalDetailRow('Primary Phone Number', req.parentPhone, isDark, isHighlighted: true),
+                              _buildModalDetailRow('Email Address', req.parentEmail, isDark),
+                              _buildModalDetailRow('Parent Occupation', req.parentOccupation ?? 'Not Specified', isDark),
+                              _buildModalDetailRow('Current Residential Address', req.currentAddress, isDark),
+                              _buildModalDetailRow('Permanent Address', req.permanentAddress ?? req.currentAddress, isDark),
+                              _buildModalDetailRow('Emergency Contact Phone', req.emergencyContactPhone, isDark),
+                            ],
+                            isDark,
+                          ),
+                          const SizedBox(height: 14),
+
+                          // Section 3: Prior Schooling History
+                          _buildModalSectionCard(
+                            'Prior Schooling & Academic Background',
+                            Icons.history_edu_rounded,
+                            [
+                              _buildModalDetailRow(
+                                'Previous School Attended',
+                                (req.previousSchoolName != null && req.previousSchoolName!.isNotEmpty)
+                                    ? req.previousSchoolName!
+                                    : 'Direct Admission (First Schooling)',
+                                isDark,
+                              ),
+                            ],
+                            isDark,
+                          ),
+                          const SizedBox(height: 14),
+
+                          // Section 4: Attached Verification Documents
+                          _buildModalSectionCard(
+                            'Attached Verification Documents',
+                            Icons.attach_file_rounded,
+                            [
+                              if (req.documents.isNotEmpty)
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: req.documents.map((doc) {
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                          color: isDark ? const Color(0xFF334155) : Colors.grey.shade300,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(Icons.file_present_rounded, size: 16, color: Color(0xFF10B981)),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            doc,
+                                            style: TextStyle(
+                                              fontSize: 11.5,
+                                              fontWeight: FontWeight.w600,
+                                              color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          const Icon(Icons.check_circle, size: 13, color: Color(0xFF10B981)),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
+                                )
+                              else
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 4),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.check_circle_outline, color: Color(0xFF10B981), size: 16),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          'Birth Certificate & Address Verification verified during online form submission.',
+                                          style: TextStyle(
+                                            fontSize: 11.5,
+                                            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                            isDark,
+                          ),
+
+                          if (req.notes != null && req.notes!.isNotEmpty) ...[
+                            const SizedBox(height: 14),
+                            _buildModalSectionCard(
+                              'Special Parent Remarks / Notes',
+                              Icons.notes_rounded,
+                              [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 4),
+                                  child: Text(
+                                    req.notes!,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: isDark ? Colors.white70 : const Color(0xFF334155),
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              isDark,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Bottom Action Button
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF131D31) : Colors.white,
+                      border: Border(
+                        top: BorderSide(
+                          color: isDark ? const Color(0xFF24334C) : Colors.grey.shade200,
+                        ),
+                      ),
+                    ),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF10B981),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        child: const Text('Close Application Dossier', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildModalSectionCard(
+    String title,
+    IconData icon,
+    List<Widget> children,
+    bool isDark,
+  ) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF131D31) : Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark ? const Color(0xFF24334C) : Colors.grey.shade200,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 16, color: const Color(0xFF10B981)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const Divider(height: 20),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModalDetailRow(
+    String label,
+    String value,
+    bool isDark, {
+    bool isHighlighted = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 140,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 11.5,
+                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: isHighlighted ? FontWeight.bold : FontWeight.w600,
+                color: isHighlighted
+                    ? const Color(0xFF10B981)
+                    : (isDark ? Colors.white : const Color(0xFF0F172A)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModalKpiTile(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+    bool isDark,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? const Color(0xFF334155) : Colors.grey.shade200,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, size: 16, color: color),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 9.5,
+                    color: isDark ? const Color(0xFF94A3B8) : Colors.grey.shade600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

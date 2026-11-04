@@ -83,13 +83,13 @@ class _FrontDeskStudentLookupScreenState extends ConsumerState<FrontDeskStudentL
             ? 'Father'
             : (adm.mother != null ? 'Mother' : (adm.guardian?.relationship ?? 'Guardian'));
         final grade =
-            '${adm.student.className}${adm.student.section != null && adm.student.section!.isNotEmpty ? " - Sec ${adm.student.section}" : ""}';
+            '${adm.student.className}${adm.student.section.isNotEmpty ? " - Sec ${adm.student.section}" : ""}';
         final roll = adm.student.rollNumber != null && adm.student.rollNumber!.isNotEmpty
             ? '#${adm.student.rollNumber}'
             : '#Pending';
-        final phone = adm.student.emergencyContactPhone ??
-            adm.father?.phoneNumber ??
-            adm.user.phoneNumber;
+        final phone = adm.student.emergencyContactPhone.isNotEmpty
+            ? adm.student.emergencyContactPhone
+            : (adm.father?.phoneNumber ?? adm.user.phoneNumber);
 
         list.insert(0, {
           'id': adm.student.admissionNumber,

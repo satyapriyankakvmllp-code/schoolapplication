@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -11,6 +13,7 @@ class AdmissionApplicationWizard extends ConsumerStatefulWidget {
   final AdmissionRequestSource source;
   final AdmissionRequestModel? initialData;
   final ValueChanged<AdmissionRequestModel> onSubmitted;
+  final ValueChanged<AdmissionRequestModel>? onSaveDraft;
   final VoidCallback onCancel;
   final bool isDark;
 
@@ -19,6 +22,7 @@ class AdmissionApplicationWizard extends ConsumerStatefulWidget {
     required this.source,
     this.initialData,
     required this.onSubmitted,
+    this.onSaveDraft,
     required this.onCancel,
     this.isDark = false,
   });
@@ -37,7 +41,11 @@ class _AdmissionApplicationWizardState
   final _step2Key = GlobalKey<FormState>();
   final _step3Key = GlobalKey<FormState>();
 
-  // --- Step 1: Student Demographics ---
+  // --- Step 1: Student Demographics & Profile Photo ---
+  String? _studentPhotoUrl;
+  Uint8List? _studentPhotoBytes;
+  String? _studentPhotoFileName;
+
   late final TextEditingController _firstNameController;
   late final TextEditingController _lastNameController;
   DateTime? _dateOfBirth;
@@ -92,6 +100,9 @@ class _AdmissionApplicationWizardState
     super.initState();
     final init = widget.initialData;
 
+    _studentPhotoUrl = init?.studentPhotoUrl;
+    _studentPhotoFileName = init?.studentPhotoUrl;
+
     _firstNameController = TextEditingController(text: init?.applicantFirstName ?? '');
     _lastNameController = TextEditingController(text: init?.applicantLastName ?? '');
     _dateOfBirth = init?.dateOfBirth ?? DateTime(2018, 5, 12);
@@ -129,6 +140,134 @@ class _AdmissionApplicationWizardState
         }
       }
     }
+  }
+
+  Future<void> _pickStudentPhoto() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['png', 'jpg', 'jpeg'],
+        withData: true,
+      );
+      if (result != null && result.files.isNotEmpty) {
+        final picked = result.files.first;
+        setState(() {
+          _studentPhotoBytes = picked.bytes;
+          _studentPhotoFileName = picked.name;
+          _studentPhotoUrl = picked.name;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        _showManualPhotoDialog();
+      }
+    }
+  }
+
+  void _removeStudentPhoto() {
+    setState(() {
+      _studentPhotoBytes = null;
+      _studentPhotoFileName = null;
+      _studentPhotoUrl = null;
+    });
+  }
+
+  void _showManualPhotoDialog() {
+    final textController = TextEditingController(text: _studentPhotoFileName ?? '');
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.add_a_photo, size: 18, color: Color(0xFF10B981)),
+            ),
+            const SizedBox(width: 10),
+            const Text('Student Photograph', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Attach a passport-size photo file or choose a sample child avatar:',
+              style: TextStyle(fontSize: 13, color: widget.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: textController,
+              style: TextStyle(color: widget.isDark ? Colors.white : Colors.black87, fontSize: 13),
+              decoration: InputDecoration(
+                hintText: 'e.g., student_photo.jpg or URL',
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'Quick Sample Avatars:',
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: widget.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ActionChip(
+                  avatar: const Icon(Icons.face, size: 14, color: Color(0xFF10B981)),
+                  label: const Text('boy_avatar.png', style: TextStyle(fontSize: 11)),
+                  backgroundColor: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+                  onPressed: () => textController.text = 'boy_avatar.png',
+                ),
+                ActionChip(
+                  avatar: const Icon(Icons.face_3, size: 14, color: Color(0xFF0D9488)),
+                  label: const Text('girl_avatar.png', style: TextStyle(fontSize: 11)),
+                  backgroundColor: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+                  onPressed: () => textController.text = 'girl_avatar.png',
+                ),
+                ActionChip(
+                  avatar: const Icon(Icons.photo_camera_front, size: 14, color: Color(0xFF3B82F6)),
+                  label: const Text('passport_photo.jpg', style: TextStyle(fontSize: 11)),
+                  backgroundColor: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+                  onPressed: () => textController.text = 'passport_photo.jpg',
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final name = textController.text.trim();
+              if (name.isNotEmpty) {
+                Navigator.pop(ctx);
+                setState(() {
+                  _studentPhotoFileName = name;
+                  _studentPhotoUrl = name;
+                });
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF109F83),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Attach Photo'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -201,10 +340,15 @@ class _AdmissionApplicationWizardState
       docs.add(_immunizationFileName!.trim());
     }
 
-    final generatedId = 'REQ-${DateTime.now().millisecondsSinceEpoch % 100000}';
+    final uniqueSuffix = (DateTime.now().millisecondsSinceEpoch % 9000) + 1000;
+    final generatedId = 'APP-2026-$uniqueSuffix';
+
+    final id = widget.initialData?.id != null && !widget.initialData!.id.startsWith('DRAFT-')
+        ? widget.initialData!.id
+        : generatedId;
 
     final request = AdmissionRequestModel(
-      id: widget.initialData?.id ?? generatedId,
+      id: id,
       applicantFirstName: _firstNameController.text.trim(),
       applicantLastName: _lastNameController.text.trim(),
       gender: _gender,
@@ -213,7 +357,7 @@ class _AdmissionApplicationWizardState
       gradeApplied: _gradeApplied,
       academicYear: _academicYear,
       source: widget.source,
-      status: AdmissionRequestStatus.pending,
+      status: AdmissionRequestStatus.pendingReview,
       appliedAt: DateTime.now(),
       parentFullName: _parentFullNameController.text.trim(),
       parentRelationship: _parentRelationship,
@@ -227,11 +371,82 @@ class _AdmissionApplicationWizardState
       previousSchoolName: _previousSchoolController.text.trim().isNotEmpty
           ? _previousSchoolController.text.trim()
           : null,
+      studentPhotoUrl: _studentPhotoUrl,
       documents: docs,
       notes: _notesController.text.trim().isNotEmpty ? _notesController.text.trim() : null,
     );
 
     widget.onSubmitted(request);
+  }
+
+  AdmissionRequestModel _buildCurrentDraftModel() {
+    final docs = <String>[];
+    if (_birthCertFileName != null && _birthCertFileName!.trim().isNotEmpty) {
+      docs.add(_birthCertFileName!.trim());
+    }
+    if (_tcFileName != null && _tcFileName!.trim().isNotEmpty) {
+      docs.add(_tcFileName!.trim());
+    }
+    if (_govtIdFileName != null && _govtIdFileName!.trim().isNotEmpty) {
+      docs.add(_govtIdFileName!.trim());
+    }
+    if (_immunizationFileName != null && _immunizationFileName!.trim().isNotEmpty) {
+      docs.add(_immunizationFileName!.trim());
+    }
+
+    final draftId = widget.initialData?.id.isNotEmpty == true
+        ? widget.initialData!.id
+        : 'DRAFT-${DateTime.now().millisecondsSinceEpoch % 100000}';
+
+    return AdmissionRequestModel(
+      id: draftId,
+      applicantFirstName: _firstNameController.text.trim(),
+      applicantLastName: _lastNameController.text.trim(),
+      gender: _gender,
+      dateOfBirth: _dateOfBirth ?? DateTime(2018, 1, 1),
+      bloodGroup: _bloodGroup,
+      gradeApplied: _gradeApplied,
+      academicYear: _academicYear,
+      source: widget.source,
+      status: AdmissionRequestStatus.pendingReview,
+      appliedAt: DateTime.now(),
+      parentFullName: _parentFullNameController.text.trim(),
+      parentRelationship: _parentRelationship,
+      parentPhone: _parentPhoneController.text.trim(),
+      parentEmail: _parentEmailController.text.trim(),
+      parentOccupation: _parentOccupationController.text.trim(),
+      currentAddress: _currentAddressController.text.trim(),
+      emergencyContactPhone: _sameAsParentPhone
+          ? _parentPhoneController.text.trim()
+          : _emergencyContactController.text.trim(),
+      previousSchoolName: _previousSchoolController.text.trim().isNotEmpty
+          ? _previousSchoolController.text.trim()
+          : null,
+      studentPhotoUrl: _studentPhotoUrl,
+      documents: docs,
+      notes: _notesController.text.trim().isNotEmpty ? _notesController.text.trim() : null,
+    );
+  }
+
+  void _handleSaveDraft() {
+    final draft = _buildCurrentDraftModel();
+    if (widget.onSaveDraft != null) {
+      widget.onSaveDraft!(draft);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.bookmark_added, color: Colors.white, size: 18),
+              SizedBox(width: 8),
+              Text('Application draft saved! You can resume anytime.'),
+            ],
+          ),
+          backgroundColor: Color(0xFFF59E0B),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   @override
@@ -473,6 +688,253 @@ class _AdmissionApplicationWizardState
   // --------------------------------------------------------------------------
   // STEP 1: Student Demographics
   // --------------------------------------------------------------------------
+  Widget _buildStudentPhotoUploader(bool isDark, bool isMobile) {
+    final hasPhoto = (_studentPhotoBytes != null) ||
+        (_studentPhotoUrl != null && _studentPhotoUrl!.isNotEmpty);
+    final borderColor = hasPhoto
+        ? const Color(0xFF10B981)
+        : (isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1));
+
+    Widget imageContent;
+    if (_studentPhotoBytes != null) {
+      imageContent = ClipRRect(
+        borderRadius: BorderRadius.circular(50),
+        child: Image.memory(
+          _studentPhotoBytes!,
+          width: 100,
+          height: 100,
+          fit: BoxFit.cover,
+        ),
+      );
+    } else if (_studentPhotoUrl != null && _studentPhotoUrl!.isNotEmpty) {
+      if (_studentPhotoUrl!.startsWith('http')) {
+        imageContent = ClipRRect(
+          borderRadius: BorderRadius.circular(50),
+          child: Image.network(
+            _studentPhotoUrl!,
+            width: 100,
+            height: 100,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => _buildInitialsPhoto(),
+          ),
+        );
+      } else {
+        imageContent = _buildInitialsPhoto();
+      }
+    } else {
+      imageContent = Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.person_add_alt_1_rounded,
+            size: 34,
+            color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            'Add Photo',
+            style: TextStyle(
+              fontSize: 10.5,
+              fontWeight: FontWeight.w600,
+              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+            ),
+          ),
+        ],
+      );
+    }
+
+    final avatarStack = Stack(
+      clipBehavior: Clip.none,
+      children: [
+        InkWell(
+          onTap: _pickStudentPhoto,
+          borderRadius: BorderRadius.circular(55),
+          child: Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isDark ? const Color(0xFF1E293B) : Colors.white,
+              border: Border.all(color: borderColor, width: 2.2),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Center(child: imageContent),
+          ),
+        ),
+        Positioned(
+          bottom: 0,
+          right: 0,
+          child: InkWell(
+            onTap: _pickStudentPhoto,
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isDark ? const Color(0xFF131D31) : Colors.white,
+                  width: 2,
+                ),
+              ),
+              child: const Icon(Icons.camera_alt, size: 14, color: Colors.white),
+            ),
+          ),
+        ),
+      ],
+    );
+
+    final details = Column(
+      crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Child Profile Photo',
+              style: TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : const Color(0xFF0F172A),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: const Text(
+                'Recommended',
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF10B981)),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Upload a clear passport-size photo of the child against a light background (PNG, JPG max 2MB).',
+          textAlign: isMobile ? TextAlign.center : TextAlign.start,
+          style: TextStyle(
+            fontSize: 12,
+            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          alignment: isMobile ? WrapAlignment.center : WrapAlignment.start,
+          children: [
+            ElevatedButton.icon(
+              onPressed: _pickStudentPhoto,
+              icon: const Icon(Icons.upload_file, size: 14),
+              label: Text(hasPhoto ? 'Change Photo' : 'Upload Photo'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF10B981),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+              ),
+            ),
+            if (hasPhoto)
+              OutlinedButton.icon(
+                onPressed: _removeStudentPhoto,
+                icon: const Icon(Icons.delete_outline, size: 14, color: Color(0xFFEF4444)),
+                label: const Text('Remove', style: TextStyle(color: Color(0xFFEF4444))),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  side: BorderSide(color: const Color(0xFFEF4444).withValues(alpha: 0.5)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  textStyle: const TextStyle(fontSize: 12),
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: hasPhoto
+              ? const Color(0xFF10B981).withValues(alpha: 0.35)
+              : (isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)),
+        ),
+      ),
+      child: isMobile
+          ? Column(
+              children: [
+                avatarStack,
+                const SizedBox(height: 14),
+                details,
+              ],
+            )
+          : Row(
+              children: [
+                avatarStack,
+                const SizedBox(width: 18),
+                Expanded(child: details),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildInitialsPhoto() {
+    final fn = _firstNameController.text.trim();
+    final ln = _lastNameController.text.trim();
+    final initials = (fn.isNotEmpty ? fn[0] : 'S') + (ln.isNotEmpty ? ln[0] : '');
+    return Container(
+      width: 100,
+      height: 100,
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          colors: [Color(0xFF10B981), Color(0xFF0D9488)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      alignment: Alignment.center,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            initials.toUpperCase(),
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: 1,
+            ),
+          ),
+          if (_studentPhotoFileName != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Text(
+                _studentPhotoFileName!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 8.5, color: Colors.white70),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildStep1StudentDemographics(bool isDark, bool isMobile) {
     return Form(
       key: _step1Key,
@@ -494,6 +956,10 @@ class _AdmissionApplicationWizardState
               Icons.school_outlined,
               isDark,
             ),
+            const SizedBox(height: 20),
+
+            // Profile Photo Uploader
+            _buildStudentPhotoUploader(isDark, isMobile),
             const SizedBox(height: 20),
 
             // Name Row
@@ -1023,6 +1489,7 @@ class _AdmissionApplicationWizardState
                     runSpacing: 8,
                     children: [
                       _buildSummaryItem('Applicant:', '${_firstNameController.text} ${_lastNameController.text}', isDark),
+                      _buildSummaryItem('Photo:', _studentPhotoFileName ?? (_studentPhotoUrl != null ? 'Attached' : 'Not Attached'), isDark),
                       _buildSummaryItem('Grade:', _gradeApplied, isDark),
                       _buildSummaryItem('DOB:', _dateOfBirth != null ? DateFormat('dd MMM yyyy').format(_dateOfBirth!) : '-', isDark),
                       _buildSummaryItem('Guardian:', '${_parentFullNameController.text} ($_parentRelationship)', isDark),
@@ -1243,11 +1710,24 @@ class _AdmissionApplicationWizardState
             ),
           );
 
+    final saveDraftButton = OutlinedButton.icon(
+      onPressed: _handleSaveDraft,
+      icon: const Icon(Icons.bookmark_border_rounded, size: 16),
+      label: const Text('Save as Draft'),
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        foregroundColor: const Color(0xFFF59E0B),
+        side: const BorderSide(color: Color(0xFFF59E0B)),
+      ),
+    );
+
     if (isMobile) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           nextOrSubmitButton,
+          const SizedBox(height: 10),
+          saveDraftButton,
           const SizedBox(height: 10),
           prevOrCancelButton,
         ],
@@ -1258,7 +1738,13 @@ class _AdmissionApplicationWizardState
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         prevOrCancelButton,
-        nextOrSubmitButton,
+        Row(
+          children: [
+            saveDraftButton,
+            const SizedBox(width: 12),
+            nextOrSubmitButton,
+          ],
+        ),
       ],
     );
   }
